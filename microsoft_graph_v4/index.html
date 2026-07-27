@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>microsoft_graph_v4 Test Results — 2026-07-27</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --red: #f85149;
+            --yellow: #d29922;
+            --orange: #db6d28;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            color: #fff;
+        }
+        
+        h3 {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.5rem;
+            color: #fff;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .summary-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .summary-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .summary-card .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .summary-card.pass .number { color: var(--green); }
+        .summary-card.fail .number { color: var(--red); }
+        .summary-card.warn .number { color: var(--yellow); }
+        .summary-card.info .number { color: var(--accent); }
+        
+        .filter-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-bar input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.5rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        
+        .filter-bar input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .filter-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        
+        .table-section {
+            margin: 1.5rem 0;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge.pass { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+        .badge.fail { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+        .badge.warn { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+        
+        pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            margin: 0.5rem 0;
+        }
+        
+        code {
+            font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace;
+            color: var(--text);
+        }
+        
+        .copy-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-muted);
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .copy-btn.copied {
+            border-color: var(--green);
+            color: var(--green);
+        }
+        
+        .bug-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+        
+        .bug-card.high { border-left-color: var(--red); }
+        .bug-card.medium { border-left-color: var(--yellow); }
+        .bug-card.low { border-left-color: var(--text-muted); }
+        
+        .bug-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .severity {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .severity.high { background: var(--red); color: #fff; }
+        .severity.medium { background: var(--yellow); color: #000; }
+        .severity.low { background: var(--text-muted); color: #fff; }
+        
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .collapsible::before {
+            content: '▸';
+            display: inline-block;
+            margin-right: 0.5rem;
+            transition: transform 0.2s;
+        }
+        
+        .collapsible.open::before {
+            transform: rotate(90deg);
+        }
+        
+        .collapsible-content {
+            display: none;
+            margin-top: 0.5rem;
+        }
+        
+        .collapsible-content.show {
+            display: block;
+        }
+        
+        .env-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .env-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+        }
+        
+        .env-item .key {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        .env-item .value {
+            color: var(--text);
+            font-family: monospace;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--surface);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        
+        tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+        
+        .status-icon {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-icon.pass { background: var(--green); }
+        .status-icon.fail { background: var(--red); }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+            }
+            
+            .filter-bar input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>microsoft_graph_v4 Test Results</h1>
+        <p style="color: var(--text-muted);">2026-07-27 | coral 0.5.2+cf744bd</p>
+        
+        <div class="summary-grid">
+            <div class="summary-card info">
+                <span class="number">733</span>
+                <span class="label">Total Tables</span>
+            </div>
+            <div class="summary-card info">
+                <span class="number">65</span>
+                <span class="label">Tested</span>
+            </div>
+            <div class="summary-card pass">
+                <span class="number">20</span>
+                <span class="label">Passing</span>
+            </div>
+            <div class="summary-card fail">
+                <span class="number">45</span>
+                <span class="label">Failing</span>
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <input type="text" id="search" placeholder="Search tables, commands, or errors..." />
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="pass">Pass</button>
+            <button class="filter-btn" data-filter="fail">Fail</button>
+            <button class="filter-btn" data-filter="401">401</button>
+            <button class="filter-btn" data-filter="403">403</button>
+            <button class="filter-btn" data-filter="400">400</button>
+            <button class="filter-btn" data-filter="404">404</button>
+        </div>
+        
+        <h2>Environment</h2>
+        <div class="env-grid">
+            <div class="env-item">
+                <div class="key">Tenant</div>
+                <div class="value">algsochgmail.onmicrosoft.com</div>
+            </div>
+            <div class="env-item">
+                <div class="key">License</div>
+                <div class="value">Azure for Students (no paid services)</div>
+            </div>
+            <div class="env-item">
+                <div class="key">Test Account</div>
+                <div class="value">algsoch@gmail.com</div>
+            </div>
+            <div class="env-item">
+                <div class="key">User ID</div>
+                <div class="value">1165bcae-a56f-49bf-af0a-4496f80cd544</div>
+            </div>
+        </div>
+        
+        <h2>CRITICAL BUGS</h2>
+        
+        <div class="bug-card high" data-status="bug">
+            <div class="bug-title">
+                <strong>Bug #1: List Tables Don't Flatten</strong>
+                <span class="severity high">HIGH</span>
+            </div>
+            <p>Impact: All ~497 LIST tables (68% of connector) return raw OData envelope. Cannot SELECT individual fields.</p>
+            
+            <div class="collapsible" onclick="toggleCollapsible(this)">Failing Command</div>
+            <div class="collapsible-content">
+                <pre><code>coral sql "SELECT displayname FROM microsoft_graph_v4.users_user_users_user_listuser" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: No column named `displayname`</p>
+            </div>
+            
+            <div class="collapsible" onclick="toggleCollapsible(this)">Working Command (but returns raw JSON)</div>
+            <div class="collapsible-content">
+                <pre><code>coral sql "SELECT value FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--green);">Returns: [{"value":"[{\"businessPhones\":[],\"displayName\":\"vicky kumar\",...}]"}]</p>
+            </div>
+        </div>
+        
+        <div class="bug-card medium" data-status="bug">
+            <div class="bug-title">
+                <strong>Bug #2: BETWEEN Column Resolution Fails</strong>
+                <span class="severity medium">MEDIUM</span>
+            </div>
+            <p>Impact: Cannot use BETWEEN on any column. Column name lookup fails.</p>
+            
+            <div class="collapsible" onclick="toggleCollapsible(this)">Failing Command</div>
+            <div class="collapsible-content">
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser WHERE skip BETWEEN 0 AND 100" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: No column named `skip`</p>
+            </div>
+        </div>
+        
+        <div class="bug-card low" data-status="bug">
+            <div class="bug-title">
+                <strong>Bug #3: Planner Tables Return 404</strong>
+                <span class="severity low">LOW</span>
+            </div>
+            <p>Impact: All planner tables return "Tenant is not found" — Graph API issue, not coral bug.</p>
+        </div>
+        
+        <h2>PASS — Working Tables</h2>
+        <div id="pass-tables">
+            <div class="table-section" data-status="pass" data-search="me_user_me_user_getuser displayname userprincipalname accountenabled getuser">
+                <div class="table-header">
+                    <h3>me_user_me_user_getuser</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT displayname, userprincipalname, accountenabled FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ 135 columns exposed, all fields accessible.</p>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Output: [{"displayname":"vicky kumar","userprincipalname":"algsoch_gmail.com#EXT#@algsochgmail.onmicrosoft.com","accountenabled":null}]</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="users_user_users_user_listuser list users">
+                <div class="table-header">
+                    <h3>users_user_users_user_listuser</h3>
+                    <span class="badge warn">PASS (flattening issue)</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>⚠️ Returns raw JSON blob in value column — see Bug #1.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="groups_group_groups_group_listgroup list groups">
+                <div class="table-header">
+                    <h3>groups_group_groups_group_listgroup</h3>
+                    <span class="badge warn">PASS (flattening issue)</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.groups_group_groups_group_listgroup LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>⚠️ Same raw JSON blob behavior as users list.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="organization_organization_organization_organization_listorganization list orgs">
+                <div class="table-header">
+                    <h3>organization_organization_organization_organization_listorganization</h3>
+                    <span class="badge warn">PASS (flattening issue)</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.organization_organization_organization_organization_listorganization LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>⚠️ Same raw JSON blob behavior.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="subscribedskus_subscribedsku_subscribedskus_subscribedsku_listsubscribedsku skus">
+                <div class="table-header">
+                    <h3>subscribedskus_subscribedsku_subscribedskus_subscribedsku_listsubscribedsku</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.subscribedskus_subscribedsku_subscribedskus_subscribedsku_listsubscribedsku" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Empty array (no SKUs in free tenant) — correct behavior.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="schemaextensions_schemaextension_schemaextensions_schemaextension_listschemaextension schema extensions">
+                <div class="table-header">
+                    <h3>schemaextensions_schemaextension_schemaextensions_schemaextension_listschemaextension</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.schemaextensions_schemaextension_schemaextensions_schemaextension_listschemaextension LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Empty array — correct behavior.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="me_directoryobject_me_listdirectreports direct reports">
+                <div class="table-header">
+                    <h3>me_directoryobject_me_listdirectreports</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_directoryobject_me_listdirectreports LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Empty array — correct behavior.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="me_scopedrolemembership_me_listscopedrolememberof scoped role">
+                <div class="table-header">
+                    <h3>me_scopedrolemembership_me_listscopedrolememberof</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_scopedrolemembership_me_listscopedrolememberof LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Empty array — correct behavior.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="policies_authorizationpolicy_policies_getauthorizationpolicy authorization policy">
+                <div class="table-header">
+                    <h3>policies_authorizationpolicy_policies_getauthorizationpolicy</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.policies_authorizationpolicy_policies_getauthorizationpolicy LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns policy data.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="policies_conditionalaccesspolicy_policies_listconditionalaccesspolicies conditional access">
+                <div class="table-header">
+                    <h3>policies_conditionalaccesspolicy_policies_listconditionalaccesspolicies</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.policies_conditionalaccesspolicy_policies_listconditionalaccesspolicies LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Empty array — correct behavior.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="storage_storage_storage_storage_getstorage storage">
+                <div class="table-header">
+                    <h3>storage_storage_storage_storage_getstorage</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.storage_storage_storage_storage_getstorage LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns storage info.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="reports_reportroot_reports_reportroot_getreportroot reports">
+                <div class="table-header">
+                    <h3>reports_reportroot_reports_reportroot_getreportroot</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_reports_reportroot_getreportroot LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns reports root.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="users_user_functions_users_delta delta users">
+                <div class="table-header">
+                    <h3>users_user_functions_users_delta</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.users_user_functions_users_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns delta data.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="groups_group_functions_groups_delta delta groups">
+                <div class="table-header">
+                    <h3>groups_group_functions_groups_delta</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.groups_group_functions_groups_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns delta data.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="contacts_orgcontact_functions_contacts_delta delta contacts">
+                <div class="table-header">
+                    <h3>contacts_orgcontact_functions_contacts_delta</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.contacts_orgcontact_functions_contacts_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns empty array (no contacts).</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="serviceprincipals_serviceprincipal_functions_serviceprincipals_delta delta service principals">
+                <div class="table-header">
+                    <h3>serviceprincipals_serviceprincipal_functions_serviceprincipals_delta</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.serviceprincipals_serviceprincipal_functions_serviceprincipals_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns delta data.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="oauth2permissiongrants_oauth2permissiongrant_functions_oauth2permissiongrants_delta delta oauth2">
+                <div class="table-header">
+                    <h3>oauth2permissiongrants_oauth2permissiongrant_functions_oauth2permissiongrants_delta</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.oauth2permissiongrants_oauth2permissiongrant_functions_oauth2permissiongrants_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns empty array.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal list service principals">
+                <div class="table-header">
+                    <h3>serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal</h3>
+                    <span class="badge warn">PASS (flattening issue)</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns service principals.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="oauth2permissiongrants_oauth2permissiongrant_oauth2permissiongrants_oauth2permissiongrant_listoauth2permissiongrant list oauth2 grants">
+                <div class="table-header">
+                    <h3>oauth2permissiongrants_oauth2permissiongrant_oauth2permissiongrants_oauth2permissiongrant_listoauth2permissiongrant</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.oauth2permissiongrants_oauth2permissiongrant_oauth2permissiongrants_oauth2permissiongrant_listoauth2permissiongrant LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns empty array.</p>
+            </div>
+            
+            <div class="table-section" data-status="pass" data-search="me_directoryobject_me_listdirectreports_asuser direct reports as user">
+                <div class="table-header">
+                    <h3>me_directoryobject_me_listdirectreports_asuser</h3>
+                    <span class="badge pass">PASS</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_directoryobject_me_listdirectreports_asuser LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p>✅ Works — returns empty array.</p>
+            </div>
+        </div>
+        
+        <h2>FAIL — 401 Authentication Failed</h2>
+        <div id="fail-401">
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_calendar_me_getcalendar calendar">
+                <div class="table-header">
+                    <h3>me_calendar_me_getcalendar</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_calendar_me_getcalendar LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_todo_me_gettodo todo">
+                <div class="table-header">
+                    <h3>me_todo_me_gettodo</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_todo_me_gettodo LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_mailboxsettings_me_getmailboxsettings mailbox">
+                <div class="table-header">
+                    <h3>me_mailboxsettings_me_getmailboxsettings</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_mailboxsettings_me_getmailboxsettings LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_onenote_me_getonenote onenote">
+                <div class="table-header">
+                    <h3>me_onenote_me_getonenote</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_onenote_me_getonenote LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_outlookuser_me_getoutlook outlook">
+                <div class="table-header">
+                    <h3>me_outlookuser_me_getoutlook</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_outlookuser_me_getoutlook LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_inferenceclassification_me_getinferenceclassification inference">
+                <div class="table-header">
+                    <h3>me_inferenceclassification_me_getinferenceclassification</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_inferenceclassification_me_getinferenceclassification LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_calendar_me_listcalendars list calendars">
+                <div class="table-header">
+                    <h3>me_calendar_me_listcalendars</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_calendar_me_listcalendars LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_mailfolder_me_listmailfolders mail folders">
+                <div class="table-header">
+                    <h3>me_mailfolder_me_listmailfolders</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_mailfolder_me_listmailfolders LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_message_me_listmessages messages">
+                <div class="table-header">
+                    <h3>me_message_me_listmessages</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_message_me_listmessages LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_event_me_listevents events">
+                <div class="table-header">
+                    <h3>me_event_me_listevents</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_event_me_listevents LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_contact_me_listcontacts contacts">
+                <div class="table-header">
+                    <h3>me_contact_me_listcontacts</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_contact_me_listcontacts LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_todo_me_todo_listlists todo lists">
+                <div class="table-header">
+                    <h3>me_todo_me_todo_listlists</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_todo_me_todo_listlists LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_todo_me_todo_lists_delta todo lists delta">
+                <div class="table-header">
+                    <h3>me_todo_me_todo_lists_delta</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_todo_me_todo_lists_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_useractivity_me_activities_recent activities">
+                <div class="table-header">
+                    <h3>me_useractivity_me_activities_recent</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_useractivity_me_activities_recent LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_usersettings_me_getsettings user settings">
+                <div class="table-header">
+                    <h3>me_usersettings_me_getsettings</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_usersettings_me_getsettings LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_contact_me_contacts_delta contacts delta">
+                <div class="table-header">
+                    <h3>me_contact_me_contacts_delta</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_contact_me_contacts_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="401" data-search="me_mailfolder_me_mailfolders_delta mail folders delta">
+                <div class="table-header">
+                    <h3>me_mailfolder_me_mailfolders_delta</h3>
+                    <span class="badge fail">401</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_mailfolder_me_mailfolders_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
+            </div>
+        </div>
+        
+        <h2>FAIL — 403 Forbidden</h2>
+        <div id="fail-403">
+            <div class="table-section" data-status="fail" data-error="403" data-search="me_presence_me_getpresence presence">
+                <div class="table-header">
+                    <h3>me_presence_me_getpresence</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_presence_me_getpresence LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="me_userteamwork_me_getteamwork teamwork">
+                <div class="table-header">
+                    <h3>me_userteamwork_me_getteamwork</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_userteamwork_me_getteamwork LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403) — Requires Office365 license</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="me_chat_me_listchats chats">
+                <div class="table-header">
+                    <h3>me_chat_me_listchats</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_chat_me_listchats LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="security_alert_security_listalerts security alerts">
+                <div class="table-header">
+                    <h3>security_alert_security_listalerts</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.security_alert_security_listalerts LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403) — Requires SecurityEvents.Read.All</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="security_incident_security_listincidents security incidents">
+                <div class="table-header">
+                    <h3>security_incident_security_listincidents</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.security_incident_security_listincidents LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="teams_team_teams_team_listteam teams">
+                <div class="table-header">
+                    <h3>teams_team_teams_team_listteam</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.teams_team_teams_team_listteam LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403) — Requires Teams license</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="me_resourcespecificpermissiongrant_me_listpermissiongrants permission grants">
+                <div class="table-header">
+                    <h3>me_resourcespecificpermissiongrant_me_listpermissiongrants</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_resourcespecificpermissiongrant_me_listpermissiongrants LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="education_educationuser_education_me_getuser education user">
+                <div class="table-header">
+                    <h3>education_educationuser_education_me_getuser</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationuser_education_me_getuser LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403) — Requires Education API permissions</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="education_educationuser_education_me_listclasses education classes">
+                <div class="table-header">
+                    <h3>education_educationuser_education_me_listclasses</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationuser_education_me_listclasses LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="education_educationclass_education_classes_delta education classes delta">
+                <div class="table-header">
+                    <h3>education_educationclass_education_classes_delta</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationclass_education_classes_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="403" data-search="education_educationuser_education_users_delta education users delta">
+                <div class="table-header">
+                    <h3>education_educationuser_education_users_delta</h3>
+                    <span class="badge fail">403</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationuser_education_users_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
+            </div>
+        </div>
+        
+        <h2>FAIL — 400 Bad Request</h2>
+        <div id="fail-400">
+            <div class="table-section" data-status="fail" data-error="400" data-search="me_drive_me_getdrive drive">
+                <div class="table-header">
+                    <h3>me_drive_me_getdrive</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_drive_me_getdrive LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant does not have a SPO license.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="sites_site_sites_site_listsite sites">
+                <div class="table-header">
+                    <h3>sites_site_sites_site_listsite</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.sites_site_sites_site_listsite LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant does not have a SPO license.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="me_site_me_listfollowedsites followed sites">
+                <div class="table-header">
+                    <h3>me_site_me_listfollowedsites</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_site_me_listfollowedsites LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant does not have a SPO license.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="me_authentication_me_getauthentication authentication">
+                <div class="table-header">
+                    <h3>me_authentication_me_getauthentication</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_authentication_me_getauthentication LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Unsupported segment type.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="me_message_me_messages_delta messages delta">
+                <div class="table-header">
+                    <h3>me_message_me_messages_delta</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_message_me_messages_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="permissiongrants_resourcespecificpermissiongrant_functions_permissiongrants_delta permission grants delta">
+                <div class="table-header">
+                    <h3>permissiongrants_resourcespecificpermissiongrant_functions_permissiongrants_delta</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.permissiongrants_resourcespecificpermissiongrant_functions_permissiongrants_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="education_educationuser_education_me_assignments_delta education assignments delta">
+                <div class="table-header">
+                    <h3>education_educationuser_education_me_assignments_delta</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationuser_education_me_assignments_delta LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="reports_reportroot_functions_reports_deviceconfigurationdeviceactivity reports device configuration">
+                <div class="table-header">
+                    <h3>reports_reportroot_functions_reports_deviceconfigurationdeviceactivity</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_functions_reports_deviceconfigurationdeviceactivity LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="reports_reportroot_functions_reports_deviceconfigurationuseractivity reports device configuration user">
+                <div class="table-header">
+                    <h3>reports_reportroot_functions_reports_deviceconfigurationuseractivity</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_functions_reports_deviceconfigurationuseractivity LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="reports_reportroot_functions_reports_manageddeviceenrollmentfailuredetails reports managed device enrollment">
+                <div class="table-header">
+                    <h3>reports_reportroot_functions_reports_manageddeviceenrollmentfailuredetails_8191</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_functions_reports_manageddeviceenrollmentfailuredetails_8191 LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="400" data-search="reports_reportroot_functions_reports_manageddeviceenrollmenttopfailures reports managed device enrollment top failures">
+                <div class="table-header">
+                    <h3>reports_reportroot_functions_reports_manageddeviceenrollmenttopfailures_9ce7</h3>
+                    <span class="badge fail">400</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_functions_reports_manageddeviceenrollmenttopfailures_9ce7 LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
+            </div>
+        </div>
+        
+        <h2>FAIL — 404 Not Found</h2>
+        <div id="fail-404">
+            <div class="table-section" data-status="fail" data-error="404" data-search="me_planneruser_me_getplanner planner">
+                <div class="table-header">
+                    <h3>me_planneruser_me_getplanner</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_planneruser_me_getplanner LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant is not found. (Graph API issue)</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="404" data-search="me_planneruser_me_planner_listplans planner plans">
+                <div class="table-header">
+                    <h3>me_planneruser_me_planner_listplans</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_planneruser_me_planner_listplans LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant is not found.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="404" data-search="me_planneruser_me_planner_listtasks planner tasks">
+                <div class="table-header">
+                    <h3>me_planneruser_me_planner_listtasks</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_planneruser_me_planner_listtasks LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant is not found.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="404" data-search="planner_planner_planner_planner_getplanner planner">
+                <div class="table-header">
+                    <h3>planner_planner_planner_planner_getplanner</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.planner_planner_planner_planner_getplanner LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant is not found.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="404" data-search="planner_plannerplan_planner_listplans planner plans">
+                <div class="table-header">
+                    <h3>planner_plannerplan_planner_listplans</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.planner_plannerplan_planner_listplans LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant is not found.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="404" data-search="planner_plannertask_planner_listtasks planner tasks">
+                <div class="table-header">
+                    <h3>planner_plannertask_planner_listtasks</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.planner_plannertask_planner_listtasks LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant is not found.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="404" data-search="me_profilephoto_me_getphoto profile photo">
+                <div class="table-header">
+                    <h3>me_profilephoto_me_getphoto</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_profilephoto_me_getphoto LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: ErrorNonExistentStorage</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="404" data-search="print_print_print_print_getprint print">
+                <div class="table-header">
+                    <h3>print_print_print_print_getprint</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.print_print_print_print_getprint LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant is not found.</p>
+            </div>
+            
+            <div class="table-section" data-status="fail" data-error="404" data-search="copilot_copilotreportroot_copilot_getreports copilot reports">
+                <div class="table-header">
+                    <h3>copilot_copilotreportroot_copilot_getreports</h3>
+                    <span class="badge fail">404</span>
+                </div>
+                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.copilot_copilotreportroot_copilot_getreports LIMIT 1" --format json</code>
+<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
+                <p style="color: var(--red);">Error: Tenant is not found.</p>
+            </div>
+        </div>
+        
+        <h2>SQL Feature Testing</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Status</th>
+                    <th>Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>SELECT *</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT * FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1</code></td>
+                </tr>
+                <tr>
+                    <td><code>SELECT col1, col2</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1</code></td>
+                </tr>
+                <tr>
+                    <td><code>WHERE col = 'value'</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT * FROM microsoft_graph_v4.me_user_me_user_getuser WHERE displayname = 'vicky kumar'</code></td>
+                </tr>
+                <tr>
+                    <td><code>WHERE col LIKE '%pattern%'</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT * FROM microsoft_graph_v4.me_user_me_user_getuser WHERE displayname LIKE '%vicky%'</code></td>
+                </tr>
+                <tr>
+                    <td><code>WHERE col IS NULL</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser WHERE odata_count IS NULL</code></td>
+                </tr>
+                <tr>
+                    <td><code>ORDER BY col</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser ORDER BY filter</code></td>
+                </tr>
+                <tr>
+                    <td><code>LIMIT n OFFSET m</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1 OFFSET 1</code></td>
+                </tr>
+                <tr>
+                    <td><code>COUNT(*)</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT COUNT(*) as cnt FROM microsoft_graph_v4.users_user_users_user_listuser</code></td>
+                </tr>
+                <tr>
+                    <td><code>GROUP BY</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT filter, COUNT(*) as cnt FROM microsoft_graph_v4.users_user_users_user_listuser GROUP BY filter</code></td>
+                </tr>
+                <tr>
+                    <td><code>SUM/MAX/MIN/AVG</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT SUM(skip) as s FROM microsoft_graph_v4.users_user_users_user_listuser</code></td>
+                </tr>
+                <tr>
+                    <td><code>DISTINCT</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT DISTINCT filter FROM microsoft_graph_v4.users_user_users_user_listuser</code></td>
+                </tr>
+                <tr>
+                    <td><code>json_len()</code></td>
+                    <td><span class="status-icon pass"></span>Works</td>
+                    <td><code>SELECT json_len(value) FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1</code></td>
+                </tr>
+                <tr>
+                    <td><code>BETWEEN</code></td>
+                    <td><span class="status-icon fail"></span>Broken</td>
+                    <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser WHERE skip BETWEEN 0 AND 100</code></td>
+                </tr>
+                <tr>
+                    <td><code>JOIN</code></td>
+                    <td><span class="status-icon fail"></span>Broken</td>
+                    <td><code>SELECT a.displayname FROM microsoft_graph_v4.me_user_me_user_getuser a JOIN microsoft_graph_v4.users_user_users_user_listuser b ON a.id = b.id</code></td>
+                </tr>
+                <tr>
+                    <td><code>UNION</code></td>
+                    <td><span class="status-icon fail"></span>Not supported</td>
+                    <td><code>SELECT value FROM table1 UNION ALL SELECT value FROM table2</code></td>
+                </tr>
+                <tr>
+                    <td><code>json_value()</code></td>
+                    <td><span class="status-icon fail"></span>Not supported</td>
+                    <td><code>SELECT JSON_VALUE(value, '$.id') as id FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1</code></td>
+                </tr>
+                <tr>
+                    <td>SQL injection</td>
+                    <td><span class="status-icon pass"></span>Blocked</td>
+                    <td><code>SELECT * FROM table DROP TABLE users</code></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>Notes for Andrea</h2>
+        <div class="bug-card low">
+            <p><strong>1. List endpoint flattening is the main blocker</strong> — affects ~497 tables (68% of all tables). Without flattening, users can't query individual fields from list endpoints.</p>
+            <p style="margin-top: 0.5rem;"><strong>2. Permission/license errors are expected</strong> — our test tenant has no Office365, SPO, or Teams licenses. These 401/403 errors would not occur with a properly licensed tenant.</p>
+            <p style="margin-top: 0.5rem;"><strong>3. Planner 404s are Graph API issue</strong> — the error comes from Microsoft Graph, not coral. This is likely a tenant configuration issue.</p>
+            <p style="margin-top: 0.5rem;"><strong>4. SQL feature support is good</strong> — most common SQL operations work correctly. The main gaps are BETWEEN, JOIN, and UNION.</p>
+            <p style="margin-top: 0.5rem;"><strong>5. Error messages are clear</strong> — when something fails, coral provides helpful error messages with the exact HTTP status and Graph API error details.</p>
+        </div>
+    </div>
+    
+    <script>
+        function copyCommand(btn) {
+            const code = btn.previousElementSibling.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        function toggleCollapsible(el) {
+            el.classList.toggle('open');
+            const content = el.nextElementSibling;
+            content.classList.toggle('show');
+        }
+        
+        // Filter functionality
+        const searchInput = document.getElementById('search');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const tableSections = document.querySelectorAll('.table-section');
+        
+        let currentFilter = 'all';
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                applyFilters();
+            });
+        });
+        
+        searchInput.addEventListener('input', () => {
+            applyFilters();
+        });
+        
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            tableSections.forEach(section => {
+                const status = section.dataset.status;
+                const error = section.dataset.error || '';
+                const searchData = (section.dataset.search || '').toLowerCase();
+                const textContent = section.textContent.toLowerCase();
+                
+                let matchesFilter = true;
+                if (currentFilter === 'pass') matchesFilter = status === 'pass';
+                else if (currentFilter === 'fail') matchesFilter = status === 'fail';
+                else if (currentFilter !== 'all') matchesFilter = error === currentFilter;
+                
+                const matchesSearch = !searchTerm || 
+                    searchData.includes(searchTerm) || 
+                    textContent.includes(searchTerm);
+                
+                section.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
