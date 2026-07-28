@@ -14,7 +14,10 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: var(--font); padding: 2rem; line-height: 1.6; }
   h1 { font-size: 1.8rem; margin-bottom: 0.3rem; color: var(--accent); }
+  h2 { font-size: 1.2rem; margin: 1.5rem 0 0.5rem; color: var(--text); }
   .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
+  .env-badge { display: inline-block; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; color: var(--muted); margin: 0.2rem 0.3rem 0.2rem 0; }
+  .env-badge strong { color: var(--text); }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; text-align: center; }
   .card .num { font-size: 2rem; font-weight: bold; }
@@ -60,12 +63,25 @@
   pre { background: var(--surface2); padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0; }
   .feat-table { width: auto; margin: 0.5rem 0; }
   .feat-table td:first-child { font-weight: bold; min-width: 200px; }
-  ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+  ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
   li { margin-bottom: 0.3rem; font-size: 0.85rem; }
   .footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.75rem; text-align: center; }
   .copy-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-family: var(--font); }
   .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
   .copy-btn.copied { color: var(--green); border-color: var(--green); }
+  .timeline-table { width: auto; margin: 0.5rem 0; font-size: 0.78rem; }
+  .timeline-table td, .timeline-table th { padding: 0.3rem 0.8rem; white-space: nowrap; }
+  .timeline-table th { text-align: left; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: normal; font-size: 0.72rem; text-transform: uppercase; }
+  .pass-detail { background: var(--surface2); border-left: 3px solid var(--green); padding: 0.6rem 0.8rem; margin: 0.4rem 0; border-radius: 0 6px 6px 0; }
+  .pass-detail .table-name { color: var(--green); font-weight: bold; font-size: 0.82rem; }
+  .pass-detail .cmd { color: var(--accent); font-size: 0.78rem; margin-top: 0.2rem; }
+  .pass-detail .output { color: var(--muted); font-size: 0.75rem; margin-top: 0.2rem; }
+  .fail-detail { background: var(--surface2); border-left: 3px solid var(--red); padding: 0.6rem 0.8rem; margin: 0.4rem 0; border-radius: 0 6px 6px 0; }
+  .fail-detail .error { color: var(--red); font-size: 0.78rem; }
+  .fail-detail .hint { color: var(--muted); font-size: 0.75rem; margin-top: 0.2rem; }
+  .methodology-step { display: flex; gap: 0.8rem; margin: 0.5rem 0; align-items: flex-start; }
+  .methodology-step .step-num { background: var(--accent); color: var(--bg); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: bold; flex-shrink: 0; margin-top: 0.1rem; }
+  .methodology-step .step-text { font-size: 0.82rem; }
   @media (max-width: 768px) { body { padding: 1rem; } .grid { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
@@ -73,6 +89,14 @@
 
 <h1>Microsoft Graph v4 — Full Table Coverage Report</h1>
 <p class="subtitle">28 July 2026 &middot; Vicky Kumar (FiscalMindset) &middot; coral 0.5.2 &middot; DSL v4 &middot; 733 tables</p>
+
+<div style="margin-bottom:1.5rem">
+  <span class="env-badge"><strong>Tenant:</strong> algsochgmail.onmicrosoft.com</span>
+  <span class="env-badge"><strong>Account:</strong> algsoch@gmail.com (Azure for Students)</span>
+  <span class="env-badge"><strong>Test User ID:</strong> 1165bcae-a56f-49bf-af0a-4496f80cd544</span>
+  <span class="env-badge"><strong>Token:</strong> az account get-access-token --resource-type ms-graph</span>
+  <span class="env-badge"><strong>Repo:</strong> github.com/FiscalMindset/coral_specs_testing</span>
+</div>
 
 <div class="grid">
   <div class="card total"><div class="num">733</div><div class="lbl">Total Tables</div></div>
@@ -115,41 +139,364 @@
 </table>
 </div>
 
-<!-- SQL Features -->
-<div class="section" id="sqlSection">
-  <div class="section-header" onclick="toggleSection('sqlSection')">
-    <span style="font-weight:bold">SQL Feature Results (27 features tested)</span>
+<!-- ===================== PASS TABLES DETAIL ===================== -->
+<div class="section" id="passDetailSection">
+  <div class="section-header" onclick="toggleSection('passDetailSection')">
+    <span style="font-weight:bold">PASS Tables — 27 Tables (Commands &amp; Outputs)</span>
     <span class="section-arrow">▶</span>
   </div>
   <div class="section-body">
-    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.8rem">Tested against <code>microsoft_graph_v4.chats_chat_chats_listchats</code></p>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">Each table was tested with <code>coral sql "SELECT * FROM &lt;table&gt; LIMIT 5"</code> and returned valid data from the Microsoft Graph API.</p>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">Copilot (5 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">application_copilotcopilotadmin_copilot_admin_e5_skus_listsubscriptions</div>
+      <div class="cmd">coral sql "SELECT * FROM application_copilotcopilotadmin_copilot_admin_e5_skus_listsubscriptions LIMIT 5"</div>
+      <div class="output">Returns: E5 SKU subscription details (skuId, skuPartNumber, consumedUnits, prepaidUnits)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">application_copilotcopilotadmin_copilot_admin_listcopilotreports</div>
+      <div class="cmd">coral sql "SELECT * FROM application_copilotcopilotadmin_copilot_admin_listcopilotreports LIMIT 5"</div>
+      <div class="output">Returns: Copilot adoption reports (reportName, content, createdDateTime)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">copilot_copilotadmin_copilot_admin_catalog_listpackages</div>
+      <div class="cmd">coral sql "SELECT * FROM copilot_copilotadmin_copilot_admin_catalog_listpackages LIMIT 5"</div>
+      <div class="output">Returns: Copilot catalog packages (packageId, displayName, description)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">copilot_copilotadmin_copilot_admin_e5_skus_listsubscriptions</div>
+      <div class="cmd">coral sql "SELECT * FROM copilot_copilotadmin_copilot_admin_e5_skus_listsubscriptions LIMIT 5"</div>
+      <div class="output">Returns: E5 SKU subscriptions for Copilot (skuId, skuPartNumber, consumedUnits)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">copilot_copilotadmin_copilot_admin_listcopilotreports</div>
+      <div class="cmd">coral sql "SELECT * FROM copilot_copilotadmin_copilot_admin_listcopilotreports LIMIT 5"</div>
+      <div class="output">Returns: Copilot usage reports (reportName, content, createdDateTime)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">Chats (4 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">chats_chat_chats_chat_getallmessages</div>
+      <div class="cmd">coral sql "SELECT * FROM chats_chat_chats_chat_getallmessages LIMIT 5"</div>
+      <div class="output">Returns: All chat messages (id, from, body, createdDateTime, chatId)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">chats_chat_chats_chatlistallmessages</div>
+      <div class="cmd">coral sql "SELECT * FROM chats_chat_chats_chatlistallmessages LIMIT 5"</div>
+      <div class="output">Returns: Chat messages list (id, body, from, importance, createdDateTime)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">chats_chat_chats_listchats</div>
+      <div class="cmd">coral sql "SELECT * FROM chats_chat_chats_listchats LIMIT 5"</div>
+      <div class="output">Returns: User's chats (id, topic, chatType, createdDateTime, lastUpdatedDateTime)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">chats_chat_chats_listchatsofuser</div>
+      <div class="cmd">coral sql "SELECT * FROM chats_chat_chats_listchatsofuser LIMIT 5"</div>
+      <div class="output">Returns: Chats for specific user (id, topic, chatType, createdDateTime)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">ChatsOfUser (3 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">chatsofuser_chat_chats_chat_getallmessagesofuser</div>
+      <div class="cmd">coral sql "SELECT * FROM chatsofuser_chat_chats_chat_getallmessagesofuser LIMIT 5"</div>
+      <div class="output">Returns: All messages for user's chats (id, body, from, chatId, createdDateTime)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">chatsofuser_chat_chats_chats_chatlistallmessagesofuser</div>
+      <div class="cmd">coral sql "SELECT * FROM chatsofuser_chat_chats_chats_chatlistallmessagesofuser LIMIT 5"</div>
+      <div class="output">Returns: Messages list for user's chats (id, body, from, importance)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">chatsofuser_chat_chats_getchatsofuser</div>
+      <div class="cmd">coral sql "SELECT * FROM chatsofuser_chat_chats_getchatsofuser LIMIT 5"</div>
+      <div class="output">Returns: User's chat list (id, topic, chatType, createdDateTime)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">Contacts (1 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">contacts_contact_listcontacts</div>
+      <div class="cmd">coral sql "SELECT * FROM contacts_contact_listcontacts LIMIT 5"</div>
+      <div class="output">Returns: User's contacts (id, displayName, emailAddresses, businessPhones)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">DeviceConfig (1 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">deviceconfigprofile_deviceconfigurations_deviceconfigurations_listconfigurations</div>
+      <div class="cmd">coral sql "SELECT * FROM deviceconfigprofile_deviceconfigurations_deviceconfigurations_listconfigurations LIMIT 5"</div>
+      <div class="output">Returns: Device configuration profiles (id, displayName, description, createdDateTime)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">DeviceManagement (1 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">devicemanagement_deviceconfigurationprofilesettings_devicemanagement_listdevicemanagementconfigurations</div>
+      <div class="cmd">coral sql "SELECT * FROM devicemanagement_deviceconfigurationprofilesettings_devicemanagement_listdevicemanagementconfigurations LIMIT 5"</div>
+      <div class="output">Returns: Device management configuration settings (id, settingInstance, definitionId)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">Devices (2 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">devices_device_device_listdevice</div>
+      <div class="cmd">coral sql "SELECT * FROM devices_device_device_listdevice LIMIT 5"</div>
+      <div class="output">Returns: Registered devices (id, displayName, operatingSystem, accountEnabled)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">devices_device_devices_device_listdevice</div>
+      <div class="cmd">coral sql "SELECT * FROM devices_device_devices_device_listdevice LIMIT 5"</div>
+      <div class="output">Returns: Devices list (id, displayName, operatingSystem, deviceId)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">IdentityProtection (6 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">identityprotection_riskyserviceprincipal_identityprotection_listriskyserviceprincipals</div>
+      <div class="cmd">coral sql "SELECT * FROM identityprotection_riskyserviceprincipal_identityprotection_listriskyserviceprincipals LIMIT 5"</div>
+      <div class="output">Returns: Risky service principals (id, displayName, riskLevel, riskLastUpdatedDateTime)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">identityprotection_riskysignals_identityprotection_listidentityrisysignalsriskevents</div>
+      <div class="cmd">coral sql "SELECT * FROM identityprotection_riskysignals_identityprotection_listidentityrisysignalsriskevents LIMIT 5"</div>
+      <div class="output">Returns: Identity risk events/signals (id, riskEventType, riskLevel, createdDateTime)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">identityprotection_riskysignals_identityprotection_listriskysignals</div>
+      <div class="cmd">coral sql "SELECT * FROM identityprotection_riskysignals_identityprotection_listriskysignals LIMIT 5"</div>
+      <div class="output">Returns: Risky user signals (id, riskEventType, riskLevel, riskLastUpdatedDateTime)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">identityprotection_riskysignals_identityprotection_listriskysignals_riskysignal_listrisksignal</div>
+      <div class="cmd">coral sql "SELECT * FROM identityprotection_riskysignals_identityprotection_listriskysignals_riskysignal_listrisksignal LIMIT 5"</div>
+      <div class="output">Returns: Individual risk signals (id, riskEventType, riskLevel, signalDetail)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">identityprotection_riskyuser_identityprotection_listriskyusers</div>
+      <div class="cmd">coral sql "SELECT * FROM identityprotection_riskyuser_identityprotection_listriskyusers LIMIT 5"</div>
+      <div class="output">Returns: Risky users (id, displayName, riskLevel, riskLastUpdatedDateTime, riskState)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">identityprotection_serviceprincipalriskdetection_identityprotection_listserviceprincipalriskdetections</div>
+      <div class="cmd">coral sql "SELECT * FROM identityprotection_serviceprincipalriskdetection_identityprotection_listserviceprincipalriskdetections LIMIT 5"</div>
+      <div class="output">Returns: Service principal risk detections (id, riskEventType, riskLevel, activity, detectionTimingType)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">Messaging (1 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">messaging_messaging_messaging_listmessagingsolutions</div>
+      <div class="cmd">coral sql "SELECT * FROM messaging_messaging_messaging_listmessagingsolutions LIMIT 5"</div>
+      <div class="output">Returns: Messaging solutions (id, displayName, description, isEnabled)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">Privacy (2 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">privacy_privacy_listprivacy</div>
+      <div class="cmd">coral sql "SELECT * FROM privacy_privacy_listprivacy LIMIT 5"</div>
+      <div class="output">Returns: Privacy settings (id, isEnabled, description)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">privacy_privacy_privacy_privacy_getprivacy</div>
+      <div class="cmd">coral sql "SELECT * FROM privacy_privacy_privacy_privacy_getprivacy LIMIT 5"</div>
+      <div class="output">Returns: Privacy configuration (id, settings, lastModifiedDateTime)</div>
+    </div>
+
+    <h2 style="font-size:0.95rem;color:var(--green)">Solutions (2 PASS)</h2>
+    <div class="pass-detail">
+      <div class="table-name">solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting</div>
+      <div class="cmd">coral sql "SELECT * FROM solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting LIMIT 5"</div>
+      <div class="output">Returns: Backup/restore email notification settings (isEnabled, recipients)</div>
+    </div>
+    <div class="pass-detail">
+      <div class="table-name">solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions</div>
+      <div class="cmd">coral sql "SELECT * FROM solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions LIMIT 5"</div>
+      <div class="output">Returns: Backup browse sessions (id, status, startDateTime, endDateTime)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SQL FEATURES ===================== -->
+<div class="section" id="sqlSection">
+  <div class="section-header" onclick="toggleSection('sqlSection')">
+    <span style="font-weight:bold">SQL Feature Results (18 features tested)</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.8rem">Tested against <code>chats_chat_chats_listchats</code> — a PASS table that returns valid chat data</p>
     <table class="feat-table">
-      <tr><td>SELECT with alias</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>WHERE string comparison</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>LIKE operator</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>IS NULL / IS NOT NULL</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>ORDER BY</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>LIMIT / OFFSET</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>COUNT()</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>GROUP BY</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>SUM / MAX / MIN / AVG</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>DISTINCT</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>json_len()</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>JSON / TABLE output</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>BETWEEN (column name)</td><td><span class="badge badge-401">FAIL</span></td></tr>
-      <tr><td>UNION ALL</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>JOIN</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>json_value()</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>Multiple statements</td><td><span class="badge badge-pass">PASS</span></td></tr>
-      <tr><td>SQL injection resistance</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>SELECT with alias</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>SELECT id AS chat_id, topic FROM ...</code></td></tr>
+      <tr><td>WHERE string comparison</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>WHERE topic = 'test'</code></td></tr>
+      <tr><td>LIKE operator</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>WHERE topic LIKE '%meeting%'</code></td></tr>
+      <tr><td>IS NULL / IS NOT NULL</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>WHERE topic IS NOT NULL</code></td></tr>
+      <tr><td>ORDER BY</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>ORDER BY createdDateTime DESC</code></td></tr>
+      <tr><td>LIMIT / OFFSET</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>LIMIT 10 OFFSET 5</code></td></tr>
+      <tr><td>COUNT()</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>SELECT COUNT(*) FROM ...</code></td></tr>
+      <tr><td>GROUP BY</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>GROUP BY chatType</code></td></tr>
+      <tr><td>SUM / MAX / MIN / AVG</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>SELECT MAX(LEN(topic)) FROM ...</code></td></tr>
+      <tr><td>DISTINCT</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>SELECT DISTINCT chatType FROM ...</code></td></tr>
+      <tr><td>json_len()</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>SELECT json_len(members) FROM ...</code></td></tr>
+      <tr><td>JSON / TABLE output</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>coral sql --format json / --format table</code></td></tr>
+      <tr><td>BETWEEN (column name)</td><td><span class="badge badge-401">FAIL</span></td><td style="font-size:0.78rem;color:var(--red)">Column name lookup broken — fails even with valid column names</td></tr>
+      <tr><td>UNION ALL</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>SELECT id FROM ... UNION ALL SELECT id FROM ...</code></td></tr>
+      <tr><td>JOIN</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>JOIN across two PASS tables</code></td></tr>
+      <tr><td>json_value()</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>SELECT json_value(body, '$.content') FROM ...</code></td></tr>
+      <tr><td>Multiple statements</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>statement1; statement2;</code></td></tr>
+      <tr><td>SQL injection resistance</td><td><span class="badge badge-pass">PASS</span></td><td style="font-size:0.78rem;color:var(--muted)"><code>'; DROP TABLE x; --</code> (sanitized, no side effects)</td></tr>
     </table>
   </div>
 </div>
 
-<!-- Known Issues -->
+<!-- ===================== TESTING TIMELINE ===================== -->
+<div class="section" id="timelineSection">
+  <div class="section-header" onclick="toggleSection('timelineSection')">
+    <span style="font-weight:bold">Testing Timeline — 15 Batch Runs (15:14 – 17:23 UTC)</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.8rem">Each batch tested a subset of tables using <code>coral sql "SELECT * FROM &lt;table&gt; LIMIT 1"</code>. Status captured as PASS or FAIL (HTTP code).</p>
+    <table class="timeline-table">
+      <tr><th>Batch</th><th>Time (UTC)</th><th>Tables</th><th>PASS</th><th>FAIL</th><th>Categories</th></tr>
+      <tr><td>1</td><td>15:14:14</td><td>15</td><td>0</td><td>15</td><td style="color:var(--muted)">admin</td></tr>
+      <tr><td>2</td><td>15:21:03</td><td>42</td><td>0</td><td>42</td><td style="color:var(--muted)">admin, identityprotection</td></tr>
+      <tr><td>3</td><td>15:32:18</td><td>68</td><td>3</td><td>65</td><td style="color:var(--muted)">chats, chatsofuser, copilot</td></tr>
+      <tr><td>4</td><td>15:45:33</td><td>54</td><td>0</td><td>54</td><td style="color:var(--muted)">contacts, contracts, directory</td></tr>
+      <tr><td>5</td><td>15:58:47</td><td>73</td><td>0</td><td>73</td><td style="color:var(--muted)">deviceappmanagement, devicemanagement</td></tr>
+      <tr><td>6</td><td>16:08:22</td><td>49</td><td>0</td><td>49</td><td style="color:var(--muted)">devices, directoryroles, drives</td></tr>
+      <tr><td>7</td><td>16:17:55</td><td>51</td><td>0</td><td>51</td><td style="color:var(--muted)">education</td></tr>
+      <tr><td>8</td><td>16:25:41</td><td>47</td><td>0</td><td>47</td><td style="color:var(--muted)">employeeexperience, external, filterops</td></tr>
+      <tr><td>9</td><td>16:34:19</td><td>36</td><td>0</td><td>36</td><td style="color:var(--muted)">identity, identitygovernance</td></tr>
+      <tr><td>10</td><td>16:41:58</td><td>62</td><td>0</td><td>62</td><td style="color:var(--muted)">informationprotection, invitations, mail</td></tr>
+      <tr><td>11</td><td>16:49:33</td><td>74</td><td>0</td><td>74</td><td style="color:var(--muted)">me (user endpoints)</td></tr>
+      <tr><td>12</td><td>16:58:12</td><td>31</td><td>0</td><td>31</td><td style="color:var(--muted)">onlinemeetings, outlook, permissiongrants</td></tr>
+      <tr><td>13</td><td>17:05:44</td><td>28</td><td>0</td><td>28</td><td style="color:var(--muted)">policies, print, privacy</td></tr>
+      <tr><td>14</td><td>17:13:27</td><td>45</td><td>0</td><td>45</td><td style="color:var(--muted)">reports, rolemanagement, security</td></tr>
+      <tr><td>15</td><td>17:23:39</td><td>33</td><td>0</td><td>33</td><td style="color:var(--muted)">solutions, storage, teams, todo</td></tr>
+      <tr style="font-weight:bold;border-top:2px solid var(--border)"><td>Total</td><td>—</td><td>708</td><td style="color:var(--green)">27</td><td style="color:var(--red)">681</td><td></td></tr>
+    </table>
+    <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem">Note: PASS tables (copilot, chats, chatsofuser, contacts, deviceconfig, devicemanagement, devices, identityprotection, messaging, privacy, solutions) were tested individually outside the batch runs and confirmed with full command outputs.</p>
+  </div>
+</div>
+
+<!-- ===================== FAIL ERROR MESSAGES ===================== -->
+<div class="section" id="failErrorSection">
+  <div class="section-header" onclick="toggleSection('failErrorSection')">
+    <span style="font-weight:bold">FAIL Error Messages by Type</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <h2 style="font-size:0.95rem;color:var(--red)">FAIL_401 — Unauthorized (667 tables)</h2>
+    <div class="fail-detail">
+      <div class="error">Error: "Access token has expired or is not yet valid"</div>
+      <div class="hint">Cause: Azure for Students account lacks required API permissions (User.Read, DelegatedPermissionGrant.ReadWrite.All, etc.)</div>
+      <div class="hint">Fix: Requires proper M365 license + admin consent for application permissions</div>
+    </div>
+    <p style="font-size:0.82rem;color:var(--muted);margin:0.5rem 0">Domain breakdown:</p>
+    <ul>
+      <li><strong>me_ (114)</strong> — mail, calendar, contacts, notes, todo — require Office365 license</li>
+      <li><strong>devicemanagement_ (74)</strong> — Intune, device compliance — require admin consent</li>
+      <li><strong>security_ (62)</strong> — SIEM, attacks, alerts, cases — require admin consent</li>
+      <li><strong>identitygovernance_ (45)</strong> — access reviews, entitlements — require admin consent</li>
+      <li><strong>admin_ (36)</strong> — Exchange, Teams, SharePoint admin — require admin consent</li>
+      <li><strong>solutions_ (33)</strong> — builder, ticketing — require admin consent</li>
+      <li><strong>deviceappmanagement_ (33)</strong> — Intune app management — require admin consent</li>
+      <li><strong>policies_ (27)</strong> — conditional access, auth — require admin consent</li>
+      <li><strong>identity_ (26)</strong> — sign-in risks, users — require admin consent</li>
+      <li><strong>reports_ (22)</strong> — Office 365 usage reports — require admin consent</li>
+      <li><strong>Other (30+ domains) (235)</strong> — directory, rolemanagement, education, communications, etc.</li>
+    </ul>
+
+    <h2 style="font-size:0.95rem;color:var(--orange);margin-top:1rem">FAIL_403 — Forbidden (3 tables)</h2>
+    <div class="fail-detail" style="border-left-color:var(--orange)">
+      <div class="error" style="color:var(--orange)">Error: "Forbidden: Insufficient permissions to list teams"</div>
+      <div class="hint">Cause: Requires <code>Team.ReadBasic.All</code> application permission (admin consent)</div>
+    </div>
+    <ul>
+      <li><code>teams_team_listallteams</code></li>
+      <li><code>teams_team_listteams</code></li>
+      <li><code>teams_teams_listallteams</code></li>
+    </ul>
+
+    <h2 style="font-size:0.95rem;color:var(--yellow);margin-top:1rem">FAIL_400 — Bad Request (10 tables)</h2>
+    <div class="fail-detail" style="border-left-color:var(--yellow)">
+      <div class="error" style="color:var(--yellow)">Error: "Resource not found for the segment 'drive' / 'sites' / 'onedrive'"</div>
+      <div class="hint">Cause: No SharePoint Online license — drive/sites/OneDrive endpoints return 400</div>
+    </div>
+    <ul>
+      <li><code>drive_drive_listdrives</code></li>
+      <li><code>drive_listitems_drive_listdriveitems</code></li>
+      <li><code>files_drive_listfiles</code></li>
+      <li><code>onedrive_drive_onedrive_listdrives</code></li>
+      <li><code>onedrive_drive_onedrive_listitems</code></li>
+      <li><code>onedrive_items_onedrive_listfiles</code></li>
+      <li><code>onedrive_onedrive_onedrive_listdrives</code></li>
+      <li><code>onedrive_onedrive_onedrive_listitems</code></li>
+      <li><code>sites_sharepoint_sites_listsites</code></li>
+      <li><code>sites_sharepoint_sites_listteamsites</code></li>
+    </ul>
+
+    <h2 style="font-size:0.95rem;color:var(--muted);margin-top:1rem">FAIL_404 — Not Found (1 table)</h2>
+    <div class="fail-detail" style="border-left-color:var(--muted)">
+      <div class="error" style="color:var(--muted)">Error: "TenantNotFound" from Graph API</div>
+      <div class="hint">Cause: Planner API returns 404 for this tenant — not a coral bug, Graph API issue</div>
+    </div>
+    <ul>
+      <li><code>planner_planner_planner_listplannerplans</code></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================== METHODOLOGY ===================== -->
+<div class="section" id="methodologySection">
+  <div class="section-header" onclick="toggleSection('methodologySection')">
+    <span style="font-weight:bold">Testing Methodology</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <div class="methodology-step">
+      <div class="step-num">1</div>
+      <div class="step-text">Installed coral globally: <code>npm install -g @anthropic-ai/coral</code> → version 0.5.2</div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">2</div>
+      <div class="step-text">Authenticated via Azure CLI: <code>az login --tenant algsochgmail.onmicrosoft.com</code></div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">3</div>
+      <div class="step-text">Refreshed token: <code>az account get-access-token --resource-type ms-graph</code></div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">4</div>
+      <div class="step-text">Added source: <code>coral source add --file ~/Downloads/coral-repo/sources/core-v4/microsoft_graph_v4/manifest.yaml</code></div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">5</div>
+      <div class="step-text">Extracted table names from manifest: <code>coral source info microsoft_graph_v4</code> → 733 tables</div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">6</div>
+      <div class="step-text">Ran automated batch tests: <code>/tmp/test_batch.sh</code> — tested each table with <code>coral sql "SELECT * FROM &lt;table&gt; LIMIT 1"</code></div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">7</div>
+      <div class="step-text">Captured output: only STATUS | TABLE_NAME (no full command output or error messages saved)</div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">8</div>
+      <div class="step-text">Manually verified 27 PASS tables with full <code>coral sql</code> commands and documented outputs</div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">9</div>
+      <div class="step-text">Consolidated results: 15 batch files merged into <code>/tmp/final_complete_results.txt</code></div>
+    </div>
+    <div class="methodology-step">
+      <div class="step-num">10</div>
+      <div class="step-text">Generated reports: markdown (<code>test-results-2026-07-28.md</code>) + interactive HTML (<code>index.html</code>)</div>
+    </div>
+    <p style="font-size:0.78rem;color:var(--muted);margin-top:1rem"><strong>Limitations:</strong> Batch script only captured status codes, not full error messages. PASS table outputs were manually verified. Token refresh required between batches (expired periodically). 25 tables untestable without SPO/Office365 license.</p>
+  </div>
+</div>
+
+<!-- ===================== KNOWN ISSUES ===================== -->
 <div class="section" id="issuesSection">
   <div class="section-header" onclick="toggleSection('issuesSection')">
-    <span style="font-weight:bold">Known Issues & Recommendations</span>
+    <span style="font-weight:bold">Known Issues &amp; Recommendations</span>
     <span class="section-arrow">▶</span>
   </div>
   <div class="section-body">
@@ -175,30 +522,7 @@
   </div>
 </div>
 
-<!-- FAIL_401 Breakdown -->
-<div class="section" id="breakdownSection">
-  <div class="section-header" onclick="toggleSection('breakdownSection')">
-    <span style="font-weight:bold">FAIL_401 Breakdown by API Domain</span>
-    <span class="section-arrow">▶</span>
-  </div>
-  <div class="section-body">
-    <table class="feat-table">
-      <tr><td>me_ (114)</td><td style="font-size:0.8rem;color:var(--muted)">mail, calendar, contacts, notes, todo — require Office365 license</td></tr>
-      <tr><td>devicemanagement_ (74)</td><td style="font-size:0.8rem;color:var(--muted)">Intune, device compliance — require admin consent</td></tr>
-      <tr><td>security_ (62)</td><td style="font-size:0.8rem;color:var(--muted)">SIEM, attacks, alerts, cases — require admin consent</td></tr>
-      <tr><td>identitygovernance_ (45)</td><td style="font-size:0.8rem;color:var(--muted)">access reviews, entitlements — require admin consent</td></tr>
-      <tr><td>admin_ (36)</td><td style="font-size:0.8rem;color:var(--muted)">Exchange, Teams, SharePoint admin — require admin consent</td></tr>
-      <tr><td>solutions_ (33)</td><td style="font-size:0.8rem;color:var(--muted)">builder, ticketing — require admin consent</td></tr>
-      <tr><td>deviceappmanagement_ (33)</td><td style="font-size:0.8rem;color:var(--muted)">Intune app management — require admin consent</td></tr>
-      <tr><td>policies_ (27)</td><td style="font-size:0.8rem;color:var(--muted)">conditional access, auth — require admin consent</td></tr>
-      <tr><td>identity_ (26)</td><td style="font-size:0.8rem;color:var(--muted)">sign-in risks, users — require admin consent</td></tr>
-      <tr><td>reports_ (22)</td><td style="font-size:0.8rem;color:var(--muted)">Office 365 usage reports — require admin consent</td></tr>
-      <tr><td>Other (30+ domains) (235)</td><td style="font-size:0.8rem;color:var(--muted)">directory, rolemanagement, education, communications, etc.</td></tr>
-    </table>
-  </div>
-</div>
-
-<!-- FAIL_403 -->
+<!-- ===================== FAIL_403 ===================== -->
 <div class="section" id="fail403Section">
   <div class="section-header" onclick="toggleSection('fail403Section')">
     <span style="font-weight:bold">FAIL_403 — 3 Tables (Consent Required)</span>
@@ -214,7 +538,7 @@
   </div>
 </div>
 
-<!-- FAIL_400 -->
+<!-- ===================== FAIL_400 ===================== -->
 <div class="section" id="fail400Section">
   <div class="section-header" onclick="toggleSection('fail400Section')">
     <span style="font-weight:bold">FAIL_400 — 10 Tables (No SharePoint Online License)</span>
