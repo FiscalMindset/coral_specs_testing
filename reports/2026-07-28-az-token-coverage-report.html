@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Graph v4 Source — API Coverage Report</title>
+<style>
+  :root {
+    --pass: #22c55e;
+    --pass-bg: #f0fdf4;
+    --fail: #ef4444;
+    --fail-bg: #fef2f2;
+    --warn: #f59e0b;
+    --warn-bg: #fffbeb;
+    --info: #3b82f6;
+    --info-bg: #eff6ff;
+    --muted: #6b7280;
+    --muted-bg: #f9fafb;
+    --err: #8b5cf6;
+    --err-bg: #f5f3ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 24px; }
+  .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; font-size: 0.85rem; color: #64748b; }
+  .meta code { background: #f1f5f9; padding: 1px 6px; border-radius: 3px; font-size: 0.8rem; }
+
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #e2e8f0; text-align: center; }
+  .card .num { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
+  .card .label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+  .card-pass .num { color: var(--pass); }
+  .card-fail .num { color: var(--fail); }
+  .card-403 .num { color: var(--warn); }
+  .card-400 .num { color: var(--info); }
+  .card-401 .num { color: var(--muted); }
+  .card-tnf .num { color: var(--err); }
+
+  .bar-container { margin-bottom: 28px; }
+  .bar { display: flex; height: 32px; border-radius: 8px; overflow: hidden; font-size: 0.75rem; font-weight: 600; }
+  .bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; overflow: hidden; }
+  .bar-pass { background: var(--pass); }
+  .bar-403 { background: #f59e0b; }
+  .bar-400 { background: #3b82f6; }
+  .bar-401 { background: #6b7280; }
+  .bar-tnf { background: #8b5cf6; }
+  .bar-err { background: #1e293b; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 0.8rem; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .section { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 16px; overflow: hidden; }
+  .section-header { padding: 12px 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .section-header:hover { background: #f8fafc; }
+  .section-header .arrow { transition: transform 0.2s; font-size: 0.8rem; }
+  .section-header.open .arrow { transform: rotate(90deg); }
+  .section-body { padding: 0 16px 16px; }
+  .section-body.hidden { display: none; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; padding: 8px 8px; border-bottom: 2px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+
+  .pass-list { column-count: 2; column-gap: 24px; font-size: 0.8rem; }
+  .pass-list li { break-inside: avoid; padding: 2px 0; list-style: none; font-family: 'SF Mono', 'Cascadia Code', 'Menlo', monospace; font-size: 0.75rem; }
+  .pass-list li::before { content: '\2713'; color: var(--pass); margin-right: 4px; font-weight: 700; }
+
+  .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .comparison-card { border-radius: 8px; padding: 16px; border: 1px solid #e2e8f0; }
+  .comparison-card h4 { margin-bottom: 8px; font-size: 0.9rem; }
+  .comparison-card ul { font-size: 0.85rem; list-style: none; }
+  .comparison-card li { padding: 2px 0; }
+  .comparison-card .big { font-size: 2rem; font-weight: 700; }
+
+  .note-box { margin-top:12px; padding:12px; border-radius:8px; font-size:0.85rem; }
+  .note-green { background:#f0fdf4; border:1px solid #bbf7d0; }
+
+  @media (max-width: 640px) {
+    .pass-list { column-count: 1; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .summary-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Microsoft Graph v4 Source — API Coverage</h1>
+<div class="subtitle">SELECT * LIMIT 1 on all 733 registered tables with Azure CLI token</div>
+<div class="meta">
+  <span>28 Jul 2026</span>
+  <span>Token: <code>az account get-access-token --resource https://graph.microsoft.com</code></span>
+  <span>4 concurrent workers, 60s timeout</span>
+</div>
+
+<!-- Summary cards -->
+<div class="summary-row">
+  <div class="card card-pass"><div class="num">117</div><div class="label">PASS</div></div>
+  <div class="card card-fail"><div class="num">616</div><div class="label">FAIL</div></div>
+  <div class="card card-403"><div class="num">192</div><div class="label">403 FORBIDDEN</div></div>
+  <div class="card card-400"><div class="num">181</div><div class="label">400 BADREQUEST</div></div>
+  <div class="card card-401"><div class="num">148</div><div class="label">401 UNAUTHORIZED</div></div>
+  <div class="card card-tnf"><div class="num">83</div><div class="label">TABLE NOT FOUND</div></div>
+</div>
+
+<!-- Bar -->
+<div class="bar-container">
+  <div class="bar">
+    <div class="bar-seg bar-pass" style="width:16%">16%</div>
+    <div class="bar-seg bar-403" style="width:26.2%">192</div>
+    <div class="bar-seg bar-400" style="width:24.7%">181</div>
+    <div class="bar-seg bar-401" style="width:20.2%">148</div>
+    <div class="bar-seg bar-tnf" style="width:11.3%">83</div>
+    <div class="bar-seg bar-err" style="width:1.6%">12</div>
+  </div>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> PASS</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span> 403 Forbidden</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> 400 BadRequest</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#6b7280"></span> 401 Unauthorized</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span> Table Not Found</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#1e293b"></span> Other Error</span>
+  </div>
+</div>
+
+<!-- PASS Section -->
+<div class="section">
+  <div class="section-header open" onclick="toggle(this)">
+    <span>PASS Tables <span style="font-weight:400;color:#64748b;font-size:0.85rem;">(117)</span></span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <ol class="pass-list">
+      <li>admin_admin_admin_admin_getadmin</li>
+      <li>admin_adminmicrosoft365apps_admin_getmicrosoft365apps</li>
+      <li>admin_exchangeadmin_admin_exchange_gettracing</li>
+      <li>admin_peopleadminsettings_admin_people_getiteminsights</li>
+      <li>applications_application_applications_application_listapplication</li>
+      <li>applications_application_functions_applications_delta</li>
+      <li>applicationtemplates_applicationtemplate_applicationtemplates_applicationtemplate_listapplicationtemplate</li>
+      <li>auditlogs_auditlogroot_auditlogs_auditlogroot_getauditlogroot</li>
+      <li>auditlogs_directoryaudit_auditlogs_listdirectoryaudits</li>
+      <li>auditlogs_provisioningobjectsummary_auditlogs_listprovisioning</li>
+      <li>communications_cloudcommunications_communications_cloudcommunications_getcloudcommunications</li>
+      <li>compliance_compliance_compliance_compliance_getcompliance</li>
+      <li>contacts_orgcontact_contacts_orgcontact_listorgcontact</li>
+      <li>contacts_orgcontact_functions_contacts_delta</li>
+      <li>contracts_contract_contracts_contract_listcontract</li>
+      <li>copilot_copilotroot_copilot_copilotroot_getcopilotroot</li>
+      <li>devices_device_devices_device_listdevice</li>
+      <li>devices_device_functions_devices_delta</li>
+      <li>directory_administrativeunit_directory_administrativeunits_delta</li>
+      <li>directory_administrativeunit_directory_listadministrativeunits</li>
+      <li>directory_companysubscription_directory_listsubscriptions</li>
+      <li>directory_directoryobject_directory_listdeleteditems_asadministrativeunit</li>
+      <li>directory_directoryobject_directory_listdeleteditems_asapplication</li>
+      <li>directory_directoryobject_directory_listdeleteditems_asdevice</li>
+      <li>directory_directoryobject_directory_listdeleteditems_asgroup</li>
+      <li>directory_directoryobject_directory_listdeleteditems_asserviceprincipal</li>
+      <li>directory_directoryobject_directory_listdeleteditems_asuser</li>
+      <li>directory_identityproviderbase_directory_listfederationconfigurations</li>
+      <li>directory_onpremisesdirectorysynchronization_directory_listonpremisessynchronization</li>
+      <li>directory_publickeyinfrastructureroot_directory_publickeyinfrastructure_listcertificatebasedauthconfigurations</li>
+      <li>directory_recovery_directory_getrecovery</li>
+      <li>directoryroles_directoryrole_directoryroles_directoryrole_listdirectoryrole</li>
+      <li>directoryroles_directoryrole_functions_directoryroles_delta</li>
+      <li>directoryroletemplates_directoryroletemplate_directoryroletemplates_directoryroletemplate_listdirectoryroletemplate</li>
+      <li>domains_domain_domains_domain_listdomain</li>
+      <li>employeeexperience_employeeexperience_employeeexperience_employeeexperience_getemployeeexperience</li>
+      <li>groups_group_functions_groups_delta</li>
+      <li>groups_group_groups_group_listgroup</li>
+      <li>groupsettings_groupsetting_groupsettings_groupsetting_listgroupsetting</li>
+      <li>groupsettingtemplates_groupsettingtemplate_groupsettingtemplates_groupsettingtemplate_listgroupsettingtemplate</li>
+      <li>identity_authenticationeventlistener_identity_listauthenticationeventlisteners</li>
+      <li>identity_conditionalaccessroot_identity_conditionalaccess_deleteditems_listnamedlocations</li>
+      <li>identity_conditionalaccessroot_identity_conditionalaccess_deleteditems_listpolicies</li>
+      <li>identity_conditionalaccessroot_identity_conditionalaccess_listnamedlocations</li>
+      <li>identity_conditionalaccessroot_identity_conditionalaccess_listpolicies</li>
+      <li>identity_conditionalaccessroot_identity_conditionalaccess_listtemplates</li>
+      <li>identity_customauthenticationextension_identity_listcustomauthenticationextensions</li>
+      <li>identitygovernance_identitygovernance_identitygovernance_identitygovernance_getidentitygovernance</li>
+      <li>identityprotection_identityprotectionroot_identityprotection_identityprotectionroot_getidentityprotectionroot</li>
+      <li>informationprotection_informationprotection_informationprotection_informationprotection_getinformationprotection</li>
+      <li>me_approleassignment_me_listapproleassignments</li>
+      <li>me_directoryobject_me_listcreatedobjects</li>
+      <li>me_directoryobject_me_listcreatedobjects_asserviceprincipal</li>
+      <li>me_directoryobject_me_listdirectreports</li>
+      <li>me_directoryobject_me_listdirectreports_asorgcontact</li>
+      <li>me_directoryobject_me_listdirectreports_asuser</li>
+      <li>me_directoryobject_me_listmemberof</li>
+      <li>me_directoryobject_me_listmemberof_asadministrativeunit</li>
+      <li>me_directoryobject_me_listmemberof_asdirectoryrole</li>
+      <li>me_directoryobject_me_listmemberof_asgroup</li>
+      <li>me_directoryobject_me_listowneddevices</li>
+      <li>me_directoryobject_me_listowneddevices_asapproleassignment</li>
+      <li>me_directoryobject_me_listowneddevices_asdevice</li>
+      <li>me_directoryobject_me_listowneddevices_asendpoint</li>
+      <li>me_directoryobject_me_listownedobjects</li>
+      <li>me_directoryobject_me_listownedobjects_asapplication</li>
+      <li>me_directoryobject_me_listownedobjects_asgroup</li>
+      <li>me_directoryobject_me_listownedobjects_asserviceprincipal</li>
+      <li>me_directoryobject_me_listrefsponsors</li>
+      <li>me_directoryobject_me_listregistereddevices</li>
+      <li>me_directoryobject_me_listregistereddevices_asapproleassignment</li>
+      <li>me_directoryobject_me_listregistereddevices_asdevice</li>
+      <li>me_directoryobject_me_listregistereddevices_asendpoint</li>
+      <li>me_directoryobject_me_listsponsors</li>
+      <li>me_directoryobject_me_listtransitivememberof</li>
+      <li>me_directoryobject_me_listtransitivememberof_asadministrativeunit</li>
+      <li>me_directoryobject_me_listtransitivememberof_asdirectoryrole</li>
+      <li>me_directoryobject_me_listtransitivememberof_asgroup</li>
+      <li>me_extension_me_listextensions</li>
+      <li>me_licensedetails_me_licensedetails_getteamslicensingdetails</li>
+      <li>me_licensedetails_me_listlicensedetails</li>
+      <li>me_oauth2permissiongrant_me_listoauth2permissiongrants</li>
+      <li>me_onpremisessyncbehavior_me_getonpremisessyncbehavior</li>
+      <li>me_scopedrolemembership_me_listscopedrolememberof</li>
+      <li>me_serviceprovisioningerror_me_listserviceprovisioningerrors</li>
+      <li>me_user_me_user_getuser</li>
+      <li>oauth2permissiongrants_oauth2permissiongrant_functions_oauth2permissiongrants_delta</li>
+      <li>oauth2permissiongrants_oauth2permissiongrant_oauth2permissiongrants_oauth2permissiongrant_listoauth2permissiongrant</li>
+      <li>organization_organization_organization_organization_listorganization</li>
+      <li>policies_activitybasedtimeoutpolicy_policies_listactivitybasedtimeoutpolicies</li>
+      <li>policies_appmanagementpolicy_policies_listappmanagementpolicies</li>
+      <li>policies_authorizationpolicy_policies_getauthorizationpolicy</li>
+      <li>policies_claimsmappingpolicy_policies_listclaimsmappingpolicies</li>
+      <li>policies_conditionalaccesspolicy_policies_listconditionalaccesspolicies</li>
+      <li>policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_getdefault</li>
+      <li>policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_listpartners</li>
+      <li>policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_templates_getmultitenantorganizationidentitysynchronization</li>
+      <li>policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_templates_getmultitenantorganizationpartnerconfiguration</li>
+      <li>policies_crosstenantaccesspolicy_policies_getcrosstenantaccesspolicy</li>
+      <li>policies_featurerolloutpolicy_policies_listfeaturerolloutpolicies</li>
+      <li>policies_homerealmdiscoverypolicy_policies_listhomerealmdiscoverypolicies</li>
+      <li>policies_permissiongrantpolicy_policies_listpermissiongrantpolicies</li>
+      <li>policies_tenantappmanagementpolicy_policies_getdefaultappmanagementpolicy</li>
+      <li>policies_tokenissuancepolicy_policies_listtokenissuancepolicies</li>
+      <li>policies_tokenlifetimepolicy_policies_listtokenlifetimepolicies</li>
+      <li>privacy_privacy_privacy_privacy_getprivacy</li>
+      <li>reports_authenticationmethodsroot_reports_getauthenticationmethods</li>
+      <li>reports_reportroot_reports_reportroot_getreportroot</li>
+      <li>rolemanagement_rbacapplication_rolemanagement_directory_listresourcenamespaces</li>
+      <li>rolemanagement_rbacapplication_rolemanagement_directory_listroleassignments</li>
+      <li>rolemanagement_rbacapplication_rolemanagement_directory_listroledefinitions</li>
+      <li>schemaextensions_schemaextension_schemaextensions_schemaextension_listschemaextension</li>
+      <li>security_casesroot_security_getcases</li>
+      <li>security_security_security_security_getsecurity</li>
+      <li>security_threatintelligence_security_getthreatintelligence</li>
+      <li>serviceprincipals_serviceprincipal_functions_serviceprincipals_delta</li>
+      <li>serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal</li>
+    </ol>
+  </div>
+</div>
+
+<!-- Comparison -->
+<div class="section">
+  <div class="section-header open" onclick="toggle(this)">
+    <span>Comparison with Previous Run</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <div class="comparison-grid">
+      <div class="comparison-card" style="border-left: 4px solid var(--info);">
+        <h4>Run 1: 9-scope Delegated Token</h4>
+        <ul>
+          <li><span class="big" style="color:var(--info);">97</span> PASS</li>
+          <li>Scopes: User.Read, Chat.Read, Files.Read, Group.Read.All, etc.</li>
+          <li>~300 of 733 tested (truncated by 600s timeout)</li>
+          <li>Sequential mode</li>
+        </ul>
+      </div>
+      <div class="comparison-card" style="border-left: 4px solid var(--pass);">
+        <h4>Run 2: Azure CLI Token</h4>
+        <ul>
+          <li><span class="big" style="color:var(--pass);">117</span> PASS</li>
+          <li>Token: <code>az account get-access-token</code></li>
+          <li>All 733 tables tested</li>
+          <li>4 workers, ~45 min, 60s timeout</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-box note-green">
+      <strong>Finding:</strong> The Azure CLI token has <strong>broader effective access</strong> than the 9-scope consent token on tenant-level endpoints. It covers directory, admin, policies, audit logs, <em>and</em> 36 /me endpoints. The earlier "universal 403/400" conclusion was incorrect — the AZ token works for many endpoints; the earlier test failed because it was run <strong>without</strong> the <code>microsoft_graph_v4.</code> schema prefix.
+    </div>
+  </div>
+</div>
+
+<!-- By API Area -->
+<div class="section">
+  <div class="section-header open" onclick="toggle(this)">
+    <span>Results by API Area</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <table>
+      <thead>
+        <tr><th>API Area</th><th style="text-align:center">Total</th><th style="text-align:center">PASS</th><th style="text-align:center">403</th><th style="text-align:center">400</th><th style="text-align:center">401</th><th style="text-align:center">TNF</th><th style="text-align:center">ERR</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>me</td><td style="text-align:center">147</td><td style="text-align:center;color:var(--pass);font-weight:600">36</td><td style="text-align:center">26</td><td style="text-align:center">23</td><td style="text-align:center">45</td><td style="text-align:center">14</td><td style="text-align:center">3</td></tr>
+        <tr><td>policies</td><td style="text-align:center">29</td><td style="text-align:center;color:var(--pass);font-weight:600">16</td><td style="text-align:center">6</td><td style="text-align:center">5</td><td style="text-align:center">&mdash;</td><td style="text-align:center">2</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>directory</td><td style="text-align:center">22</td><td style="text-align:center;color:var(--pass);font-weight:600">13</td><td style="text-align:center">5</td><td style="text-align:center">3</td><td style="text-align:center">&mdash;</td><td style="text-align:center">1</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>identity</td><td style="text-align:center">26</td><td style="text-align:center;color:var(--pass);font-weight:600">7</td><td style="text-align:center">13</td><td style="text-align:center">2</td><td style="text-align:center">&mdash;</td><td style="text-align:center">4</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>admin</td><td style="text-align:center">36</td><td style="text-align:center;color:var(--pass);font-weight:600">4</td><td style="text-align:center">19</td><td style="text-align:center">9</td><td style="text-align:center">1</td><td style="text-align:center">2</td><td style="text-align:center">1</td></tr>
+        <tr><td>security</td><td style="text-align:center">64</td><td style="text-align:center;color:var(--pass);font-weight:600">3</td><td style="text-align:center">22</td><td style="text-align:center">&mdash;</td><td style="text-align:center">23</td><td style="text-align:center">16</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>rolemanagement</td><td style="text-align:center">21</td><td style="text-align:center;color:var(--pass);font-weight:600">3</td><td style="text-align:center">7</td><td style="text-align:center">8</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">3</td></tr>
+        <tr><td>auditlogs</td><td style="text-align:center">4</td><td style="text-align:center;color:var(--pass);font-weight:600">3</td><td style="text-align:center">1</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>applications</td><td style="text-align:center">2</td><td style="text-align:center;color:var(--pass);font-weight:600">2</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>contacts</td><td style="text-align:center">2</td><td style="text-align:center;color:var(--pass);font-weight:600">2</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>devices</td><td style="text-align:center">2</td><td style="text-align:center;color:var(--pass);font-weight:600">2</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>groups</td><td style="text-align:center">2</td><td style="text-align:center;color:var(--pass);font-weight:600">2</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>reports</td><td style="text-align:center">27</td><td style="text-align:center;color:var(--pass);font-weight:600">2</td><td style="text-align:center">7</td><td style="text-align:center">12</td><td style="text-align:center">4</td><td style="text-align:center">2</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>serviceprincipals</td><td style="text-align:center">2</td><td style="text-align:center;color:var(--pass);font-weight:600">2</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>oauth2permissiongrants</td><td style="text-align:center">2</td><td style="text-align:center;color:var(--pass);font-weight:600">2</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>communications</td><td style="text-align:center">12</td><td style="text-align:center;color:var(--pass);font-weight:600">1</td><td style="text-align:center">4</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">7</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>identitygovernance</td><td style="text-align:center">45</td><td style="text-align:center;color:var(--pass);font-weight:600">1</td><td style="text-align:center">31</td><td style="text-align:center">3</td><td style="text-align:center">&mdash;</td><td style="text-align:center">10</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>solutions</td><td style="text-align:center">35</td><td style="text-align:center;color:var(--pass);font-weight:600">0</td><td style="text-align:center">1</td><td style="text-align:center">&mdash;</td><td style="text-align:center">34</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>devicemanagement</td><td style="text-align:center">74</td><td style="text-align:center;color:var(--pass);font-weight:600">0</td><td style="text-align:center">12</td><td style="text-align:center">62</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>deviceappmanagement</td><td style="text-align:center">33</td><td style="text-align:center;color:var(--pass);font-weight:600">0</td><td style="text-align:center">&mdash;</td><td style="text-align:center">33</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td><td style="text-align:center">&mdash;</td></tr>
+        <tr><td>education</td><td style="text-align:center">22</td><td style="text-align:center;color:var(--pass);font-weight:600">0</td><td style="text-align:center">16</td><td style="text-align:center">1</td><td style="text-align:center">&mdash;</td><td style="text-align:center">1</td><td style="text-align:center">4</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Notes -->
+<div class="section">
+  <div class="section-header open" onclick="toggle(this)">
+    <span>Notes &amp; Anomalies</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="section-body" style="font-size:0.85rem;">
+    <ul style="list-style:disc; padding-left:20px;">
+      <li><strong>83 TABLE_NOT_FOUND</strong>: Tables registered in manifest.yaml (and listed in information_schema) that return "Table not found" at query time &mdash; likely a DuckDB foreign table registration issue.</li>
+      <li><strong>400_BADREQUEST (181)</strong>: Many endpoints require parameters (id, $select, $filter) not sent in a simple <code>SELECT * LIMIT 1</code>. These may work with real parameterized queries.</li>
+      <li><strong>Missing me_*, teams_*, users_*, places_* coverage</strong>: Many delegated-scope-only endpoints need an OAuth token with specific scopes like User.Read, Mail.Read, Teams.Read, etc.</li>
+      <li><strong>Previous "universal 403" was wrong</strong>: The earlier failed run omitted the <code>microsoft_graph_v4.</code> schema prefix, causing DuckDB to look in the default schema.</li>
+      <li><strong>32-scope OAuth URL</strong> was generated for a broader test if needed.</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+function toggle(el) {
+  el.classList.toggle('open');
+  var body = el.nextElementSibling;
+  body.classList.toggle('hidden');
+}
+</script>
+</body>
+</html>
