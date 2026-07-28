@@ -42,11 +42,30 @@ pre, .output { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; bac
 .count { color: #8b949e; font-size: 13px; margin-bottom: 12px; }
 .files { margin: 16px 0; padding: 12px 16px; background: #161b22; border-radius: 6px; border: 1px solid #30363d; font-size: 13px; }
 .files a { color: #58a6ff; }
+.header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #30363d; }
+.avatar { width: 64px; height: 64px; border-radius: 50%; border: 2px solid #30363d; }
+.header-info { flex: 1; }
+.header-info h1 { font-size: 22px; margin-bottom: 2px; }
+.header-info .meta { color: #8b949e; font-size: 13px; line-height: 1.6; }
+.header-info .meta span { color: #58a6ff; }
 </style>
 </head>
 <body>
-<h1>Microsoft Graph v4 — Full Coverage Report</h1>
-<p class="subtitle">All 733 tables tested with <code>SELECT * FROM table LIMIT 1</code></p>
+
+<div class="header">
+  <img class="avatar" src="https://avatars.githubusercontent.com/u/84862556?v=4" alt="FiscalMindset">
+  <div class="header-info">
+    <h1>Microsoft Graph v4 &mdash; Full Coverage Report</h1>
+    <div class="meta">
+      <strong>Date:</strong> 28 July 2026 &middot;
+      <strong>Tester:</strong> <a href="https://github.com/FiscalMindset" style="color:#58a6ff;text-decoration:none;">Vicky Kumar (FiscalMindset)</a><br>
+      <strong>Connector:</strong> microsoft_graph_v4 (coral 0.5.2, DSL v4) &middot;
+      <strong>Account:</strong> algsoch@gmail.com<br>
+      <strong>Tenant:</strong> <span>algsochgmail.onmicrosoft.com</span> &middot;
+      <strong>Endpoint:</strong> <span>https://graph.microsoft.com/v1.0</span>
+    </div>
+  </div>
+</div>
 
 <div class="summary">
   <div class="stat" style="border-color: #3fb950;">PASS <span>97</span></div>
