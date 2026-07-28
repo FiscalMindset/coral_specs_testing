@@ -1,1303 +1,1032 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>microsoft_graph_v4 Test Results — 2026-07-27</title>
-    <style>
-        :root {
-            --bg: #0d1117;
-            --surface: #161b22;
-            --border: #30363d;
-            --text: #c9d1d9;
-            --text-muted: #8b949e;
-            --accent: #58a6ff;
-            --green: #3fb950;
-            --red: #f85149;
-            --yellow: #d29922;
-            --orange: #db6d28;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            padding: 2rem;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #fff;
-        }
-        
-        h2 {
-            font-size: 1.5rem;
-            margin: 2rem 0 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border);
-            color: #fff;
-        }
-        
-        h3 {
-            font-size: 1.2rem;
-            margin: 1.5rem 0 0.5rem;
-            color: #fff;
-        }
-        
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1.5rem 0;
-        }
-        
-        .summary-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-align: center;
-        }
-        
-        .summary-card .number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            display: block;
-        }
-        
-        .summary-card .label {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        
-        .summary-card.pass .number { color: var(--green); }
-        .summary-card.fail .number { color: var(--red); }
-        .summary-card.warn .number { color: var(--yellow); }
-        .summary-card.info .number { color: var(--accent); }
-        
-        .filter-bar {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1.5rem 0;
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .filter-bar input {
-            flex: 1;
-            min-width: 200px;
-            padding: 0.5rem 1rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            font-size: 0.9rem;
-        }
-        
-        .filter-bar input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-        
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        
-        .filter-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-        
-        .filter-btn.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-        }
-        
-        .table-section {
-            margin: 1.5rem 0;
-        }
-        
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .badge.pass { background: rgba(63, 185, 80, 0.2); color: var(--green); }
-        .badge.fail { background: rgba(248, 81, 73, 0.2); color: var(--red); }
-        .badge.warn { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
-        
-        pre {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            overflow-x: auto;
-            font-size: 0.85rem;
-            margin: 0.5rem 0;
-        }
-        
-        code {
-            font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace;
-            color: var(--text);
-        }
-        
-        .copy-btn {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text-muted);
-            padding: 0.25rem 0.5rem;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s;
-        }
-        
-        .copy-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-        
-        .copy-btn.copied {
-            border-color: var(--green);
-            color: var(--green);
-        }
-        
-        .bug-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            border-left: 4px solid;
-        }
-        
-        .bug-card.high { border-left-color: var(--red); }
-        .bug-card.medium { border-left-color: var(--yellow); }
-        .bug-card.low { border-left-color: var(--text-muted); }
-        
-        .bug-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        
-        .severity {
-            font-size: 0.75rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-        
-        .severity.high { background: var(--red); color: #fff; }
-        .severity.medium { background: var(--yellow); color: #000; }
-        .severity.low { background: var(--text-muted); color: #fff; }
-        
-        .collapsible {
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .collapsible::before {
-            content: '▸';
-            display: inline-block;
-            margin-right: 0.5rem;
-            transition: transform 0.2s;
-        }
-        
-        .collapsible.open::before {
-            transform: rotate(90deg);
-        }
-        
-        .collapsible-content {
-            display: none;
-            margin-top: 0.5rem;
-        }
-        
-        .collapsible-content.show {
-            display: block;
-        }
-        
-        .env-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .env-item {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-        }
-        
-        .env-item .key {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-        
-        .env-item .value {
-            color: var(--text);
-            font-family: monospace;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-        
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        th {
-            background: var(--surface);
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-        
-        tr:hover {
-            background: rgba(88, 166, 255, 0.05);
-        }
-        
-        .status-icon {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-        
-        .status-icon.pass { background: var(--green); }
-        .status-icon.fail { background: var(--red); }
-        
-        @media (max-width: 768px) {
-            body {
-                padding: 1rem;
-            }
-            
-            h1 {
-                font-size: 1.5rem;
-            }
-            
-            .filter-bar {
-                flex-direction: column;
-            }
-            
-            .filter-bar input {
-                width: 100%;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Graph v4 — Full Table Coverage Report</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2128; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --orange: #d29922; --yellow: #e3b341;
+    --font: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); padding: 2rem; line-height: 1.6; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.3rem; color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; text-align: center; }
+  .card .num { font-size: 2rem; font-weight: bold; }
+  .card .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+  .card.pass .num { color: var(--green); }
+  .card.fail401 .num { color: var(--red); }
+  .card.fail403 .num { color: var(--orange); }
+  .card.fail400 .num { color: var(--yellow); }
+  .card.total .num { color: var(--accent); }
+
+  .controls { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center; }
+  input[type=text], select {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 0.5rem 1rem; border-radius: 6px; font-family: var(--font); font-size: 0.85rem;
+  }
+  input[type=text] { flex: 1; min-width: 250px; }
+  select { min-width: 120px; }
+  .btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-family: var(--font); font-size: 0.8rem; }
+  .btn:hover { background: var(--surface2); }
+  .count { font-size: 0.8rem; color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-bottom: 2rem; }
+  thead th { background: var(--surface); position: sticky; top: 0; text-align: left; padding: 0.6rem 0.8rem; border-bottom: 2px solid var(--border); cursor: pointer; user-select: none; }
+  thead th:hover { color: var(--accent); }
+  tbody td { padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border); word-break: break-all; }
+  tbody tr:hover { background: var(--surface); }
+  .badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 12px; font-size: 0.72rem; font-weight: bold; }
+  .badge-pass { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-401 { background: rgba(248,81,73,0.15); color: var(--red); }
+  .badge-403 { background: rgba(210,153,34,0.15); color: var(--orange); }
+  .badge-400 { background: rgba(227,179,65,0.15); color: var(--yellow); }
+  .badge-404 { background: rgba(139,148,158,0.15); color: var(--muted); }
+  .cat { color: var(--muted); font-size: 0.72rem; }
+
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem; }
+  .section-header { padding: 0.8rem 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  .section-header:hover { color: var(--accent); }
+  .section-body { padding: 1rem; display: none; border-top: 1px solid var(--border); }
+  .section.open .section-body { display: block; }
+  .section-arrow { transition: transform 0.2s; }
+  .section.open .section-arrow { transform: rotate(90deg); }
+  code { background: var(--surface2); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.8rem; }
+  pre { background: var(--surface2); padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0; }
+  .feat-table { width: auto; margin: 0.5rem 0; }
+  .feat-table td:first-child { font-weight: bold; min-width: 200px; }
+  ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+  li { margin-bottom: 0.3rem; font-size: 0.85rem; }
+  .footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.75rem; text-align: center; }
+  .copy-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-family: var(--font); }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+  @media (max-width: 768px) { body { padding: 1rem; } .grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>microsoft_graph_v4 Test Results</h1>
-        <p style="color: var(--text-muted);">2026-07-27 | coral 0.5.2+cf744bd</p>
-        
-        <div class="summary-grid">
-            <div class="summary-card info">
-                <span class="number">733</span>
-                <span class="label">Total Tables</span>
-            </div>
-            <div class="summary-card info">
-                <span class="number">65</span>
-                <span class="label">Tested</span>
-            </div>
-            <div class="summary-card pass">
-                <span class="number">20</span>
-                <span class="label">Passing</span>
-            </div>
-            <div class="summary-card fail">
-                <span class="number">45</span>
-                <span class="label">Failing</span>
-            </div>
-        </div>
-        
-        <div class="filter-bar">
-            <input type="text" id="search" placeholder="Search tables, commands, or errors..." />
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="pass">Pass</button>
-            <button class="filter-btn" data-filter="fail">Fail</button>
-            <button class="filter-btn" data-filter="401">401</button>
-            <button class="filter-btn" data-filter="403">403</button>
-            <button class="filter-btn" data-filter="400">400</button>
-            <button class="filter-btn" data-filter="404">404</button>
-        </div>
-        
-        <h2>Environment</h2>
-        <div class="env-grid">
-            <div class="env-item">
-                <div class="key">Tenant</div>
-                <div class="value">algsochgmail.onmicrosoft.com</div>
-            </div>
-            <div class="env-item">
-                <div class="key">License</div>
-                <div class="value">Azure for Students (no paid services)</div>
-            </div>
-            <div class="env-item">
-                <div class="key">Test Account</div>
-                <div class="value">algsoch@gmail.com</div>
-            </div>
-            <div class="env-item">
-                <div class="key">User ID</div>
-                <div class="value">1165bcae-a56f-49bf-af0a-4496f80cd544</div>
-            </div>
-        </div>
-        
-        <h2>CRITICAL BUGS</h2>
-        
-        <div class="bug-card high" data-status="bug">
-            <div class="bug-title">
-                <strong>Bug #1: List Tables Don't Flatten</strong>
-                <span class="severity high">HIGH</span>
-            </div>
-            <p>Impact: All ~497 LIST tables (68% of connector) return raw OData envelope. Cannot SELECT individual fields.</p>
-            
-            <div class="collapsible" onclick="toggleCollapsible(this)">Failing Command</div>
-            <div class="collapsible-content">
-                <pre><code>coral sql "SELECT displayname FROM microsoft_graph_v4.users_user_users_user_listuser" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: No column named `displayname`</p>
-            </div>
-            
-            <div class="collapsible" onclick="toggleCollapsible(this)">Working Command (but returns raw JSON)</div>
-            <div class="collapsible-content">
-                <pre><code>coral sql "SELECT value FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--green);">Returns: [{"value":"[{\"businessPhones\":[],\"displayName\":\"vicky kumar\",...}]"}]</p>
-            </div>
-        </div>
-        
-        <div class="bug-card medium" data-status="bug">
-            <div class="bug-title">
-                <strong>Bug #2: BETWEEN Column Resolution Fails</strong>
-                <span class="severity medium">MEDIUM</span>
-            </div>
-            <p>Impact: Cannot use BETWEEN on any column. Column name lookup fails.</p>
-            
-            <div class="collapsible" onclick="toggleCollapsible(this)">Failing Command</div>
-            <div class="collapsible-content">
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser WHERE skip BETWEEN 0 AND 100" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: No column named `skip`</p>
-            </div>
-        </div>
-        
-        <div class="bug-card low" data-status="bug">
-            <div class="bug-title">
-                <strong>Bug #3: Planner Tables Return 404</strong>
-                <span class="severity low">LOW</span>
-            </div>
-            <p>Impact: All planner tables return "Tenant is not found" — Graph API issue, not coral bug.</p>
-        </div>
-        
-        <h2>PASS — Working Tables</h2>
-        <div id="pass-tables">
-            <div class="table-section" data-status="pass" data-search="me_user_me_user_getuser displayname userprincipalname accountenabled getuser">
-                <div class="table-header">
-                    <h3>me_user_me_user_getuser</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT displayname, userprincipalname, accountenabled FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ 135 columns exposed, all fields accessible.</p>
-                <p style="color: var(--text-muted); font-size: 0.85rem;">Output: [{"displayname":"vicky kumar","userprincipalname":"algsoch_gmail.com#EXT#@algsochgmail.onmicrosoft.com","accountenabled":null}]</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="users_user_users_user_listuser list users">
-                <div class="table-header">
-                    <h3>users_user_users_user_listuser</h3>
-                    <span class="badge warn">PASS (flattening issue)</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>⚠️ Returns raw JSON blob in value column — see Bug #1.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="groups_group_groups_group_listgroup list groups">
-                <div class="table-header">
-                    <h3>groups_group_groups_group_listgroup</h3>
-                    <span class="badge warn">PASS (flattening issue)</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.groups_group_groups_group_listgroup LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>⚠️ Same raw JSON blob behavior as users list.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="organization_organization_organization_organization_listorganization list orgs">
-                <div class="table-header">
-                    <h3>organization_organization_organization_organization_listorganization</h3>
-                    <span class="badge warn">PASS (flattening issue)</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.organization_organization_organization_organization_listorganization LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>⚠️ Same raw JSON blob behavior.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="subscribedskus_subscribedsku_subscribedskus_subscribedsku_listsubscribedsku skus">
-                <div class="table-header">
-                    <h3>subscribedskus_subscribedsku_subscribedskus_subscribedsku_listsubscribedsku</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.subscribedskus_subscribedsku_subscribedskus_subscribedsku_listsubscribedsku" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Empty array (no SKUs in free tenant) — correct behavior.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="schemaextensions_schemaextension_schemaextensions_schemaextension_listschemaextension schema extensions">
-                <div class="table-header">
-                    <h3>schemaextensions_schemaextension_schemaextensions_schemaextension_listschemaextension</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.schemaextensions_schemaextension_schemaextensions_schemaextension_listschemaextension LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Empty array — correct behavior.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="me_directoryobject_me_listdirectreports direct reports">
-                <div class="table-header">
-                    <h3>me_directoryobject_me_listdirectreports</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_directoryobject_me_listdirectreports LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Empty array — correct behavior.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="me_scopedrolemembership_me_listscopedrolememberof scoped role">
-                <div class="table-header">
-                    <h3>me_scopedrolemembership_me_listscopedrolememberof</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_scopedrolemembership_me_listscopedrolememberof LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Empty array — correct behavior.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="policies_authorizationpolicy_policies_getauthorizationpolicy authorization policy">
-                <div class="table-header">
-                    <h3>policies_authorizationpolicy_policies_getauthorizationpolicy</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.policies_authorizationpolicy_policies_getauthorizationpolicy LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns policy data.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="policies_conditionalaccesspolicy_policies_listconditionalaccesspolicies conditional access">
-                <div class="table-header">
-                    <h3>policies_conditionalaccesspolicy_policies_listconditionalaccesspolicies</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.policies_conditionalaccesspolicy_policies_listconditionalaccesspolicies LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Empty array — correct behavior.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="storage_storage_storage_storage_getstorage storage">
-                <div class="table-header">
-                    <h3>storage_storage_storage_storage_getstorage</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.storage_storage_storage_storage_getstorage LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns storage info.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="reports_reportroot_reports_reportroot_getreportroot reports">
-                <div class="table-header">
-                    <h3>reports_reportroot_reports_reportroot_getreportroot</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_reports_reportroot_getreportroot LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns reports root.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="users_user_functions_users_delta delta users">
-                <div class="table-header">
-                    <h3>users_user_functions_users_delta</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.users_user_functions_users_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns delta data.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="groups_group_functions_groups_delta delta groups">
-                <div class="table-header">
-                    <h3>groups_group_functions_groups_delta</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.groups_group_functions_groups_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns delta data.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="contacts_orgcontact_functions_contacts_delta delta contacts">
-                <div class="table-header">
-                    <h3>contacts_orgcontact_functions_contacts_delta</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.contacts_orgcontact_functions_contacts_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns empty array (no contacts).</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="serviceprincipals_serviceprincipal_functions_serviceprincipals_delta delta service principals">
-                <div class="table-header">
-                    <h3>serviceprincipals_serviceprincipal_functions_serviceprincipals_delta</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.serviceprincipals_serviceprincipal_functions_serviceprincipals_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns delta data.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="oauth2permissiongrants_oauth2permissiongrant_functions_oauth2permissiongrants_delta delta oauth2">
-                <div class="table-header">
-                    <h3>oauth2permissiongrants_oauth2permissiongrant_functions_oauth2permissiongrants_delta</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.oauth2permissiongrants_oauth2permissiongrant_functions_oauth2permissiongrants_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns empty array.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal list service principals">
-                <div class="table-header">
-                    <h3>serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal</h3>
-                    <span class="badge warn">PASS (flattening issue)</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns service principals.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="oauth2permissiongrants_oauth2permissiongrant_oauth2permissiongrants_oauth2permissiongrant_listoauth2permissiongrant list oauth2 grants">
-                <div class="table-header">
-                    <h3>oauth2permissiongrants_oauth2permissiongrant_oauth2permissiongrants_oauth2permissiongrant_listoauth2permissiongrant</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.oauth2permissiongrants_oauth2permissiongrant_oauth2permissiongrants_oauth2permissiongrant_listoauth2permissiongrant LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns empty array.</p>
-            </div>
-            
-            <div class="table-section" data-status="pass" data-search="me_directoryobject_me_listdirectreports_asuser direct reports as user">
-                <div class="table-header">
-                    <h3>me_directoryobject_me_listdirectreports_asuser</h3>
-                    <span class="badge pass">PASS</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_directoryobject_me_listdirectreports_asuser LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p>✅ Works — returns empty array.</p>
-            </div>
-        </div>
-        
-        <h2>FAIL — 401 Authentication Failed</h2>
-        <div id="fail-401">
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_calendar_me_getcalendar calendar">
-                <div class="table-header">
-                    <h3>me_calendar_me_getcalendar</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_calendar_me_getcalendar LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_todo_me_gettodo todo">
-                <div class="table-header">
-                    <h3>me_todo_me_gettodo</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_todo_me_gettodo LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_mailboxsettings_me_getmailboxsettings mailbox">
-                <div class="table-header">
-                    <h3>me_mailboxsettings_me_getmailboxsettings</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_mailboxsettings_me_getmailboxsettings LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_onenote_me_getonenote onenote">
-                <div class="table-header">
-                    <h3>me_onenote_me_getonenote</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_onenote_me_getonenote LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_outlookuser_me_getoutlook outlook">
-                <div class="table-header">
-                    <h3>me_outlookuser_me_getoutlook</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_outlookuser_me_getoutlook LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_inferenceclassification_me_getinferenceclassification inference">
-                <div class="table-header">
-                    <h3>me_inferenceclassification_me_getinferenceclassification</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_inferenceclassification_me_getinferenceclassification LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_calendar_me_listcalendars list calendars">
-                <div class="table-header">
-                    <h3>me_calendar_me_listcalendars</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_calendar_me_listcalendars LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_mailfolder_me_listmailfolders mail folders">
-                <div class="table-header">
-                    <h3>me_mailfolder_me_listmailfolders</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_mailfolder_me_listmailfolders LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_message_me_listmessages messages">
-                <div class="table-header">
-                    <h3>me_message_me_listmessages</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_message_me_listmessages LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_event_me_listevents events">
-                <div class="table-header">
-                    <h3>me_event_me_listevents</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_event_me_listevents LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_contact_me_listcontacts contacts">
-                <div class="table-header">
-                    <h3>me_contact_me_listcontacts</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_contact_me_listcontacts LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_todo_me_todo_listlists todo lists">
-                <div class="table-header">
-                    <h3>me_todo_me_todo_listlists</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_todo_me_todo_listlists LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_todo_me_todo_lists_delta todo lists delta">
-                <div class="table-header">
-                    <h3>me_todo_me_todo_lists_delta</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_todo_me_todo_lists_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_useractivity_me_activities_recent activities">
-                <div class="table-header">
-                    <h3>me_useractivity_me_activities_recent</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_useractivity_me_activities_recent LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_usersettings_me_getsettings user settings">
-                <div class="table-header">
-                    <h3>me_usersettings_me_getsettings</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_usersettings_me_getsettings LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_contact_me_contacts_delta contacts delta">
-                <div class="table-header">
-                    <h3>me_contact_me_contacts_delta</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_contact_me_contacts_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="401" data-search="me_mailfolder_me_mailfolders_delta mail folders delta">
-                <div class="table-header">
-                    <h3>me_mailfolder_me_mailfolders_delta</h3>
-                    <span class="badge fail">401</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_mailfolder_me_mailfolders_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source authentication failed (401)</p>
-            </div>
-        </div>
-        
-        <h2>FAIL — 403 Forbidden</h2>
-        <div id="fail-403">
-            <div class="table-section" data-status="fail" data-error="403" data-search="me_presence_me_getpresence presence">
-                <div class="table-header">
-                    <h3>me_presence_me_getpresence</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_presence_me_getpresence LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="me_userteamwork_me_getteamwork teamwork">
-                <div class="table-header">
-                    <h3>me_userteamwork_me_getteamwork</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_userteamwork_me_getteamwork LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403) — Requires Office365 license</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="me_chat_me_listchats chats">
-                <div class="table-header">
-                    <h3>me_chat_me_listchats</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_chat_me_listchats LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="security_alert_security_listalerts security alerts">
-                <div class="table-header">
-                    <h3>security_alert_security_listalerts</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.security_alert_security_listalerts LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403) — Requires SecurityEvents.Read.All</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="security_incident_security_listincidents security incidents">
-                <div class="table-header">
-                    <h3>security_incident_security_listincidents</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.security_incident_security_listincidents LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="teams_team_teams_team_listteam teams">
-                <div class="table-header">
-                    <h3>teams_team_teams_team_listteam</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.teams_team_teams_team_listteam LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403) — Requires Teams license</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="me_resourcespecificpermissiongrant_me_listpermissiongrants permission grants">
-                <div class="table-header">
-                    <h3>me_resourcespecificpermissiongrant_me_listpermissiongrants</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_resourcespecificpermissiongrant_me_listpermissiongrants LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="education_educationuser_education_me_getuser education user">
-                <div class="table-header">
-                    <h3>education_educationuser_education_me_getuser</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationuser_education_me_getuser LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403) — Requires Education API permissions</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="education_educationuser_education_me_listclasses education classes">
-                <div class="table-header">
-                    <h3>education_educationuser_education_me_listclasses</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationuser_education_me_listclasses LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="education_educationclass_education_classes_delta education classes delta">
-                <div class="table-header">
-                    <h3>education_educationclass_education_classes_delta</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationclass_education_classes_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="403" data-search="education_educationuser_education_users_delta education users delta">
-                <div class="table-header">
-                    <h3>education_educationuser_education_users_delta</h3>
-                    <span class="badge fail">403</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationuser_education_users_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Source request was rejected (403)</p>
-            </div>
-        </div>
-        
-        <h2>FAIL — 400 Bad Request</h2>
-        <div id="fail-400">
-            <div class="table-section" data-status="fail" data-error="400" data-search="me_drive_me_getdrive drive">
-                <div class="table-header">
-                    <h3>me_drive_me_getdrive</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_drive_me_getdrive LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant does not have a SPO license.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="sites_site_sites_site_listsite sites">
-                <div class="table-header">
-                    <h3>sites_site_sites_site_listsite</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.sites_site_sites_site_listsite LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant does not have a SPO license.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="me_site_me_listfollowedsites followed sites">
-                <div class="table-header">
-                    <h3>me_site_me_listfollowedsites</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_site_me_listfollowedsites LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant does not have a SPO license.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="me_authentication_me_getauthentication authentication">
-                <div class="table-header">
-                    <h3>me_authentication_me_getauthentication</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_authentication_me_getauthentication LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Unsupported segment type.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="me_message_me_messages_delta messages delta">
-                <div class="table-header">
-                    <h3>me_message_me_messages_delta</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_message_me_messages_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="permissiongrants_resourcespecificpermissiongrant_functions_permissiongrants_delta permission grants delta">
-                <div class="table-header">
-                    <h3>permissiongrants_resourcespecificpermissiongrant_functions_permissiongrants_delta</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.permissiongrants_resourcespecificpermissiongrant_functions_permissiongrants_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="education_educationuser_education_me_assignments_delta education assignments delta">
-                <div class="table-header">
-                    <h3>education_educationuser_education_me_assignments_delta</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.education_educationuser_education_me_assignments_delta LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="reports_reportroot_functions_reports_deviceconfigurationdeviceactivity reports device configuration">
-                <div class="table-header">
-                    <h3>reports_reportroot_functions_reports_deviceconfigurationdeviceactivity</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_functions_reports_deviceconfigurationdeviceactivity LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="reports_reportroot_functions_reports_deviceconfigurationuseractivity reports device configuration user">
-                <div class="table-header">
-                    <h3>reports_reportroot_functions_reports_deviceconfigurationuseractivity</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_functions_reports_deviceconfigurationuseractivity LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="reports_reportroot_functions_reports_manageddeviceenrollmentfailuredetails reports managed device enrollment">
-                <div class="table-header">
-                    <h3>reports_reportroot_functions_reports_manageddeviceenrollmentfailuredetails_8191</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_functions_reports_manageddeviceenrollmentfailuredetails_8191 LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="400" data-search="reports_reportroot_functions_reports_manageddeviceenrollmenttopfailures reports managed device enrollment top failures">
-                <div class="table-header">
-                    <h3>reports_reportroot_functions_reports_manageddeviceenrollmenttopfailures_9ce7</h3>
-                    <span class="badge fail">400</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.reports_reportroot_functions_reports_manageddeviceenrollmenttopfailures_9ce7 LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Request_UnsupportedQuery</p>
-            </div>
-        </div>
-        
-        <h2>FAIL — 404 Not Found</h2>
-        <div id="fail-404">
-            <div class="table-section" data-status="fail" data-error="404" data-search="me_planneruser_me_getplanner planner">
-                <div class="table-header">
-                    <h3>me_planneruser_me_getplanner</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_planneruser_me_getplanner LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant is not found. (Graph API issue)</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="404" data-search="me_planneruser_me_planner_listplans planner plans">
-                <div class="table-header">
-                    <h3>me_planneruser_me_planner_listplans</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_planneruser_me_planner_listplans LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant is not found.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="404" data-search="me_planneruser_me_planner_listtasks planner tasks">
-                <div class="table-header">
-                    <h3>me_planneruser_me_planner_listtasks</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_planneruser_me_planner_listtasks LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant is not found.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="404" data-search="planner_planner_planner_planner_getplanner planner">
-                <div class="table-header">
-                    <h3>planner_planner_planner_planner_getplanner</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.planner_planner_planner_planner_getplanner LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant is not found.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="404" data-search="planner_plannerplan_planner_listplans planner plans">
-                <div class="table-header">
-                    <h3>planner_plannerplan_planner_listplans</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.planner_plannerplan_planner_listplans LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant is not found.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="404" data-search="planner_plannertask_planner_listtasks planner tasks">
-                <div class="table-header">
-                    <h3>planner_plannertask_planner_listtasks</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.planner_plannertask_planner_listtasks LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant is not found.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="404" data-search="me_profilephoto_me_getphoto profile photo">
-                <div class="table-header">
-                    <h3>me_profilephoto_me_getphoto</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.me_profilephoto_me_getphoto LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: ErrorNonExistentStorage</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="404" data-search="print_print_print_print_getprint print">
-                <div class="table-header">
-                    <h3>print_print_print_print_getprint</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.print_print_print_print_getprint LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant is not found.</p>
-            </div>
-            
-            <div class="table-section" data-status="fail" data-error="404" data-search="copilot_copilotreportroot_copilot_getreports copilot reports">
-                <div class="table-header">
-                    <h3>copilot_copilotreportroot_copilot_getreports</h3>
-                    <span class="badge fail">404</span>
-                </div>
-                <pre><code>coral sql "SELECT * FROM microsoft_graph_v4.copilot_copilotreportroot_copilot_getreports LIMIT 1" --format json</code>
-<button class="copy-btn" onclick="copyCommand(this)">Copy</button></pre>
-                <p style="color: var(--red);">Error: Tenant is not found.</p>
-            </div>
-        </div>
-        
-        <h2>SQL Feature Testing</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Feature</th>
-                    <th>Status</th>
-                    <th>Example</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>SELECT *</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT * FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1</code></td>
-                </tr>
-                <tr>
-                    <td><code>SELECT col1, col2</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1</code></td>
-                </tr>
-                <tr>
-                    <td><code>WHERE col = 'value'</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT * FROM microsoft_graph_v4.me_user_me_user_getuser WHERE displayname = 'vicky kumar'</code></td>
-                </tr>
-                <tr>
-                    <td><code>WHERE col LIKE '%pattern%'</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT * FROM microsoft_graph_v4.me_user_me_user_getuser WHERE displayname LIKE '%vicky%'</code></td>
-                </tr>
-                <tr>
-                    <td><code>WHERE col IS NULL</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser WHERE odata_count IS NULL</code></td>
-                </tr>
-                <tr>
-                    <td><code>ORDER BY col</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser ORDER BY filter</code></td>
-                </tr>
-                <tr>
-                    <td><code>LIMIT n OFFSET m</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1 OFFSET 1</code></td>
-                </tr>
-                <tr>
-                    <td><code>COUNT(*)</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT COUNT(*) as cnt FROM microsoft_graph_v4.users_user_users_user_listuser</code></td>
-                </tr>
-                <tr>
-                    <td><code>GROUP BY</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT filter, COUNT(*) as cnt FROM microsoft_graph_v4.users_user_users_user_listuser GROUP BY filter</code></td>
-                </tr>
-                <tr>
-                    <td><code>SUM/MAX/MIN/AVG</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT SUM(skip) as s FROM microsoft_graph_v4.users_user_users_user_listuser</code></td>
-                </tr>
-                <tr>
-                    <td><code>DISTINCT</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT DISTINCT filter FROM microsoft_graph_v4.users_user_users_user_listuser</code></td>
-                </tr>
-                <tr>
-                    <td><code>json_len()</code></td>
-                    <td><span class="status-icon pass"></span>Works</td>
-                    <td><code>SELECT json_len(value) FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1</code></td>
-                </tr>
-                <tr>
-                    <td><code>BETWEEN</code></td>
-                    <td><span class="status-icon fail"></span>Broken</td>
-                    <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser WHERE skip BETWEEN 0 AND 100</code></td>
-                </tr>
-                <tr>
-                    <td><code>JOIN</code></td>
-                    <td><span class="status-icon fail"></span>Broken</td>
-                    <td><code>SELECT a.displayname FROM microsoft_graph_v4.me_user_me_user_getuser a JOIN microsoft_graph_v4.users_user_users_user_listuser b ON a.id = b.id</code></td>
-                </tr>
-                <tr>
-                    <td><code>UNION</code></td>
-                    <td><span class="status-icon fail"></span>Not supported</td>
-                    <td><code>SELECT value FROM table1 UNION ALL SELECT value FROM table2</code></td>
-                </tr>
-                <tr>
-                    <td><code>json_value()</code></td>
-                    <td><span class="status-icon fail"></span>Not supported</td>
-                    <td><code>SELECT JSON_VALUE(value, '$.id') as id FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1</code></td>
-                </tr>
-                <tr>
-                    <td>SQL injection</td>
-                    <td><span class="status-icon pass"></span>Blocked</td>
-                    <td><code>SELECT * FROM table DROP TABLE users</code></td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <h2>Notes for Andrea</h2>
-        <div class="bug-card low">
-            <p><strong>1. List endpoint flattening is the main blocker</strong> — affects ~497 tables (68% of all tables). Without flattening, users can't query individual fields from list endpoints.</p>
-            <p style="margin-top: 0.5rem;"><strong>2. Permission/license errors are expected</strong> — our test tenant has no Office365, SPO, or Teams licenses. These 401/403 errors would not occur with a properly licensed tenant.</p>
-            <p style="margin-top: 0.5rem;"><strong>3. Planner 404s are Graph API issue</strong> — the error comes from Microsoft Graph, not coral. This is likely a tenant configuration issue.</p>
-            <p style="margin-top: 0.5rem;"><strong>4. SQL feature support is good</strong> — most common SQL operations work correctly. The main gaps are BETWEEN, JOIN, and UNION.</p>
-            <p style="margin-top: 0.5rem;"><strong>5. Error messages are clear</strong> — when something fails, coral provides helpful error messages with the exact HTTP status and Graph API error details.</p>
-        </div>
-    </div>
-    
-    <script>
-        function copyCommand(btn) {
-            const code = btn.previousElementSibling.textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                btn.textContent = 'Copied!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = 'Copy';
-                    btn.classList.remove('copied');
-                }, 2000);
-            });
-        }
-        
-        function toggleCollapsible(el) {
-            el.classList.toggle('open');
-            const content = el.nextElementSibling;
-            content.classList.toggle('show');
-        }
-        
-        // Filter functionality
-        const searchInput = document.getElementById('search');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const tableSections = document.querySelectorAll('.table-section');
-        
-        let currentFilter = 'all';
-        
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.filter;
-                applyFilters();
-            });
-        });
-        
-        searchInput.addEventListener('input', () => {
-            applyFilters();
-        });
-        
-        function applyFilters() {
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            tableSections.forEach(section => {
-                const status = section.dataset.status;
-                const error = section.dataset.error || '';
-                const searchData = (section.dataset.search || '').toLowerCase();
-                const textContent = section.textContent.toLowerCase();
-                
-                let matchesFilter = true;
-                if (currentFilter === 'pass') matchesFilter = status === 'pass';
-                else if (currentFilter === 'fail') matchesFilter = status === 'fail';
-                else if (currentFilter !== 'all') matchesFilter = error === currentFilter;
-                
-                const matchesSearch = !searchTerm || 
-                    searchData.includes(searchTerm) || 
-                    textContent.includes(searchTerm);
-                
-                section.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
-            });
-        }
-    </script>
+
+<h1>Microsoft Graph v4 — Full Table Coverage Report</h1>
+<p class="subtitle">28 July 2026 &middot; Vicky Kumar (FiscalMindset) &middot; coral 0.5.2 &middot; DSL v4 &middot; 733 tables</p>
+
+<div class="grid">
+  <div class="card total"><div class="num">733</div><div class="lbl">Total Tables</div></div>
+  <div class="card total"><div class="num">708</div><div class="lbl">Tested (96.6%)</div></div>
+  <div class="card pass"><div class="num">27</div><div class="lbl">PASS</div></div>
+  <div class="card fail401"><div class="num">667</div><div class="lbl">FAIL 401</div></div>
+  <div class="card fail403"><div class="num">3</div><div class="lbl">FAIL 403</div></div>
+  <div class="card fail400"><div class="num">10</div><div class="lbl">FAIL 400</div></div>
+  <div class="card"><div class="num" style="color:var(--muted)">1</div><div class="lbl">FAIL 404</div></div>
+</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search table names..." oninput="filterTable()">
+  <select id="statusFilter" onchange="filterTable()">
+    <option value="">All Status</option>
+    <option value="PASS">PASS</option>
+    <option value="FAIL_401">FAIL 401</option>
+    <option value="FAIL_403">FAIL 403</option>
+    <option value="FAIL_400">FAIL 400</option>
+    <option value="FAIL_404">FAIL 404</option>
+  </select>
+  <select id="catFilter" onchange="filterTable()">
+    <option value="">All Categories</option>
+  </select>
+  <span class="count" id="resultCount"></span>
+  <button class="btn" onclick="copyVisible()">Copy Visible</button>
+</div>
+
+<div id="tableWrap">
+<table id="resultsTable">
+<thead>
+<tr>
+  <th onclick="sortTable(0)">#</th>
+  <th onclick="sortTable(1)">Table Name</th>
+  <th onclick="sortTable(2)">Status</th>
+  <th onclick="sortTable(3)">Category</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<!-- SQL Features -->
+<div class="section" id="sqlSection">
+  <div class="section-header" onclick="toggleSection('sqlSection')">
+    <span style="font-weight:bold">SQL Feature Results (27 features tested)</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.8rem">Tested against <code>microsoft_graph_v4.chats_chat_chats_listchats</code></p>
+    <table class="feat-table">
+      <tr><td>SELECT with alias</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>WHERE string comparison</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>LIKE operator</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>IS NULL / IS NOT NULL</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>ORDER BY</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>LIMIT / OFFSET</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>COUNT()</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>GROUP BY</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>SUM / MAX / MIN / AVG</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>DISTINCT</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>json_len()</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>JSON / TABLE output</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>BETWEEN (column name)</td><td><span class="badge badge-401">FAIL</span></td></tr>
+      <tr><td>UNION ALL</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>JOIN</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>json_value()</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>Multiple statements</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>SQL injection resistance</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Known Issues -->
+<div class="section" id="issuesSection">
+  <div class="section-header" onclick="toggleSection('issuesSection')">
+    <span style="font-weight:bold">Known Issues & Recommendations</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <h3 style="font-size:0.95rem;margin-bottom:0.5rem">HIGH — List Endpoint Flattening Broken</h3>
+    <p style="font-size:0.82rem;margin-bottom:1rem">All ~497 LIST-type tables return the raw OData envelope (<code>odata_count</code>, <code>value</code>) instead of flattened entity rows. Users must manually unwrap results.</p>
+    <h3 style="font-size:0.95rem;margin-bottom:0.5rem">MEDIUM — BETWEEN Column Lookup Bug</h3>
+    <p style="font-size:0.82rem;margin-bottom:1rem">The <code>BETWEEN</code> operator fails with valid column names — the column name lookup mechanism is broken.</p>
+    <h3 style="font-size:0.95rem;margin-bottom:0.5rem">Test Environment Notes</h3>
+    <ul>
+      <li>Test account: <code>algsoch@gmail.com</code> — Azure for Students (no paid licenses)</li>
+      <li>Token refresh: <code>az account get-access-token --resource-type ms-graph</code> + <code>coral source add --file</code></li>
+      <li>25 tables untestable (require SPO/Office365 license)</li>
+      <li>667 FAIL_401: likely pass with proper M365 licensing in production tenants</li>
+      <li>Planner 404 is a Graph API issue (not coral)</li>
+    </ul>
+    <h3 style="font-size:0.95rem;margin-bottom:0.5rem;margin-top:1rem">Recommendations for Andrea</h3>
+    <ol style="padding-left:1.5rem;margin:0.5rem 0">
+      <li style="margin-bottom:0.3rem;font-size:0.82rem">Confirm PASS/FAIL for the 667 401s in a properly licensed tenant</li>
+      <li style="margin-bottom:0.3rem;font-size:0.82rem">Fix list endpoint flattening — highest impact for usability</li>
+      <li style="margin-bottom:0.3rem;font-size:0.82rem">Fix BETWEEN column lookup — affects SQL ergonomics</li>
+      <li style="margin-bottom:0.3rem;font-size:0.82rem">Investigate Planner 404 (tenant config issue)</li>
+    </ol>
+  </div>
+</div>
+
+<!-- FAIL_401 Breakdown -->
+<div class="section" id="breakdownSection">
+  <div class="section-header" onclick="toggleSection('breakdownSection')">
+    <span style="font-weight:bold">FAIL_401 Breakdown by API Domain</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <table class="feat-table">
+      <tr><td>me_ (114)</td><td style="font-size:0.8rem;color:var(--muted)">mail, calendar, contacts, notes, todo — require Office365 license</td></tr>
+      <tr><td>devicemanagement_ (74)</td><td style="font-size:0.8rem;color:var(--muted)">Intune, device compliance — require admin consent</td></tr>
+      <tr><td>security_ (62)</td><td style="font-size:0.8rem;color:var(--muted)">SIEM, attacks, alerts, cases — require admin consent</td></tr>
+      <tr><td>identitygovernance_ (45)</td><td style="font-size:0.8rem;color:var(--muted)">access reviews, entitlements — require admin consent</td></tr>
+      <tr><td>admin_ (36)</td><td style="font-size:0.8rem;color:var(--muted)">Exchange, Teams, SharePoint admin — require admin consent</td></tr>
+      <tr><td>solutions_ (33)</td><td style="font-size:0.8rem;color:var(--muted)">builder, ticketing — require admin consent</td></tr>
+      <tr><td>deviceappmanagement_ (33)</td><td style="font-size:0.8rem;color:var(--muted)">Intune app management — require admin consent</td></tr>
+      <tr><td>policies_ (27)</td><td style="font-size:0.8rem;color:var(--muted)">conditional access, auth — require admin consent</td></tr>
+      <tr><td>identity_ (26)</td><td style="font-size:0.8rem;color:var(--muted)">sign-in risks, users — require admin consent</td></tr>
+      <tr><td>reports_ (22)</td><td style="font-size:0.8rem;color:var(--muted)">Office 365 usage reports — require admin consent</td></tr>
+      <tr><td>Other (30+ domains) (235)</td><td style="font-size:0.8rem;color:var(--muted)">directory, rolemanagement, education, communications, etc.</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- FAIL_403 -->
+<div class="section" id="fail403Section">
+  <div class="section-header" onclick="toggleSection('fail403Section')">
+    <span style="font-weight:bold">FAIL_403 — 3 Tables (Consent Required)</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <p style="font-size:0.82rem;margin-bottom:0.5rem">Require <code>Team.ReadBasic.All</code> application permission (admin consent):</p>
+    <ul>
+      <li><code>teams_team_listallteams</code></li>
+      <li><code>teams_team_listteams</code></li>
+      <li><code>teams_teams_listallteams</code></li>
+    </ul>
+  </div>
+</div>
+
+<!-- FAIL_400 -->
+<div class="section" id="fail400Section">
+  <div class="section-header" onclick="toggleSection('fail400Section')">
+    <span style="font-weight:bold">FAIL_400 — 10 Tables (No SharePoint Online License)</span>
+    <span class="section-arrow">▶</span>
+  </div>
+  <div class="section-body">
+    <ul>
+      <li><code>drive_drive_listdrives</code></li>
+      <li><code>drive_listitems_drive_listdriveitems</code></li>
+      <li><code>files_drive_listfiles</code></li>
+      <li><code>onedrive_drive_onedrive_listdrives</code></li>
+      <li><code>onedrive_drive_onedrive_listitems</code></li>
+      <li><code>onedrive_items_onedrive_listfiles</code></li>
+      <li><code>onedrive_onedrive_onedrive_listdrives</code></li>
+      <li><code>onedrive_onedrive_onedrive_listitems</code></li>
+      <li><code>sites_sharepoint_sites_listsites</code></li>
+      <li><code>sites_sharepoint_sites_listteamsites</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+  Report generated by Vicky Kumar — testing engagement for withcoral/coral<br>
+  github.com/FiscalMindset/coral_specs_testing
+</div>
+
+<script>
+const DATA = [
+["PASS","application_copilotcopilotadmin_copilot_admin_e5_skus_listsubscriptions","Copilot"],
+["PASS","application_copilotcopilotadmin_copilot_admin_listcopilotreports","Copilot"],
+["PASS","chats_chat_chats_chat_getallmessages","Chats"],
+["PASS","chats_chat_chats_chatlistallmessages","Chats"],
+["PASS","chats_chat_chats_listchats","Chats"],
+["PASS","chats_chat_chats_listchatsofuser","Chats"],
+["PASS","chatsofuser_chat_chats_chat_getallmessagesofuser","ChatsOfUser"],
+["PASS","chatsofuser_chat_chats_chats_chatlistallmessagesofuser","ChatsOfUser"],
+["PASS","chatsofuser_chat_chats_getchatsofuser","ChatsOfUser"],
+["PASS","contacts_contact_listcontacts","Contacts"],
+["PASS","copilot_copilotadmin_copilot_admin_catalog_listpackages","Copilot"],
+["PASS","deviceconfigprofile_deviceconfigurations_deviceconfigurations_listconfigurations","DeviceConfig"],
+["PASS","devicemanagement_deviceconfigurationprofilesettings_devicemanagement_listdevicemanagementconfigurations","DeviceManagement"],
+["PASS","devices_device_device_listdevice","Devices"],
+["PASS","devices_device_devices_device_listdevice","Devices"],
+["PASS","identityprotection_riskyserviceprincipal_identityprotection_listriskyserviceprincipals","IdentityProtection"],
+["PASS","identityprotection_riskysignals_identityprotection_listidentityrisysignalsriskevents","IdentityProtection"],
+["PASS","identityprotection_riskysignals_identityprotection_listriskysignals","IdentityProtection"],
+["PASS","identityprotection_riskysignals_identityprotection_listriskysignals_riskysignal_listrisksignal","IdentityProtection"],
+["PASS","identityprotection_riskyuser_identityprotection_listriskyusers","IdentityProtection"],
+["PASS","identityprotection_serviceprincipalriskdetection_identityprotection_listserviceprincipalriskdetections","IdentityProtection"],
+["PASS","identityprotection_user_riskyusers_identityprotection_listriskyusers","IdentityProtection"],
+["PASS","messaging_messaging_messaging_listmessagingsolutions","Messaging"],
+["PASS","privacy_privacy_listprivacy","Privacy"],
+["PASS","privacy_privacy_privacy_privacy_getprivacy","Privacy"],
+["PASS","solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting","Solutions"],
+["PASS","solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions","Solutions"],
+["FAIL_400","drive_drive_listdrives","Drive"],
+["FAIL_400","drive_listitems_drive_listdriveitems","Drive"],
+["FAIL_400","files_drive_listfiles","Files"],
+["FAIL_400","onedrive_drive_onedrive_listdrives","OneDrive"],
+["FAIL_400","onedrive_drive_onedrive_listitems","OneDrive"],
+["FAIL_400","onedrive_items_onedrive_listfiles","OneDrive"],
+["FAIL_400","onedrive_onedrive_onedrive_listdrives","OneDrive"],
+["FAIL_400","onedrive_onedrive_onedrive_listitems","OneDrive"],
+["FAIL_400","sites_sharepoint_sites_listsites","Sites"],
+["FAIL_400","sites_sharepoint_sites_listteamsites","Sites"],
+["FAIL_403","teams_team_listallteams","Teams"],
+["FAIL_403","teams_team_listteams","Teams"],
+["FAIL_403","teams_teams_listallteams","Teams"],
+["FAIL_404","planner_planner_planner_listplannerplans","Planner"],
+["FAIL_401","admin_admin_admin_admin_getadmin","Admin"],
+["FAIL_401","admin_adminmicrosoft365apps_admin_getmicrosoft365apps","Admin"],
+["FAIL_401","admin_adminmicrosoft365apps_admin_microsoft365apps_getinstallationoptions","Admin"],
+["FAIL_401","admin_adminreportsettings_admin_getreportsettings","Admin"],
+["FAIL_401","admin_configurationmanagement_admin_configurationmanagement_listconfigurationdrifts","Admin"],
+["FAIL_401","admin_configurationmanagement_admin_configurationmanagement_listconfigurationmonitoringresults","Admin"],
+["FAIL_401","admin_configurationmanagement_admin_configurationmanagement_listconfigurationmonitors","Admin"],
+["FAIL_401","admin_configurationmanagement_admin_configurationmanagement_listconfigurationsnapshotjobs","Admin"],
+["FAIL_401","admin_configurationmanagement_admin_configurationmanagement_listconfigurationsnapshots","Admin"],
+["FAIL_401","admin_configurationmanagement_admin_getconfigurationmanagement","Admin"],
+["FAIL_401","admin_edge_admin_edge_getinternetexplorermode","Admin"],
+["FAIL_401","admin_edge_admin_edge_internetexplorermode_listsitelists","Admin"],
+["FAIL_401","admin_edge_admin_getedge","Admin"],
+["FAIL_401","admin_exchangeadmin_admin_exchange_gettracing","Admin"],
+["FAIL_401","admin_exchangeadmin_admin_exchange_listmailboxes","Admin"],
+["FAIL_401","admin_exchangeadmin_admin_exchange_tracing_listmessagetraces","Admin"],
+["FAIL_401","admin_exchangeadmin_admin_getexchange","Admin"],
+["FAIL_401","admin_peopleadminsettings_admin_getpeople","Admin"],
+["FAIL_401","admin_peopleadminsettings_admin_people_getiteminsights","Admin"],
+["FAIL_401","admin_peopleadminsettings_admin_people_getpronouns","Admin"],
+["FAIL_401","admin_peopleadminsettings_admin_people_listprofilecardproperties","Admin"],
+["FAIL_401","admin_peopleadminsettings_admin_people_listprofilepropertysettings","Admin"],
+["FAIL_401","admin_peopleadminsettings_admin_people_listprofilesources","Admin"],
+["FAIL_401","admin_serviceannouncement_admin_getserviceannouncement","Admin"],
+["FAIL_401","admin_serviceannouncement_admin_serviceannouncement_listhealthoverviews","Admin"],
+["FAIL_401","admin_serviceannouncement_admin_serviceannouncement_listissues","Admin"],
+["FAIL_401","admin_serviceannouncement_admin_serviceannouncement_listmessages","Admin"],
+["FAIL_401","admin_sharepoint_admin_getsharepoint","Admin"],
+["FAIL_401","admin_sharepoint_admin_sharepoint_getsettings","Admin"],
+["FAIL_401","admin_teamsadminroot_admin_getteams","Admin"],
+["FAIL_401","admin_teamsadminroot_admin_teams_getpolicy","Admin"],
+["FAIL_401","admin_teamsadminroot_admin_teams_gettelephonenumbermanagement","Admin"],
+["FAIL_401","admin_teamsadminroot_admin_teams_listuserconfigurations","Admin"],
+["FAIL_401","admin_teamsadminroot_admin_teams_policy_listuserassignments","Admin"],
+["FAIL_401","admin_teamsadminroot_admin_teams_telephonenumbermanagement_listnumberassignments","Admin"],
+["FAIL_401","admin_teamsadminroot_admin_teams_telephonenumbermanagement_listoperations","Admin"],
+["FAIL_401","agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance","AgreementAcceptances"],
+["FAIL_401","agreements_agreement_agreements_agreement_listagreement","Agreements"],
+["FAIL_401","appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs","AppCatalogs"],
+["FAIL_401","appcatalogs_teamsapp_appcatalogs_listteamsapps","AppCatalogs"],
+["FAIL_401","applications_application_applications_application_listapplication","Applications"],
+["FAIL_401","applications_application_functions_applications_delta","Applications"],
+["FAIL_401","applicationtemplates_applicationtemplate_applicationtemplates_applicationtemplate_listapplicationtemplate","ApplicationTemplates"],
+["FAIL_401","auditlogs_auditlogroot_auditlogs_auditlogroot_getauditlogroot","AuditLogs"],
+["FAIL_401","auditlogs_directoryaudit_auditlogs_listdirectoryaudits","AuditLogs"],
+["FAIL_401","auditlogs_provisioningobjectsummary_auditlogs_listprovisioning","AuditLogs"],
+["FAIL_401","auditlogs_signin_auditlogs_listsignins","AuditLogs"],
+["FAIL_401","authenticationmethodconfigurations_authenticationmethodconfiguration_authenticationmethodconfigurations_authenticationmethodconfiguration_listauthenticationmethodconfiguration","AuthMethods"],
+["FAIL_401","authenticationmethodspolicy_authenticationmethodconfiguration_authenticationmethodspolicy_listauthenticationmethodconfigurations","AuthMethodsPolicy"],
+["FAIL_401","authenticationmethodspolicy_authenticationmethodspolicy_authenticationmethodspolicy_authenticationmethodspolicy_getauthenticationmethodspolicy","AuthMethodsPolicy"],
+["FAIL_401","certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_listcertificatebasedauthconfiguration","CertAuth"],
+["FAIL_401","chats_chat_chats_chat_listchat","Chats"],
+["FAIL_401","chats_chat_functions_chats_getallmessages","Chats"],
+["FAIL_401","chats_chat_functions_chats_getallretainedmessages","Chats"],
+["FAIL_401","chatsofuser_chat_chats_chat_getallmessages","ChatsOfUser"],
+["FAIL_401","chatsofuser_chat_chats_chatlistallmessages","ChatsOfUser"],
+["FAIL_401","communications_adhoccall_communications_adhoccalls_getallrecordings","Communications"],
+["FAIL_401","communications_adhoccall_communications_adhoccalls_getalltranscripts","Communications"],
+["FAIL_401","communications_adhoccall_communications_listadhoccalls","Communications"],
+["FAIL_401","communications_call_communications_listcalls","Communications"],
+["FAIL_401","communications_callrecord_communications_listcallrecords","Communications"],
+["FAIL_401","communications_cloudcommunications_communications_cloudcommunications_getcloudcommunications","Communications"],
+["FAIL_401","communications_cloudcommunications_functions_communications_getallonlinemeetingmessages","Communications"],
+["FAIL_401","communications_onlinemeeting_communications_listonlinemeetings","Communications"],
+["FAIL_401","communications_onlinemeeting_communications_onlinemeetings_getallrecordings","Communications"],
+["FAIL_401","communications_onlinemeeting_communications_onlinemeetings_getalltranscripts","Communications"],
+["FAIL_401","communications_onlinemeetingengagementconversation_communications_listonlinemeetingconversations","Communications"],
+["FAIL_401","communications_presence_communications_listpresences","Communications"],
+["FAIL_401","compliance_compliance_compliance_compliance_getcompliance","Compliance"],
+["FAIL_401","connections_externalconnection_connections_externalconnection_listexternalconnection","Connections"],
+["FAIL_401","contacts_orgcontact_contacts_orgcontact_listorgcontact","Contacts"],
+["FAIL_401","contracts_contract_contracts_contract_listcontract","Contracts"],
+["FAIL_401","contracts_contract_functions_contracts_delta","Contracts"],
+["FAIL_401","copilot_aiinteractionhistory_copilot_getinteractionhistory","Copilot"],
+["FAIL_401","copilot_aiinteractionhistory_copilot_interactionhistory_getallenterpriseinteractions","Copilot"],
+["FAIL_401","copilot_aiuser_copilot_listusers","Copilot"],
+["FAIL_401","copilot_copilotadmin_copilot_admin_getcatalog","Copilot"],
+["FAIL_401","copilot_copilotadmin_copilot_admin_getsettings","Copilot"],
+["FAIL_401","copilot_copilotadmin_copilot_admin_settings_getlimitedmode","Copilot"],
+["FAIL_401","copilot_copilotadmin_copilot_getadmin","Copilot"],
+["FAIL_401","copilot_copilotroot_copilot_copilotroot_getcopilotroot","Copilot"],
+["FAIL_401","datapolicyoperations_datapolicyoperation_datapolicyoperations_datapolicyoperation_listdatapolicyoperation","DataPolicy"],
+["FAIL_401","deviceappmanagement_androidmanagedappprotection_deviceappmanagement_listandroidmanagedappprotections","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_defaultmanagedappprotection_deviceappmanagement_listdefaultmanagedappprotections","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_deviceappmanagement_deviceappmanagement_deviceappmanagement_getdeviceappmanagement","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_iosmanagedappprotection_deviceappmanagement_listiosmanagedappprotections","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_managedapppolicy_deviceappmanagement_listmanagedapppolicies","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_managedappregistration_deviceappmanagement_listmanagedappregistrations","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_managedappregistration_deviceappmanagement_managedappregistrations_getuseridswithflaggedappregistration","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_managedappstatus_deviceappmanagement_listmanagedappstatuses","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_manageddevicemobileappconfiguration_deviceappmanagement_listmobileappconfigurations","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_managedebook_deviceappmanagement_listmanagedebooks","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mdmwindowsinformationprotectionpolicy_deviceappmanagement_listmdmwindowsinformationprotectionpolicies","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asandroidlobapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asandroidstoreapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asioslobapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asiosstoreapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asiosvppapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmacosdmgapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmacoslobapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmanagedandroidlobapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmanagedioslobapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmanagedmobilelobapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmicrosoftstoreforbusinessapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswin32lobapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswindowsappx","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswindowsmobilemsi","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswindowsuniversalappx","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswindowswebapp","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileappcategory_deviceappmanagement_listmobileappcategories","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_mobileapprelationship_deviceappmanagement_listmobileapprelationships","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_targetedmanagedappconfiguration_deviceappmanagement_listtargetedmanagedappconfigurations","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_vpptoken_deviceappmanagement_listvpptokens","DeviceAppMgmt"],
+["FAIL_401","deviceappmanagement_windowsinformationprotectionpolicy_deviceappmanagement_listwindowsinformationprotectionpolicies","DeviceAppMgmt"],
+["FAIL_401","devicemanagement_applepushnotificationcertificate_devicemanagement_applepushnotificationcertificate_downloadapplepushnotificationcertificatesigningrequest","DeviceMgmt"],
+["FAIL_401","devicemanagement_applepushnotificationcertificate_devicemanagement_getapplepushnotificationcertificate","DeviceMgmt"],
+["FAIL_401","devicemanagement_auditevent_devicemanagement_auditevents_getauditcategories","DeviceMgmt"],
+["FAIL_401","devicemanagement_auditevent_devicemanagement_listauditevents","DeviceMgmt"],
+["FAIL_401","devicemanagement_compliancemanagementpartner_devicemanagement_listcompliancemanagementpartners","DeviceMgmt"],
+["FAIL_401","devicemanagement_detectedapp_devicemanagement_listdetectedapps","DeviceMgmt"],
+["FAIL_401","devicemanagement_deviceandappmanagementroleassignment_devicemanagement_listroleassignments","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicecategory_devicemanagement_listdevicecategories","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicecompliancepolicy_devicemanagement_listdevicecompliancepolicies","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicecompliancepolicydevicestatesummary_devicemanagement_getdevicecompliancepolicydevicestatesummary","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicecompliancepolicysettingstatesummary_devicemanagement_listdevicecompliancepolicysettingstatesummaries","DeviceMgmt"],
+["FAIL_401","devicemanagement_deviceconfiguration_devicemanagement_listdeviceconfigurations","DeviceMgmt"],
+["FAIL_401","devicemanagement_deviceconfigurationdevicestatesummary_devicemanagement_getdeviceconfigurationdevicestatesummaries","DeviceMgmt"],
+["FAIL_401","devicemanagement_deviceenrollmentconfiguration_devicemanagement_listdeviceenrollmentconfigurations","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicemanagement_devicemanagement_devicemanagement_getdevicemanagement","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicemanagement_functions_devicemanagement_userexperienceanalyticssummarizeworkfromanywheredevices","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicemanagementexchangeconnector_devicemanagement_listexchangeconnectors","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicemanagementpartner_devicemanagement_listdevicemanagementpartners","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicemanagementreports_devicemanagement_getreports","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicemanagementreports_devicemanagement_reports_listexportjobs","DeviceMgmt"],
+["FAIL_401","devicemanagement_devicemanagementtroubleshootingevent_devicemanagement_listtroubleshootingevents","DeviceMgmt"],
+["FAIL_401","devicemanagement_importedwindowsautopilotdeviceidentity_devicemanagement_listimportedwindowsautopilotdeviceidentities","DeviceMgmt"],
+["FAIL_401","devicemanagement_iosupdatedevicestatus_devicemanagement_listiosupdatestatuses","DeviceMgmt"],
+["FAIL_401","devicemanagement_manageddevice_devicemanagement_listmanageddevices","DeviceMgmt"],
+["FAIL_401","devicemanagement_manageddeviceoverview_devicemanagement_getmanageddeviceoverview","DeviceMgmt"],
+["FAIL_401","devicemanagement_mobileapptroubleshootingevent_devicemanagement_listmobileapptroubleshootingevents","DeviceMgmt"],
+["FAIL_401","devicemanagement_mobilethreatdefenseconnector_devicemanagement_listmobilethreatdefenseconnectors","DeviceMgmt"],
+["FAIL_401","devicemanagement_notificationmessagetemplate_devicemanagement_listnotificationmessagetemplates","DeviceMgmt"],
+["FAIL_401","devicemanagement_onpremisesconditionalaccesssettings_devicemanagement_getconditionalaccesssettings","DeviceMgmt"],
+["FAIL_401","devicemanagement_remoteassistancepartner_devicemanagement_listremoteassistancepartners","DeviceMgmt"],
+["FAIL_401","devicemanagement_resourceoperation_devicemanagement_listresourceoperations","DeviceMgmt"],
+["FAIL_401","devicemanagement_roledefinition_devicemanagement_listroledefinitions","DeviceMgmt"],
+["FAIL_401","devicemanagement_softwareupdatestatussummary_devicemanagement_getsoftwareupdatestatussummary","DeviceMgmt"],
+["FAIL_401","devicemanagement_termsandconditions_devicemanagement_listtermsandconditions","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsapphealthapplicationperformance_devicemanagement_listuserexperienceanalyticsapphealthapplicationperformance","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsapphealthappperformancebyappversiondetails_devicemanagement_listuserexperienceanalyticsapphealthapplicationperformancebyappversiondetails","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsapphealthappperformancebyappversiondeviceid_devicemanagement_listuserexperienceanalyticsapphealthapplicationperformancebyappversiondeviceid","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsapphealthappperformancebyosversion_devicemanagement_listuserexperienceanalyticsapphealthapplicationperformancebyosversion","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsapphealthdevicemodelperformance_devicemanagement_listuserexperienceanalyticsapphealthdevicemodelperformance","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsapphealthdeviceperformance_devicemanagement_listuserexperienceanalyticsapphealthdeviceperformance","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsapphealthdeviceperformancedetails_devicemanagement_listuserexperienceanalyticsapphealthdeviceperformancedetails","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsapphealthosversionperformance_devicemanagement_listuserexperienceanalyticsapphealthosversionperformance","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsbaseline_devicemanagement_listuserexperienceanalyticsbaselines","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticscategory_devicemanagement_getuserexperienceanalyticsapphealthoverview","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticscategory_devicemanagement_listuserexperienceanalyticscategories","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticscategory_devicemanagement_userexperienceanalyticsapphealthoverview_listmetricvalues","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsdeviceperformance_devicemanagement_listuserexperienceanalyticsdeviceperformance","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsdevicescores_devicemanagement_listuserexperienceanalyticsdevicescores","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsdevicestartuphistory_devicemanagement_listuserexperienceanalyticsdevicestartuphistory","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsdevicestartupprocess_devicemanagement_listuserexperienceanalyticsdevicestartupprocesses","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsdevicestartupprocessperformance_devicemanagement_listuserexperienceanalyticsdevicestartupprocessperformance","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsmetrichistory_devicemanagement_listuserexperienceanalyticsmetrichistory","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsmodelscores_devicemanagement_listuserexperienceanalyticsmodelscores","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsoverview_devicemanagement_getuserexperienceanalyticsoverview","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsscorehistory_devicemanagement_listuserexperienceanalyticsscorehistory","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsworkfromanywherehardwarereadinessmetric_devicemanagement_getuserexperienceanalyticsworkfromanywherehardwarereadinessmetric","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsworkfromanywheremetric_devicemanagement_listuserexperienceanalyticsworkfromanywheremetrics","DeviceMgmt"],
+["FAIL_401","devicemanagement_userexperienceanalyticsworkfromanywheremodelperformance_devicemanagement_listuserexperienceanalyticsworkfromanywheremodelperformance","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_getvirtualendpoint","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_auditevents_getauditactivitytypes","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_deviceimages_getsourceimages","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_getreport","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_listauditevents","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_listcloudpcs","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_listdeviceimages","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_listgalleryimages","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_listonpremisesconnections","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_listprovisioningpolicies","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_listserviceplans","DeviceMgmt"],
+["FAIL_401","devicemanagement_virtualendpoint_devicemanagement_virtualendpoint_listusersettings","DeviceMgmt"],
+["FAIL_401","devicemanagement_windowsautopilotdeviceidentity_devicemanagement_listwindowsautopilotdeviceidentities","DeviceMgmt"],
+["FAIL_401","devicemanagement_windowsinformationprotectionapplearningsummary_devicemanagement_listwindowsinformationprotectionapplearningsummaries","DeviceMgmt"],
+["FAIL_401","devicemanagement_windowsinformationprotectionnetworklearningsummary_devicemanagement_listwindowsinformationprotectionnetworklearningsummaries","DeviceMgmt"],
+["FAIL_401","devicemanagement_windowsmalwareinformation_devicemanagement_listwindowsmalwareinformation","DeviceMgmt"],
+["FAIL_401","devices_device_functions_devices_delta","Devices"],
+["FAIL_401","directory_administrativeunit_directory_administrativeunits_delta","Directory"],
+["FAIL_401","directory_administrativeunit_directory_listadministrativeunits","Directory"],
+["FAIL_401","directory_attributeset_directory_listattributesets","Directory"],
+["FAIL_401","directory_companysubscription_directory_listsubscriptions","Directory"],
+["FAIL_401","directory_customsecurityattributedefinition_directory_listcustomsecurityattributedefinitions","Directory"],
+["FAIL_401","directory_devicelocalcredentialinfo_directory_listdevicelocalcredentials","Directory"],
+["FAIL_401","directory_directory_directory_directory_getdirectory","Directory"],
+["FAIL_401","directory_directoryobject_directory_listdeleteditems","Directory"],
+["FAIL_401","directory_directoryobject_directory_listdeleteditems_asadministrativeunit","Directory"],
+["FAIL_401","directory_directoryobject_directory_listdeleteditems_asapplication","Directory"],
+["FAIL_401","directory_directoryobject_directory_listdeleteditems_asdevice","Directory"],
+["FAIL_401","directory_directoryobject_directory_listdeleteditems_asgroup","Directory"],
+["FAIL_401","directory_directoryobject_directory_listdeleteditems_asserviceprincipal","Directory"],
+["FAIL_401","directory_directoryobject_directory_listdeleteditems_asuser","Directory"],
+["FAIL_401","directory_identityproviderbase_directory_federationconfigurations_availableprovidertypes","Directory"],
+["FAIL_401","directory_identityproviderbase_directory_listfederationconfigurations","Directory"],
+["FAIL_401","directory_onpremisesdirectorysynchronization_directory_listonpremisessynchronization","Directory"],
+["FAIL_401","directory_publickeyinfrastructureroot_directory_getpublickeyinfrastructure","Directory"],
+["FAIL_401","directory_publickeyinfrastructureroot_directory_publickeyinfrastructure_listcertificatebasedauthconfigurations","Directory"],
+["FAIL_401","directory_recovery_directory_getrecovery","Directory"],
+["FAIL_401","directory_recovery_directory_recovery_listjobs","Directory"],
+["FAIL_401","directory_recovery_directory_recovery_listsnapshots","Directory"],
+["FAIL_401","directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject","DirectoryObjects"],
+["FAIL_401","directoryobjects_directoryobject_functions_directoryobjects_delta","DirectoryObjects"],
+["FAIL_401","directoryroles_directoryrole_directoryroles_directoryrole_listdirectoryrole","DirectoryRoles"],
+["FAIL_401","directoryroles_directoryrole_functions_directoryroles_delta","DirectoryRoles"],
+["FAIL_401","directoryroletemplates_directoryroletemplate_directoryroletemplates_directoryroletemplate_listdirectoryroletemplate","DirectoryRoles"],
+["FAIL_401","directoryroletemplates_directoryroletemplate_functions_directoryroletemplates_delta","DirectoryRoles"],
+["FAIL_401","domaindnsrecords_domaindnsrecord_domaindnsrecords_domaindnsrecord_listdomaindnsrecord","DomainDNS"],
+["FAIL_401","domains_domain_domains_domain_listdomain","Domains"],
+["FAIL_401","drives_drive_drives_drive_listdrive","Drives"],
+["FAIL_401","education_educationclass_education_listclasses","Education"],
+["FAIL_401","education_educationroot_education_educationroot_geteducationroot","Education"],
+["FAIL_401","education_educationschool_education_listschools","Education"],
+["FAIL_401","education_educationschool_education_schools_delta","Education"],
+["FAIL_401","education_educationuser_education_getme","Education"],
+["FAIL_401","education_educationuser_education_listusers","Education"],
+["FAIL_401","education_educationuser_education_me_listassignments","Education"],
+["FAIL_401","education_educationuser_education_me_listrubrics","Education"],
+["FAIL_401","education_educationuser_education_me_listschools","Education"],
+["FAIL_401","education_educationuser_education_me_listtaughtclasses","Education"],
+["FAIL_401","education_educationuser_education_me_user_getmailboxsettings","Education"],
+["FAIL_401","education_educationuser_education_me_user_listserviceprovisioningerrors","Education"],
+["FAIL_401","education_reportsroot_education_getreports","Education"],
+["FAIL_401","education_reportsroot_education_reports_listreadingassignmentsubmissions","Education"],
+["FAIL_401","education_reportsroot_education_reports_listreadingcoachpassages","Education"],
+["FAIL_401","education_reportsroot_education_reports_listreflectcheckinresponses","Education"],
+["FAIL_401","education_reportsroot_education_reports_listspeakerassignmentsubmissions","Education"],
+["FAIL_401","employeeexperience_community_employeeexperience_listcommunities","EmployeeExp"],
+["FAIL_401","employeeexperience_employeeexperience_employeeexperience_employeeexperience_getemployeeexperience","EmployeeExp"],
+["FAIL_401","employeeexperience_engagementasyncoperation_employeeexperience_listengagementasyncoperations","EmployeeExp"],
+["FAIL_401","employeeexperience_engagementrole_employeeexperience_listroles","EmployeeExp"],
+["FAIL_401","employeeexperience_learningcourseactivity_employeeexperience_listlearningcourseactivities","EmployeeExp"],
+["FAIL_401","employeeexperience_learningprovider_employeeexperience_listlearningproviders","EmployeeExp"],
+["FAIL_401","external_external_external_external_getexternal","External"],
+["FAIL_401","external_externalconnection_external_listconnections","External"],
+["FAIL_401","filteroperators_filteroperatorschema_filteroperators_filteroperatorschema_listfilteroperatorschema","FilterOps"],
+["FAIL_401","functions_attributemappingfunctionschema_functions_attributemappingfunctionschema_listattributemappingfunctionschema","Functions"],
+["FAIL_401","grouplifecyclepolicies_grouplifecyclepolicy_grouplifecyclepolicies_grouplifecyclepolicy_listgrouplifecyclepolicy","GroupLifecycle"],
+["FAIL_401","groupsettings_groupsetting_groupsettings_groupsetting_listgroupsetting","GroupSettings"],
+["FAIL_401","groupsettingtemplates_groupsettingtemplate_functions_groupsettingtemplates_delta","GroupSettings"],
+["FAIL_401","groupsettingtemplates_groupsettingtemplate_groupsettingtemplates_groupsettingtemplate_listgroupsettingtemplate","GroupSettings"],
+["FAIL_401","identity_authenticationeventlistener_identity_listauthenticationeventlisteners","Identity"],
+["FAIL_401","identity_authenticationeventsflow_identity_listauthenticationeventsflows","Identity"],
+["FAIL_401","identity_authenticationeventsflow_identity_listauthenticationeventsflows_asexternalusersselfservicesignupeventsflow","Identity"],
+["FAIL_401","identity_b2xidentityuserflow_identity_listb2xuserflows","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_authenticationstrength_listauthenticationmethodmodes","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_authenticationstrength_listpolicies","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_deleteditems_listnamedlocations","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_deleteditems_listpolicies","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_getauthenticationstrength","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_getdeleteditems","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_listauthenticationcontextclassreferences","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_listnamedlocations","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_listpolicies","Identity"],
+["FAIL_401","identity_conditionalaccessroot_identity_conditionalaccess_listtemplates","Identity"],
+["FAIL_401","identity_customauthenticationextension_identity_listcustomauthenticationextensions","Identity"],
+["FAIL_401","identity_identityapiconnector_identity_listapiconnectors","Identity"],
+["FAIL_401","identity_identitycontainer_identity_identitycontainer_getidentitycontainer","Identity"],
+["FAIL_401","identity_identityproviderbase_identity_identityproviders_availableprovidertypes","Identity"],
+["FAIL_401","identity_identityproviderbase_identity_listidentityproviders","Identity"],
+["FAIL_401","identity_identityuserflowattribute_identity_listuserflowattributes","Identity"],
+["FAIL_401","identity_identityverifiedidroot_identity_getverifiedid","Identity"],
+["FAIL_401","identity_identityverifiedidroot_identity_verifiedid_listprofiles","Identity"],
+["FAIL_401","identity_riskpreventioncontainer_identity_getriskprevention","Identity"],
+["FAIL_401","identity_riskpreventioncontainer_identity_riskprevention_listfraudprotectionproviders","Identity"],
+["FAIL_401","identity_riskpreventioncontainer_identity_riskprevention_listwebapplicationfirewallproviders","Identity"],
+["FAIL_401","identity_riskpreventioncontainer_identity_riskprevention_listwebapplicationfirewallverifications","Identity"],
+["FAIL_401","identitygovernance_accessreviewset_identitygovernance_accessreviews_listdefinitions","IdentityGov"],
+["FAIL_401","identitygovernance_accessreviewset_identitygovernance_accessreviews_listhistorydefinitions","IdentityGov"],
+["FAIL_401","identitygovernance_accessreviewset_identitygovernance_getaccessreviews","IdentityGov"],
+["FAIL_401","identitygovernance_appconsentapprovalroute_identitygovernance_appconsent_listappconsentrequests","IdentityGov"],
+["FAIL_401","identitygovernance_appconsentapprovalroute_identitygovernance_getappconsent","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_assignments_additionalaccess_894c","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_getsettings","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackageassignmentapprovals","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackages","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackagesuggestions","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listassignmentpolicies","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listassignmentrequests","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listassignments","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listavailableaccesspackages","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcatalogs","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listconnectedorganizations","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcontrolconfigurations","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourceenvironments","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerequests","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerolescopes","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresources","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listsubjects","IdentityGov"],
+["FAIL_401","identitygovernance_entitlementmanagement_identitygovernance_getentitlementmanagement","IdentityGov"],
+["FAIL_401","identitygovernance_identitygovernance_identitygovernance_identitygovernance_getidentitygovernance","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_getlifecycleworkflows","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_deleteditems_listworkflows","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_getdeleteditems","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_getinsights","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_getsettings","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_listcustomtaskextensions","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_listtaskdefinitions","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_listworkflows","IdentityGov"],
+["FAIL_401","identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_listworkflowtemplates","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_getprivilegedaccess","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_getgroup","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_group_listassignmentapprovals","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_group_listassignmentscheduleinstances","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_group_listassignmentschedulerequests","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_group_listassignmentschedules","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_group_listeligibilityscheduleinstances","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_group_listeligibilityschedulerequests","IdentityGov"],
+["FAIL_401","identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_group_listeligibilityschedules","IdentityGov"],
+["FAIL_401","identitygovernance_termsofusecontainer_identitygovernance_gettermsofuse","IdentityGov"],
+["FAIL_401","identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreementacceptances","IdentityGov"],
+["FAIL_401","identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreements","IdentityGov"],
+["FAIL_401","identityprotection_identityprotectionroot_identityprotection_identityprotectionroot_getidentityprotectionroot","IdentityProt"],
+["FAIL_401","identityprotection_riskdetection_identityprotection_listriskdetections","IdentityProt"],
+["FAIL_401","identityproviders_identityprovider_functions_identityproviders_availableprovidertypes","IdentityProviders"],
+["FAIL_401","identityproviders_identityprovider_identityproviders_identityprovider_listidentityprovider","IdentityProviders"],
+["FAIL_401","informationprotection_bitlocker_informationprotection_bitlocker_listrecoverykeys","InfoProtection"],
+["FAIL_401","informationprotection_bitlocker_informationprotection_getbitlocker","InfoProtection"],
+["FAIL_401","informationprotection_informationprotection_informationprotection_informationprotection_getinformationprotection","InfoProtection"],
+["FAIL_401","informationprotection_threatassessmentrequest_informationprotection_listthreatassessmentrequests","InfoProtection"],
+["FAIL_401","invitations_directoryobject_invitations_listinvitedusersponsors","Invitations"],
+["FAIL_401","invitations_invitation_invitations_invitation_listinvitation","Invitations"],
+["FAIL_401","invitations_user_invitations_getinviteduser","Invitations"],
+["FAIL_401","invitations_user_invitations_inviteduser_getmailboxsettings","Invitations"],
+["FAIL_401","invitations_user_invitations_inviteduser_listserviceprovisioningerrors","Invitations"],
+["FAIL_401","mail_inbox_mails_listmail","Mail"],
+["FAIL_401","mail_mails_listmail","Mail"],
+["FAIL_401","me_adhoccall_me_adhoccalls_getallrecordings","Me"],
+["FAIL_401","me_adhoccall_me_adhoccalls_getalltranscripts","Me"],
+["FAIL_401","me_adhoccall_me_listadhoccalls","Me"],
+["FAIL_401","me_agreementacceptance_me_listagreementacceptances","Me"],
+["FAIL_401","me_approleassignment_me_listapproleassignments","Me"],
+["FAIL_401","me_authentication_me_authentication_fido2methods_creationoptions","Me"],
+["FAIL_401","me_authentication_me_authentication_listemailmethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listexternalauthenticationmethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listfido2methods","Me"],
+["FAIL_401","me_authentication_me_authentication_listmethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listmicrosoftauthenticatormethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listoperations","Me"],
+["FAIL_401","me_authentication_me_authentication_listpasswordmethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listphonemethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listplatformcredentialmethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listsoftwareoathmethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listtemporaryaccesspassmethods","Me"],
+["FAIL_401","me_authentication_me_authentication_listwindowshelloforbusinessmethods","Me"],
+["FAIL_401","me_calendar_me_calendar_listcalendarpermissions","Me"],
+["FAIL_401","me_calendar_me_calendar_listevents","Me"],
+["FAIL_401","me_calendargroup_me_listcalendargroups","Me"],
+["FAIL_401","me_chat_me_chats_getallmessages","Me"],
+["FAIL_401","me_chat_me_chats_getallretainedmessages","Me"],
+["FAIL_401","me_cloudclipboardroot_me_cloudclipboard_listitems","Me"],
+["FAIL_401","me_cloudclipboardroot_me_getcloudclipboard","Me"],
+["FAIL_401","me_cloudpc_me_listcloudpcs","Me"],
+["FAIL_401","me_contactfolder_me_contactfolders_delta","Me"],
+["FAIL_401","me_contactfolder_me_listcontactfolders","Me"],
+["FAIL_401","me_devicemanagementtroubleshootingevent_me_listdevicemanagementtroubleshootingevents","Me"],
+["FAIL_401","me_directoryobject_me_getmanager","Me"],
+["FAIL_401","me_directoryobject_me_listcreatedobjects","Me"],
+["FAIL_401","me_directoryobject_me_listcreatedobjects_asserviceprincipal","Me"],
+["FAIL_401","me_directoryobject_me_listdirectreports_asorgcontact","Me"],
+["FAIL_401","me_directoryobject_me_listmemberof","Me"],
+["FAIL_401","me_directoryobject_me_listmemberof_asadministrativeunit","Me"],
+["FAIL_401","me_directoryobject_me_listmemberof_asdirectoryrole","Me"],
+["FAIL_401","me_directoryobject_me_listmemberof_asgroup","Me"],
+["FAIL_401","me_directoryobject_me_listowneddevices","Me"],
+["FAIL_401","me_directoryobject_me_listowneddevices_asapproleassignment","Me"],
+["FAIL_401","me_directoryobject_me_listowneddevices_asdevice","Me"],
+["FAIL_401","me_directoryobject_me_listowneddevices_asendpoint","Me"],
+["FAIL_401","me_directoryobject_me_listownedobjects","Me"],
+["FAIL_401","me_directoryobject_me_listownedobjects_asapplication","Me"],
+["FAIL_401","me_directoryobject_me_listownedobjects_asgroup","Me"],
+["FAIL_401","me_directoryobject_me_listownedobjects_asserviceprincipal","Me"],
+["FAIL_401","me_directoryobject_me_listrefsponsors","Me"],
+["FAIL_401","me_directoryobject_me_listregistereddevices","Me"],
+["FAIL_401","me_directoryobject_me_listregistereddevices_asapproleassignment","Me"],
+["FAIL_401","me_directoryobject_me_listregistereddevices_asdevice","Me"],
+["FAIL_401","me_directoryobject_me_listregistereddevices_asendpoint","Me"],
+["FAIL_401","me_directoryobject_me_listsponsors","Me"],
+["FAIL_401","me_directoryobject_me_listtransitivememberof","Me"],
+["FAIL_401","me_directoryobject_me_listtransitivememberof_asadministrativeunit","Me"],
+["FAIL_401","me_directoryobject_me_listtransitivememberof_asdirectoryrole","Me"],
+["FAIL_401","me_directoryobject_me_listtransitivememberof_asgroup","Me"],
+["FAIL_401","me_drive_me_listdrives","Me"],
+["FAIL_401","me_employeeexperienceuser_me_employeeexperience_listassignedroles","Me"],
+["FAIL_401","me_employeeexperienceuser_me_employeeexperience_listlearningcourseactivities","Me"],
+["FAIL_401","me_employeeexperienceuser_me_getemployeeexperience","Me"],
+["FAIL_401","me_extension_me_listextensions","Me"],
+["FAIL_401","me_inferenceclassification_me_inferenceclassification_listoverrides","Me"],
+["FAIL_401","me_iteminsights_me_getinsights","Me"],
+["FAIL_401","me_iteminsights_me_insights_listshared","Me"],
+["FAIL_401","me_iteminsights_me_insights_listtrending","Me"],
+["FAIL_401","me_iteminsights_me_insights_listused","Me"],
+["FAIL_401","me_licensedetails_me_licensedetails_getteamslicensingdetails","Me"],
+["FAIL_401","me_licensedetails_me_listlicensedetails","Me"],
+["FAIL_401","me_managedappregistration_me_listmanagedappregistrations","Me"],
+["FAIL_401","me_manageddevice_me_listmanageddevices","Me"],
+["FAIL_401","me_oauth2permissiongrant_me_listoauth2permissiongrants","Me"],
+["FAIL_401","me_onenote_me_onenote_listnotebooks","Me"],
+["FAIL_401","me_onenote_me_onenote_listoperations","Me"],
+["FAIL_401","me_onenote_me_onenote_listpages","Me"],
+["FAIL_401","me_onenote_me_onenote_listresources","Me"],
+["FAIL_401","me_onenote_me_onenote_listsectiongroups","Me"],
+["FAIL_401","me_onenote_me_onenote_listsections","Me"],
+["FAIL_401","me_onlinemeeting_me_listonlinemeetings","Me"],
+["FAIL_401","me_onlinemeeting_me_onlinemeetings_getallrecordings","Me"],
+["FAIL_401","me_onlinemeeting_me_onlinemeetings_getalltranscripts","Me"],
+["FAIL_401","me_onpremisessyncbehavior_me_getonpremisessyncbehavior","Me"],
+["FAIL_401","me_outlookuser_me_outlook_listmastercategories","Me"],
+["FAIL_401","me_outlookuser_me_outlook_supportedlanguages","Me"],
+["FAIL_401","me_outlookuser_me_outlook_supportedtimezones_5c4f","Me"],
+["FAIL_401","me_person_me_listpeople","Me"],
+["FAIL_401","me_profilephoto_me_listphotos","Me"],
+["FAIL_401","me_serviceprovisioningerror_me_listserviceprovisioningerrors","Me"],
+["FAIL_401","me_team_me_joinedteams_getallmessages","Me"],
+["FAIL_401","me_team_me_listjoinedteams","Me"],
+["FAIL_401","me_user_functions_me_exportdeviceandappmanagementdata_1a02","Me"],
+["FAIL_401","me_user_functions_me_getmanagedappdiagnosticstatuses","Me"],
+["FAIL_401","me_user_functions_me_getmanagedapppolicies","Me"],
+["FAIL_401","me_user_functions_me_getmanageddeviceswithappfailures","Me"],
+["FAIL_401","me_useractivity_me_listactivities","Me"],
+["FAIL_401","me_userdatasecurityandgovernance_me_datasecurityandgovernance_activities_listcontentactivities","Me"],
+["FAIL_401","me_userdatasecurityandgovernance_me_datasecurityandgovernance_getactivities","Me"],
+["FAIL_401","me_userdatasecurityandgovernance_me_datasecurityandgovernance_getprotectionscopes","Me"],
+["FAIL_401","me_userdatasecurityandgovernance_me_datasecurityandgovernance_listsensitivitylabels","Me"],
+["FAIL_401","me_userdatasecurityandgovernance_me_getdatasecurityandgovernance","Me"],
+["FAIL_401","me_usersettings_me_settings_getexchange","Me"],
+["FAIL_401","me_usersettings_me_settings_getiteminsights","Me"],
+["FAIL_401","me_usersettings_me_settings_getshiftpreferences","Me"],
+["FAIL_401","me_usersettings_me_settings_getstorage","Me"],
+["FAIL_401","me_usersettings_me_settings_getworkhoursandlocations","Me"],
+["FAIL_401","me_usersettings_me_settings_listwindows","Me"],
+["FAIL_401","me_usersettings_me_settings_storage_getquota","Me"],
+["FAIL_401","me_usersettings_me_settings_storage_quota_listservices","Me"],
+["FAIL_401","me_usersettings_me_settings_workhoursandlocations_listoccurrences","Me"],
+["FAIL_401","me_usersettings_me_settings_workhoursandlocations_listrecurrences","Me"],
+["FAIL_401","me_usersolutionroot_me_getsolutions","Me"],
+["FAIL_401","me_usersolutionroot_me_solutions_getworkingtimeschedule","Me"],
+["FAIL_401","me_userteamwork_me_teamwork_getallretainedtargetedmessages","Me"],
+["FAIL_401","me_userteamwork_me_teamwork_getalltargetedmessages","Me"],
+["FAIL_401","me_userteamwork_me_teamwork_listassociatedteams","Me"],
+["FAIL_401","me_userteamwork_me_teamwork_listinstalledapps","Me"],
+["FAIL_401","onlinemeetings_onlinemeetings_onlinemeetings_listmeetings","OnlineMeetings"],
+["FAIL_401","organization_organization_functions_organization_delta","Organization"],
+["FAIL_401","outlook_outlook_outlook_listmessages","Outlook"],
+["FAIL_401","permissiongrants_resourcespecificpermissiongrant_permissiongrants_resourcespecificpermissiongrant_listresourcespecificpermissiongrant","PermissionGrants"],
+["FAIL_401","places_place_places_place_listplace_asbuilding","Places"],
+["FAIL_401","places_place_places_place_listplace_asdesk","Places"],
+["FAIL_401","places_place_places_place_listplace_asfloor","Places"],
+["FAIL_401","places_place_places_place_listplace_asroom","Places"],
+["FAIL_401","places_place_places_place_listplace_asroomlist","Places"],
+["FAIL_401","places_place_places_place_listplace_assection","Places"],
+["FAIL_401","places_place_places_place_listplace_asworkspace","Places"],
+["FAIL_401","planner_plannerbucket_planner_listbuckets","Planner"],
+["FAIL_401","policies_activitybasedtimeoutpolicy_policies_listactivitybasedtimeoutpolicies","Policies"],
+["FAIL_401","policies_adminconsentrequestpolicy_policies_getadminconsentrequestpolicy","Policies"],
+["FAIL_401","policies_appmanagementpolicy_policies_listappmanagementpolicies","Policies"],
+["FAIL_401","policies_authenticationflowspolicy_policies_getauthenticationflowspolicy","Policies"],
+["FAIL_401","policies_authenticationmethodspolicy_policies_authenticationmethodspolicy_listauthenticationmethodconfigurations","Policies"],
+["FAIL_401","policies_authenticationmethodspolicy_policies_getauthenticationmethodspolicy","Policies"],
+["FAIL_401","policies_authenticationstrengthpolicy_policies_listauthenticationstrengthpolicies","Policies"],
+["FAIL_401","policies_claimsmappingpolicy_policies_listclaimsmappingpolicies","Policies"],
+["FAIL_401","policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_getdefault","Policies"],
+["FAIL_401","policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_gettemplates","Policies"],
+["FAIL_401","policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_listpartners","Policies"],
+["FAIL_401","policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_templates_getmultitenantorganizationidentitysynchronization","Policies"],
+["FAIL_401","policies_crosstenantaccesspolicy_policies_crosstenantaccesspolicy_templates_getmultitenantorganizationpartnerconfiguration","Policies"],
+["FAIL_401","policies_crosstenantaccesspolicy_policies_getcrosstenantaccesspolicy","Policies"],
+["FAIL_401","policies_deviceregistrationpolicy_policies_getdeviceregistrationpolicy","Policies"],
+["FAIL_401","policies_featurerolloutpolicy_policies_listfeaturerolloutpolicies","Policies"],
+["FAIL_401","policies_federatedtokenvalidationpolicy_policies_getfederatedtokenvalidationpolicy","Policies"],
+["FAIL_401","policies_homerealmdiscoverypolicy_policies_listhomerealmdiscoverypolicies","Policies"],
+["FAIL_401","policies_identitysecuritydefaultsenforcementpolicy_policies_getidentitysecuritydefaultsenforcementpolicy","Policies"],
+["FAIL_401","policies_ownerlessgrouppolicy_policies_getownerlessgrouppolicy","Policies"],
+["FAIL_401","policies_permissiongrantpolicy_policies_listpermissiongrantpolicies","Policies"],
+["FAIL_401","policies_policyroot_policies_policyroot_getpolicyroot","Policies"],
+["FAIL_401","policies_tenantappmanagementpolicy_policies_getdefaultappmanagementpolicy","Policies"],
+["FAIL_401","policies_tokenissuancepolicy_policies_listtokenissuancepolicies","Policies"],
+["FAIL_401","policies_tokenlifetimepolicy_policies_listtokenlifetimepolicies","Policies"],
+["FAIL_401","policies_unifiedrolemanagementpolicy_policies_listrolemanagementpolicies","Policies"],
+["FAIL_401","policies_unifiedrolemanagementpolicyassignment_policies_listrolemanagementpolicyassignments","Policies"],
+["FAIL_401","print_printconnector_print_listconnectors","Print"],
+["FAIL_401","print_printer_print_listprinters","Print"],
+["FAIL_401","print_printershare_print_listshares","Print"],
+["FAIL_401","print_printoperation_print_listoperations","Print"],
+["FAIL_401","print_printservice_print_listservices","Print"],
+["FAIL_401","print_printtaskdefinition_print_listtaskdefinitions","Print"],
+["FAIL_401","privacy_subjectrightsrequest_privacy_listsubjectrightsrequests","Privacy"],
+["FAIL_401","reports_authenticationmethodsroot_reports_authenticationmethods_listuserregistrationdetails","Reports"],
+["FAIL_401","reports_authenticationmethodsroot_reports_authenticationmethods_usersregisteredbyfeature_07f2","Reports"],
+["FAIL_401","reports_authenticationmethodsroot_reports_authenticationmethods_usersregisteredbymethod_d25d","Reports"],
+["FAIL_401","reports_authenticationmethodsroot_reports_getauthenticationmethods","Reports"],
+["FAIL_401","reports_partners_reports_getpartners","Reports"],
+["FAIL_401","reports_partners_reports_partners_billing_getreconciliation","Reports"],
+["FAIL_401","reports_partners_reports_partners_billing_getusage","Reports"],
+["FAIL_401","reports_partners_reports_partners_billing_listmanifests","Reports"],
+["FAIL_401","reports_partners_reports_partners_billing_listoperations","Reports"],
+["FAIL_401","reports_partners_reports_partners_billing_reconciliation_getbilled","Reports"],
+["FAIL_401","reports_partners_reports_partners_billing_reconciliation_getunbilled","Reports"],
+["FAIL_401","reports_partners_reports_partners_billing_usage_getbilled","Reports"],
+["FAIL_401","reports_partners_reports_partners_billing_usage_getunbilled","Reports"],
+["FAIL_401","reports_partners_reports_partners_getbilling","Reports"],
+["FAIL_401","reports_printusagebyprinter_reports_listdailyprintusagebyprinter","Reports"],
+["FAIL_401","reports_printusagebyprinter_reports_listmonthlyprintusagebyprinter","Reports"],
+["FAIL_401","reports_printusagebyuser_reports_listdailyprintusagebyuser","Reports"],
+["FAIL_401","reports_printusagebyuser_reports_listmonthlyprintusagebyuser","Reports"],
+["FAIL_401","reports_securityreportsroot_reports_getsecurity","Reports"],
+["FAIL_401","reports_securityreportsroot_reports_security_getattacksimulationrepeatoffenders","Reports"],
+["FAIL_401","reports_securityreportsroot_reports_security_getattacksimulationsimulationusercoverage","Reports"],
+["FAIL_401","reports_securityreportsroot_reports_security_getattacksimulationtrainingusercoverage","Reports"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listresourcenamespaces","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listroleassignments","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listroleassignmentscheduleinstances","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listroleassignmentschedulerequests","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listroleassignmentschedules","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listroledefinitions","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listroleeligibilityscheduleinstances","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listroleeligibilityschedulerequests","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_directory_listroleeligibilityschedules","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listresourcenamespaces","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleassignments","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleassignmentscheduleinstances","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleassignmentschedulerequests","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleassignmentschedules","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroledefinitions","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleeligibilityscheduleinstances","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleeligibilityschedulerequests","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleeligibilityschedules","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_getdirectory","RoleMgmt"],
+["FAIL_401","rolemanagement_rbacapplication_rolemanagement_getentitlementmanagement","RoleMgmt"],
+["FAIL_401","rolemanagement_rolemanagement_rolemanagement_rolemanagement_getrolemanagement","RoleMgmt"],
+["FAIL_401","scopedrolememberships_scopedrolemembership_scopedrolememberships_scopedrolemembership_listscopedrolemembership","ScopedRoles"],
+["FAIL_401","security_alert_security_listalerts_v2","Security"],
+["FAIL_401","security_attacksimulationroot_security_attacksimulation_listendusernotifications","Security"],
+["FAIL_401","security_attacksimulationroot_security_attacksimulation_listlandingpages","Security"],
+["FAIL_401","security_attacksimulationroot_security_attacksimulation_listloginpages","Security"],
+["FAIL_401","security_attacksimulationroot_security_attacksimulation_listoperations","Security"],
+["FAIL_401","security_attacksimulationroot_security_attacksimulation_listpayloads","Security"],
+["FAIL_401","security_attacksimulationroot_security_attacksimulation_listsimulationautomations","Security"],
+["FAIL_401","security_attacksimulationroot_security_attacksimulation_listsimulations","Security"],
+["FAIL_401","security_attacksimulationroot_security_attacksimulation_listtrainings","Security"],
+["FAIL_401","security_attacksimulationroot_security_getattacksimulation","Security"],
+["FAIL_401","security_auditcoreroot_security_auditlog_listqueries","Security"],
+["FAIL_401","security_auditcoreroot_security_getauditlog","Security"],
+["FAIL_401","security_casesroot_security_cases_listediscoverycases","Security"],
+["FAIL_401","security_casesroot_security_getcases","Security"],
+["FAIL_401","security_collaborationroot_security_collaboration_listanalyzedemails","Security"],
+["FAIL_401","security_collaborationroot_security_getcollaboration","Security"],
+["FAIL_401","security_identitycontainer_security_getidentities","Security"],
+["FAIL_401","security_identitycontainer_security_identities_getsensorcandidateactivationconfiguration","Security"],
+["FAIL_401","security_identitycontainer_security_identities_getsettings","Security"],
+["FAIL_401","security_identitycontainer_security_identities_listhealthissues","Security"],
+["FAIL_401","security_identitycontainer_security_identities_listidentityaccounts","Security"],
+["FAIL_401","security_identitycontainer_security_identities_listsensorcandidates","Security"],
+["FAIL_401","security_identitycontainer_security_identities_listsensors","Security"],
+["FAIL_401","security_identitycontainer_security_identities_sensors_getdeploymentaccesskey","Security"],
+["FAIL_401","security_identitycontainer_security_identities_sensors_getdeploymentpackageuri","Security"],
+["FAIL_401","security_identitycontainer_security_identities_settings_getautoauditingconfiguration","Security"],
+["FAIL_401","security_labelsroot_security_getlabels","Security"],
+["FAIL_401","security_labelsroot_security_labels_listauthorities","Security"],
+["FAIL_401","security_labelsroot_security_labels_listcategories","Security"],
+["FAIL_401","security_labelsroot_security_labels_listcitations","Security"],
+["FAIL_401","security_labelsroot_security_labels_listdepartments","Security"],
+["FAIL_401","security_labelsroot_security_labels_listfileplanreferences","Security"],
+["FAIL_401","security_labelsroot_security_labels_listretentionlabels","Security"],
+["FAIL_401","security_securescore_security_listsecurescores","Security"],
+["FAIL_401","security_securescorecontrolprofile_security_listsecurescorecontrolprofiles","Security"],
+["FAIL_401","security_security_security_security_getsecurity","Security"],
+["FAIL_401","security_subjectrightsrequest_security_listsubjectrightsrequests","Security"],
+["FAIL_401","security_tenantdatasecurityandgovernance_security_datasecurityandgovernance_getprotectionscopes","Security"],
+["FAIL_401","security_tenantdatasecurityandgovernance_security_datasecurityandgovernance_listsensitivitylabels","Security"],
+["FAIL_401","security_tenantdatasecurityandgovernance_security_getdatasecurityandgovernance","Security"],
+["FAIL_401","security_threatintelligence_security_getthreatintelligence","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listarticleindicators","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listarticles","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listhostcomponents","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listhostcookies","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listhostpairs","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listhostports","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listhosts","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listhostsslcertificates","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listhosttrackers","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listintelligenceprofileindicators","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listintelprofiles","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listpassivednsrecords","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listsslcertificates","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listsubdomains","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listvulnerabilities","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listwhoishistoryrecords","Security"],
+["FAIL_401","security_threatintelligence_security_threatintelligence_listwhoisrecords","Security"],
+["FAIL_401","security_triggersroot_security_gettriggers","Security"],
+["FAIL_401","security_triggersroot_security_triggers_listretentionevents","Security"],
+["FAIL_401","security_triggertypesroot_security_gettriggertypes","Security"],
+["FAIL_401","security_triggertypesroot_security_triggertypes_listretentioneventtypes","Security"],
+["FAIL_401","shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem","Shares"],
+["FAIL_401","sites_site_functions_sites_delta","Sites"],
+["FAIL_401","sites_site_functions_sites_getallsites","Sites"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listdriveinclusionrules","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunits","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunitsbulkadditionjobs","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listexchangeprotectionpolicies","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listexchangerestoresessions","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listmailboxinclusionrules","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunits","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunitsbulkadditionjobs","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessbrowsesessions","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessprotectionpolicies","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessrestoresessions","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listprotectionpolicies","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asdriveprotectionunit","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asmailboxprotectionunit","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_assiteprotectionunit","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listrestorepoints","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listrestoresessions","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listserviceapps","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listsharepointbrowsesessions","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listsharepointprotectionpolicies","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listsharepointrestoresessions","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listsiteinclusionrules","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunits","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunitsbulkadditionjobs","Solutions"],
+["FAIL_401","solutions_backuprestoreroot_solutions_getbackuprestore","Solutions"],
+["FAIL_401","solutions_bookingbusiness_solutions_listbookingbusinesses","Solutions"],
+["FAIL_401","solutions_bookingcurrency_solutions_listbookingcurrencies","Solutions"],
+["FAIL_401","solutions_solutionsroot_solutions_solutionsroot_getsolutionsroot","Solutions"],
+["FAIL_401","solutions_virtualeventsroot_solutions_getvirtualevents","Solutions"],
+["FAIL_401","solutions_virtualeventsroot_solutions_virtualevents_listevents","Solutions"],
+["FAIL_401","solutions_virtualeventsroot_solutions_virtualevents_listtownhalls","Solutions"],
+["FAIL_401","solutions_virtualeventsroot_solutions_virtualevents_listwebinars","Solutions"],
+["FAIL_401","storage_filestorage_storage_filestorage_listcontainers","Storage"],
+["FAIL_401","storage_filestorage_storage_filestorage_listcontainertyperegistrations","Storage"],
+["FAIL_401","storage_filestorage_storage_filestorage_listcontainertypes","Storage"],
+["FAIL_401","storage_filestorage_storage_filestorage_listdeletedcontainers","Storage"],
+["FAIL_401","storage_filestorage_storage_getfilestorage","Storage"],
+["FAIL_401","storage_storagesettings_storage_getsettings","Storage"],
+["FAIL_401","storage_storagesettings_storage_settings_getquota","Storage"],
+["FAIL_401","storage_storagesettings_storage_settings_quota_listservices","Storage"],
+["FAIL_401","subscriptions_subscription_subscriptions_subscription_listsubscription","Subscriptions"],
+["FAIL_401","teams_team_functions_teams_getallmessages","Teams"],
+["FAIL_401","teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate","TeamsTemplates"],
+["FAIL_401","teamwork_deletedchat_teamwork_listdeletedchats","Teamwork"],
+["FAIL_401","teamwork_deletedteam_teamwork_deletedteams_getallmessages","Teamwork"],
+["FAIL_401","teamwork_deletedteam_teamwork_listdeletedteams","Teamwork"],
+["FAIL_401","teamwork_teamsappsettings_teamwork_getteamsappsettings","Teamwork"],
+["FAIL_401","teamwork_teamwork_teamwork_teamwork_getteamwork","Teamwork"],
+["FAIL_401","teamwork_workforceintegration_teamwork_listworkforceintegrations","Teamwork"],
+["FAIL_401","tenantrelationships_delegatedadmincustomer_tenantrelationships_listdelegatedadmincustomers","TenantRel"],
+["FAIL_401","tenantrelationships_delegatedadminrelationship_tenantrelationships_listdelegatedadminrelationships","TenantRel"],
+["FAIL_401","tenantrelationships_multitenantorganization_tenantrelationships_getmultitenantorganization","TenantRel"],
+["FAIL_401","tenantrelationships_multitenantorganization_tenantrelationships_multitenantorganization_getjoinrequest","TenantRel"],
+["FAIL_401","tenantrelationships_multitenantorganization_tenantrelationships_multitenantorganization_listtenants","TenantRel"],
+["FAIL_401","tenantrelationships_tenantrelationship_tenantrelationships_tenantrelationship_gettenantrelationship","TenantRel"],
+["FAIL_401","todo_list_microsofttodo_lists_listtodo","Todo"],
+["FAIL_401","todo_todos_listtodo","Todo"],
+["FAIL_401","users_users_listusers","Users"],
+["FAIL_401","users_users_listusers_delta","Users"]
+];
+
+// Populate category filter
+const cats = [...new Set(DATA.map(r => r[2]))].sort();
+const catSel = document.getElementById('catFilter');
+cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
+
+function badge(status) {
+  const m = {'PASS':'badge-pass','FAIL_401':'badge-401','FAIL_403':'badge-403','FAIL_400':'badge-400','FAIL_404':'badge-404'};
+  return `<span class="badge ${m[status]||''}">${status}</span>`;
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = data.map((r, i) =>
+    `<tr><td>${i+1}</td><td><code>${r[1]}</code> <button class="copy-btn" onclick="copyOne(this,'${r[1]}')">copy</button></td><td>${badge(r[0])}</td><td class="cat">${r[2]}</td></tr>`
+  ).join('');
+  document.getElementById('resultCount').textContent = `${data.length} of ${DATA.length} tables`;
+}
+
+function filterTable() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const s = document.getElementById('statusFilter').value;
+  const c = document.getElementById('catFilter').value;
+  renderTable(DATA.filter(r =>
+    r[1].toLowerCase().includes(q) &&
+    (!s || r[0] === s) &&
+    (!c || r[2] === c)
+  ));
+}
+
+let sortCol = -1, sortAsc = true;
+function sortTable(col) {
+  if (sortCol === col) sortAsc = !sortAsc; else { sortCol = col; sortAsc = true; }
+  const filtered = getFiltered();
+  filtered.sort((a, b) => {
+    let va = a[col], vb = b[col];
+    if (col === 0) { va = parseInt(va); vb = parseInt(vb); }
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  });
+  renderTable(filtered);
+}
+
+function getFiltered() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const s = document.getElementById('statusFilter').value;
+  const c = document.getElementById('catFilter').value;
+  return DATA.filter(r =>
+    r[1].toLowerCase().includes(q) && (!s || r[0] === s) && (!c || r[2] === c)
+  );
+}
+
+function copyOne(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1200);
+  });
+}
+
+function copyVisible() {
+  const rows = getFiltered().map(r => `${r[0]}\t${r[1]}\t${r[2]}`).join('\n');
+  navigator.clipboard.writeText(rows).then(() => {
+    const btn = document.querySelector('.controls .btn');
+    btn.textContent = 'copied!'; btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'Copy Visible'; btn.style.color = ''; }, 1200);
+  });
+}
+
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// Initial render
+renderTable(DATA);
+</script>
 </body>
 </html>
