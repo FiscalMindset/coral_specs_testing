@@ -265,6 +265,81 @@ These tables are registered in `manifest.yaml` and appear in `information_schema
 
 ---
 
+## Re-test with Wide-Scope Token (29 Jul 2026)
+
+> Token: New app registration **`Coral Specs Testing Wide`** (App ID: `51d95acf-8764-497b-96b3-eb15d6e5a470`) granted delegated consent for **9 additional Graph scopes**: `AuditLog.Read.All`, `Directory.Read.All`, `Group.Read.All`, `Policy.Read.All`, `Reports.Read.All`, `SecurityEvents.Read.All`, `ThreatIntelligence.Read.All`, `User.Read.All`, `User.ReadBasic.All`.
+> Token expires: ~85 minutes after consent.
+
+Re-ran the **616 previously-failing** tables against Graph directly using the wide-scope token. Results:
+
+| Status | Before | After | Change |
+|--------|--------|-------|--------|
+| **PASS** | 0 | **15** | +15 ✅ |
+| `403_FORBIDDEN` | 171 | 154 | -17 (some moved to 404/PASS) |
+| `400_BADREQUEST` | 147 | 141 | -6 |
+| `401_UNAUTHORIZED` | 101 | 100 | -1 |
+| `404_NOT_FOUND` | 83 | 79 | -4 |
+| `500/503` | 0 | 11 | +11 (transient server errors) |
+| `skip` (TIMEOUT) | 12 | 115 | — |
+| `405_METHOD_NOT_ALLOWED` | 0 | 1 | +1 |
+
+**New total: 117 + 15 = 132 PASS (18%)**, 601 FAIL (82%).
+
+### 15 Endpoints Newly Granted (was 403, now PASS)
+
+| Table | Area | Response (first 80 chars) |
+|-------|------|--------------------------|
+| `grouplifecyclepolicies_grouplifecyclepolicy_grouplifecyclepolicies_grouplifecyclepolicy_listgrouplifecyclepolicy` | groupLifecyclePolicies | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#groupLifecyclePolicies","value":[]}` |
+| `identity_conditionalaccessroot_identity_conditionalaccess_authenticationstrength_listpolicies` | identity/conditionalAccess | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#identity/conditionalAccess/authenticati…` |
+| `identity_conditionalaccessroot_identity_conditionalaccess_listauthenticationcontextclassreferences` | identity/conditionalAccess | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#identity/conditionalAccess/authenticati…` |
+| `identitygovernance_appconsentapprovalroute_identitygovernance_appconsent_listappconsentrequests` | identityGovernance/appConsent | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#identityGovernance/appConsent/appConse…` |
+| `policies_adminconsentrequestpolicy_policies_getadminconsentrequestpolicy` | policies/adminConsentRequestPolicy | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#policies/adminConsentRequestPolicy/$en…` |
+| `policies_authenticationflowspolicy_policies_getauthenticationflowspolicy` | policies/authenticationFlowsPolicy | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#policies/authenticationFlowsPolicy/$en…` |
+| `policies_authenticationmethodspolicy_policies_getauthenticationmethodspolicy` | policies/authenticationMethodsPolicy | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#authenticationMethodsPolicy","id":"aut…` |
+| `policies_authenticationstrengthpolicy_policies_listauthenticationstrengthpolicies` | policies/authenticationStrengthPolicy | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#policies/authenticationStrengthPolicie…` |
+| `policies_deviceregistrationpolicy_policies_getdeviceregistrationpolicy` | policies/deviceRegistrationPolicy | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#policies/deviceRegistrationPolicy/$ent…` |
+| `policies_identitysecuritydefaultsenforcementpolicy_policies_getidentitysecuritydefaultsenforcementpolicy` | policies/identitySecurityDefaultsEnforcementPolicy | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#policies/identitySecurityDefaultsEnfor…` |
+| `security_alert_security_listalerts` | security/alerts | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#security/alerts","value":[]}` |
+| `security_attacksimulationroot_security_attacksimulation_listsimulationautomations` | security/attackSimulation | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#security/attackSimulation/simulationAu…` |
+| `security_attacksimulationroot_security_attacksimulation_listsimulations` | security/attackSimulation | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#security/attackSimulation/simulations"…` |
+| `security_attacksimulationroot_security_attacksimulation_listtrainings` | security/attackSimulation | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#security/attackSimulation/trainings",…` |
+| `security_securescorecontrolprofile_security_listsecurescorecontrolprofiles` | security/secureScoreControlProfiles | `{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#security/secureScoreControlProfiles",…` |
+
+### What Did NOT Improve (and Why)
+
+The remaining failures break down by **root cause**:
+
+| Cause | Count | Fixable by wider token? |
+|-------|-------|-------------------------|
+| `400_BADREQUEST` — endpoint needs `$filter`/`$select` params not sent by `SELECT *` | 141 | ❌ No — schema/code issue |
+| `404_NOT_FOUND` — endpoint path doesn't exist or is deprecated | 79 | ❌ No — manifest issue |
+| `401_UNAUTHORIZED` — endpoint needs **Exchange Online** or **SharePoint** scope (different resource) | 100 | ⚠️ Partially — would need a separate token for those resources |
+| `403_FORBIDDEN` (remaining) — needs additional Graph scopes (e.g., `IdentityGovernance.Read.All`, `PrivilegedAccess.Read.AzureAD`, `UserAuthenticationMethod.Read.All`, `IdentityRiskPrevention.Read.All`, `NetworkAccessPolicy.Read.All`, `ChannelMessage.Read.All`, `EduRoster.Read.All`) | 154 | ⚠️ Yes — would need to consent more scopes |
+| `500/503` — Graph server errors (transient) | 11 | ❌ No |
+| TIMEOUT — token may need refresh, or endpoint genuinely slow | 115 | ⏳ Need re-run |
+| `405_METHOD_NOT_ALLOWED` — wrong method on path | 1 | ❌ No |
+
+### Tenant-Level Blockers (Independent of Token)
+
+These endpoints returned `Authentication_RequestFromNonPremiumTenantOrB2CTenant` or `AADB2C` even with the correct scopes — they require **Entra ID P1/P2** or **Microsoft Defender** license that the Azure for Students tenant does not have:
+
+- `auditLogs/signIns` (Entra P1/P2)
+- `reports/authenticationMethods/userRegistrationDetails` (Entra P1/P2)
+- `security/threatIntelligence/intelProfiles` (Defender TI)
+- `identity/authenticationEventListeners`, `identity/customAuthenticationExtensions` (AADB2C feature blocked)
+- `me/authentication/*` (Entra P1/P2)
+- `education/classes` (Entra EDU)
+
+### Next Steps to Reduce FAILs Further
+
+1. **Run 3 with all 274 scopes** — extend consent to include `IdentityGovernance.Read.All`, `PrivilegedAccess.Read.*`, `EduRoster.Read.All`, `DeviceManagement*`, `CustomAuthenticationExtension.Read.All`, etc. Estimated additional gain: 30–60 PASS.
+2. **Re-test the 115 TIMEOUT tables** with a longer timeout + retry — some will likely move to PASS or 403.
+3. **Add Exchange Online + SharePoint resource tokens** — would unlock ~30 more (separate `az account get-access-token --resource https://outlook.office.com`).
+4. **Fix manifest for 79 × 404** — these are real bugs in the manifest (paths don't exist in Graph OpenAPI).
+5. **Add `coral_*` filter-aware test mode** — instead of bare `SELECT *`, use `?$select=<id>` and `?$top=1` for parameterized endpoints (turns ~141 × 400 into PASS).
+
+---
+
 ## Failure Details by Area
 
 | API Area | Total Tables | PASS | 403 | 400 | 401 | TBL_NOT_FOUND | ERR |
