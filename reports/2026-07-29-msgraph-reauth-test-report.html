@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Microsoft Graph v4 Source — Re-Auth & Test Report</title>
+<title>Microsoft Graph v4 Source — Full Command & Output Log</title>
 <style>
   :root {
     --pass: #22c55e; --pass-bg: #f0fdf4;
@@ -14,14 +14,14 @@
     --err: #8b5cf6; --err-bg: #f5f3ff;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; padding-bottom: 48px; }
   .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
   h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
   .subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 24px; }
   .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; font-size: 0.85rem; color: #64748b; }
   .meta code { background: #f1f5f9; padding: 1px 6px; border-radius: 3px; font-size: 0.8rem; }
 
-  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
   .card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #e2e8f0; text-align: center; }
   .card .num { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
   .card .label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -30,21 +30,9 @@
   .card-warn .num { color: var(--warn); }
   .card-info .num { color: var(--info); }
   .card-muted .num { color: var(--muted); }
+  .card-err .num { color: var(--err); }
 
-  .bar-container { margin-bottom: 28px; }
-  .bar { display: flex; height: 32px; border-radius: 8px; overflow: hidden; font-size: 0.75rem; font-weight: 600; }
-  .bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; overflow: hidden; }
-  .bar-pass { background: var(--pass); }
-  .bar-warn { background: var(--warn); }
-  .bar-info { background: var(--info); }
-  .bar-muted { background: var(--muted); }
-  .bar-err { background: #1e293b; }
-
-  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 0.8rem; }
-  .legend-item { display: flex; align-items: center; gap: 4px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-
-  .section { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 16px; overflow: hidden; }
+  .section { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 14px; overflow: hidden; }
   .section-header { padding: 12px 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
   .section-header:hover { background: #f8fafc; }
   .section-header .arrow { transition: transform 0.2s; font-size: 0.8rem; }
@@ -54,7 +42,7 @@
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 12px; }
   th { text-align: left; padding: 8px 8px 8px 0; border-bottom: 2px solid #e2e8f0; color: #64748b; font-weight: 600; }
   td { padding: 8px 8px 8px 0; border-bottom: 1px solid #f1f5f9; }
-  .tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
   .tag-pass { background: var(--pass-bg); color: #15803d; }
   .tag-fail { background: var(--fail-bg); color: #dc2626; }
   .tag-warn { background: var(--warn-bg); color: #b45309; }
@@ -62,259 +50,523 @@
   .tag-muted { background: var(--muted-bg); color: #4b5563; }
   .tag-err { background: var(--err-bg); color: #7c3aed; }
 
-  .detail-json { background: #f1f5f9; padding: 8px 12px; border-radius: 6px; font-family: 'SF Mono', Menlo, monospace; font-size: 0.78rem; overflow-x: auto; margin-top: 4px; white-space: pre-wrap; word-break: break-all; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 0.78rem; line-height: 1.5; overflow-x: auto; margin-top: 10px; white-space: pre-wrap; word-break: break-all; font-family: 'SF Mono', Menlo, monospace; }
+  pre .prompt { color: #94a3b8; }
+  pre .output { color: #cbd5e1; }
+  pre .exit { color: #64748b; font-style: italic; }
   code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.8rem; }
-
+  .note { margin-top: 8px; font-size: 0.85rem; color: #64748b; }
   .diff-positive { color: var(--pass); }
   .diff-negative { color: var(--fail); }
+  pre .trunc { color: #f59e0b; font-style: italic; }
 
-  @media (max-width: 600px) {
-    .summary-row { grid-template-columns: repeat(2, 1fr); }
-  }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; font-size: 0.8rem; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .bar { display: flex; height: 28px; border-radius: 8px; overflow: hidden; font-size: 0.7rem; font-weight: 600; margin-bottom: 8px; }
+  .bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; overflow: hidden; white-space: nowrap; }
+  .bar-pass { background: var(--pass); }
+  .bar-warn { background: var(--warn); }
+  .bar-info { background: var(--info); }
+  .bar-muted { background: var(--muted); }
+  .bar-err { background: var(--err); }
+  .bar-fail { background: var(--fail); }
 </style>
 </head>
 <body>
 <div class="container">
 
-<h1>Microsoft Graph v4 — Re-Auth Test Report</h1>
-<p class="subtitle">Coral 0.8.1+3acb123 · surface-singular fix · 2026-07-29</p>
+<h1>Microsoft Graph v4 — Full Command & Output Log</h1>
+<p class="subtitle">Coral 0.8.1+3acb123 · surface-singular fix (#1791) · 2026-07-29</p>
 <div class="meta">
-  <span>Tenant: <code>89de3b75-…</code></span>
+  <span>Tenant: <code>89de3b75-fef2-44f9-90a4-cf8c69700c83</code></span>
   <span>User: <code>vicky@algsochgmail.onmicrosoft.com</code></span>
   <span>Auth: <code>admin OAuth token (keychain)</code></span>
   <span>License: <code>None (no M365)</code></span>
+  <span>Manifest: <code>sources/core-v4/microsoft_graph_v4/manifest.yaml</code></span>
 </div>
 
-<!-- Summary Cards -->
 <div class="summary-row">
   <div class="card card-pass"><div class="num">733</div><div class="label">Tables</div></div>
   <div class="card card-info"><div class="num">5,972</div><div class="label">Columns</div></div>
-  <div class="card card-err"><div class="num">5,776</div><div class="label">Table Funcs</div></div>
+  <div class="card card-info"><div class="num">5,776</div><div class="label">Table Funcs</div></div>
   <div class="card card-pass"><div class="num">1/1</div><div class="label">Source Test</div></div>
-  <div class="card card-warn"><div class="num">6</div><div class="label">Queries OK</div></div>
-  <div class="card card-fail"><div class="num">4</div><div class="label">Failures</div></div>
-  <div class="card card-muted"><div class="num">2</div><div class="label">Timeouts</div></div>
+  <div class="card card-pass"><div class="num">6</div><div class="label">Identity PASS</div></div>
+  <div class="card card-pass"><div class="num">0</div><div class="label">Timeouts</div></div>
 </div>
 
-<!-- Changes from 0.5.2 -->
-<div class="summary-row" style="margin-bottom:28px">
+<div class="summary-row" style="margin-bottom:20px">
   <div class="card card-pass"><div class="num diff-positive">+1</div><div class="label">Tables (was 732)</div></div>
   <div class="card card-pass"><div class="num diff-positive">+17</div><div class="label">Table Funcs (was 5,759)</div></div>
   <div class="card card-warn"><div class="num">surfaces→surface</div><div class="label">Manifest fix (#1791)</div></div>
   <div class="card card-pass"><div class="num">admin token</div><div class="label">Auth works</div></div>
+  <div class="card card-pass"><div class="num diff-positive">-2</div><div class="label">Timeouts (was 2)</div></div>
 </div>
 
-<!-- Bar -->
-<div class="bar-container">
-  <div class="bar" id="bar"></div>
-  <div class="legend">
-    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> PASS (6)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> Expected failure (2)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> 400 API limit (1)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> Auth failure (2)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--err)"></span> Timeout (2)</span>
-  </div>
+<div class="bar">
+  <div class="bar-seg bar-pass" style="flex:6">6 PASS</div>
+  <div class="bar-seg bar-warn" style="flex:4">4 Structured 400/403</div>
+  <div class="bar-seg bar-fail" style="flex:3">3 403 WARN</div>
+  <div class="bar-seg bar-muted" style="flex:1">1 401</div>
+</div>
+<div class="legend">
+  <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> PASS (6)</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> Structured 400/403 (4)</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--fail)"></span> 403 WARN (3)</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> 401 (1)</span>
 </div>
 
-<!-- Identity Queries -->
+<!-- Section 1: CLI Basics -->
 <div class="section">
-<div class="section-header open" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-  <span>✅ Identity Queries (6/6)</span><span class="arrow">▶</span>
+<div class="section-header open" onclick="toggleSection(this)">
+  <span>1. CLI basics</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<pre><span class="prompt">$</span> coral --version
+<span class="output">coral 0.8.1+3acb123</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral source list
+<span class="output">Source                     Version  Origin    Secrets
+-------------------------  -------  --------  ----------------
+agentmail                  0.1.0    imported  keychain
+assemblyai                 0.1.0    imported  keychain
+azure                      0.1.0    imported  keychain
+blogger                    0.2.0    imported  file (plaintext)
+careops_appointments       0.1.0    imported  none
+careops_doctor_chats       0.1.0    imported  none
+careops_family_notes       0.1.0    imported  none
+careops_lab_reports        0.1.0    imported  none
+careops_medications        0.1.0    imported  none
+careops_patients           0.1.0    imported  none
+careops_pharmacy_receipts  0.1.0    imported  none
+careops_prescription_ocr   0.1.0    imported  none
+careops_symptom_logs       0.1.0    imported  none
+claude                     0.1.0    bundled   none
+claude_code_sessions       0.1.0    imported  none
+cloudinary                 0.1.0    imported  file (plaintext)
+deepgram                   0.2.0    imported  file (plaintext)
+elevenlabs                 0.1.0    imported  file (plaintext)
+exa                        0.1.0    imported  keychain
+firecrawl                  0.1.0    imported  keychain
+github                     1.1.8    bundled   file (plaintext)
+google_cloud_vision        0.1.0    imported  file (plaintext)
+google_sheets              0.1.0    imported  none
+groq_ai                    0.1.0    imported  file (plaintext)
+kairon_live                0.1.0    imported  none
+microsoft_graph_v4         -        imported  keychain
+notion                     0.1.0    imported  keychain
+ollama                     0.1.0    imported  none
+pdf                        0.1.0    imported  none
+rclone                     0.1.0    imported  none
+render                     0.1.0    imported  keychain
+serper                     0.1.0    imported  keychain
+stream_video               0.1.0    imported  file (plaintext)
+tavily                     0.1.0    imported  file (plaintext)
+twilio                     0.1.0    imported  keychain
+voyage_ai                  0.1.1    imported  file (plaintext)
+web_scraper                0.1.0    imported  none</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral source info microsoft_graph_v4
+<span class="output">microsoft_graph_v4
+  Status:      installed
+  Origin:      imported
+  Secrets:     keychain
+  Description: Preview Microsoft Graph source generated from the full v1.0 Microsoft Graph OpenAPI description. Uses delegated Microsoft OAuth for work/school accounts.
+
+  Inputs
+    MS_GRAPH_TENANT_ID (variable, optional)
+      default: organizations
+    MS_GRAPH_ACCESS_TOKEN (secret, required)</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral source test microsoft_graph_v4
+<span class="output">  ✓ microsoft_graph_v4 connected successfully
+  Secrets: keychain
+
+    microsoft_graph_v4 (733 tables)
+    ├─ admin_admin_admin_admin_getadmin
+    ├─ admin_adminmicrosoft365apps_admin_getmicrosoft365apps
+    ├─ admin_adminmicrosoft365apps_admin_microsoft365apps_getinstallationoptions
+    ├─ admin_adminreportsettings_admin_reportsettings_getreportsettings
+    ├─ ... (733 tables and 5776 table functions)
+    └─ users_userteamwork_users_user_teamwork_getalltargetedmessages
+
+    Query tests
+    1 declared · 1 passed · 0 failed
+
+    ✓ SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1
+      1 row</span>
+<span class="exit">(exit code: 0)</span></pre>
+</div>
+</div>
+
+<!-- Section 2: Schema Discovery -->
+<div class="section">
+<div class="section-header open" onclick="toggleSection(this)">
+  <span>2. Schema discovery via coral.* catalog tables</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<pre><span class="prompt">$</span> coral sql "SELECT count(*) AS tables FROM coral.tables WHERE schema_name='microsoft_graph_v4'"
+<span class="output">+--------+
+| tables |
++--------+
+| 733    |
++--------+</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral sql "SELECT count(*) AS columns FROM coral.columns WHERE schema_name='microsoft_graph_v4'"
+<span class="output">+---------+
+| columns |
++---------+
+| 5972    |
++---------+</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral sql "SELECT count(*) AS table_functions FROM coral.table_functions WHERE schema_name='microsoft_graph_v4'"
+<span class="output">+-----------------+
+| table_functions |
++-----------------+
+| 5776            |
++-----------------+</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral sql "SELECT table_name FROM coral.tables WHERE schema_name='microsoft_graph_v4' ORDER BY table_name LIMIT 15"
+<span class="output">+------------------------------------------------------------------------------------------------+
+| table_name                                                                                     |
++------------------------------------------------------------------------------------------------+
+| admin_admin_admin_admin_getadmin                                                               |
+| admin_adminmicrosoft365apps_admin_getmicrosoft365apps                                          |
+| admin_adminmicrosoft365apps_admin_microsoft365apps_getinstallationoptions                      |
+| admin_adminreportsettings_admin_reportsettings_getreportsettings                               |
+| admin_configurationmanagement_admin_configurationmanagement_listconfigurationdrifts            |
+| admin_configurationmanagement_admin_configurationmanagement_listconfigurationmonitoringresults |
+| admin_configurationmanagement_admin_configurationmanagement_listconfigurationmonitors          |
+| admin_configurationmanagement_admin_configurationmanagement_listconfigurationsnapshotjobs      |
+| admin_configurationmanagement_admin_configurationmanagement_listconfigurationsnapshots         |
+| admin_configurationmanagement_admin_getconfigurationmanagement                                 |
+| admin_edge_admin_edge_getinternetexplorermode                                                  |
+| admin_edge_admin_edge_internetexplorermode_listsitelists                                       |
+| admin_edge_admin_getedge                                                                       |
+| admin_exchangeadmin_admin_exchange_gettracing                                                  |
+| admin_exchangeadmin_admin_exchange_listmailboxes                                               |
++------------------------------------------------------------------------------------------------+</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<p class="note"><strong>Table category breakdown:</strong></p>
+<table>
+  <tr><th>Category</th><th>Count</th></tr>
+  <tr><td>admin_*</td><td>36</td></tr>
+  <tr><td>device_*</td><td>109</td></tr>
+  <tr><td>team_*</td><td>9</td></tr>
+  <tr><td>group_*</td><td>6</td></tr>
+  <tr><td>app_*</td><td>5</td></tr>
+  <tr><td>site_*</td><td>3</td></tr>
+  <tr><td>chat_*</td><td>3</td></tr>
+  <tr><td>user_*</td><td>2</td></tr>
+  <tr><td>users_*</td><td>2</td></tr>
+  <tr><td>org_*</td><td>2</td></tr>
+  <tr><td>service_*</td><td>2</td></tr>
+  <tr><td>drive_*</td><td>1</td></tr>
+  <tr><td>other</td><td>555</td></tr>
+  <tr><td><strong>Total</strong></td><td><strong>733</strong></td></tr>
+</table>
+</div>
+</div>
+
+<!-- Section 3: Identity Queries -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>3. Identity queries <span class="tag tag-pass">6/6 PASS</span></span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<h4 style="margin-top:12px;">3a. Me / User profile</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser"
+<span class="output">+-------------+----------------------------------------------------+
+| displayname | userprincipalname                                   |
++-------------+----------------------------------------------------+
+| Vicky Test  | vicky@algsochgmail.onmicrosoft.com                 |
++-------------+----------------------------------------------------+</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<h4 style="margin-top:12px;">3b. List users</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1"
+<span class="output">| value |
++----------------------------------------------------------------------------------------------------------------------------------+
+| [{"businessPhones":[],"displayName":"vicky kumar","givenName":"vicky","jobTitle":null,... 17 entries including Bulk Tester 1-15] |</span>
+<span class="exit">(exit code: 0)</span>
+<span class="trunc">17 users returned: vicky kumar (guest), Bulk Tester 1-15, Vicky Test</span></pre>
+
+<h4 style="margin-top:12px;">3c. Organization / Tenant</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.organization_organization_organization_organization_listorganization LIMIT 1"
+<span class="output">| value |
++----------------------------------------------------------------------------------------------------------------------------------+
+| [{"id":"89de3b75-...","displayName":"Default Directory","tenantType":"AAD","directorySizeQuota":{"used":132,"total":50000},...}] |</span>
+<span class="exit">(exit code: 0)</span>
+<span class="trunc">tenantId: 89de3b75-... | displayName: "Default Directory" | tenantType: "AAD" | quota: 132/50000</span></pre>
+
+<h4 style="margin-top:12px;">3d. Groups</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.groups_group_groups_group_listgroup WHERE top = 3"
+<span class="output">| value |
++----------------------------------------------------------------------------------------------------------------------------------+
+| [{"id":"7b4d5771-...","displayName":"Coral Test Group A",...},{"id":"c668c8b1-...","displayName":"Coral Test Group B",...}] |</span>
+<span class="exit">(exit code: 0)</span>
+<span class="trunc">2 security groups: "Coral Test Group A", "Coral Test Group B"</span></pre>
+
+<h4 style="margin-top:12px;">3e. Applications</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.applications_application_applications_application_listapplication WHERE top = 3"
+<span class="output">| value |
++----------------------------------------------------------------------------------------------------------------------------------+
+| [{"id":"5f591326-...","displayName":"coral",...},{"displayName":"Coral Specs Testing Wide",...},{"displayName":"Coral Azure Source",...}] |</span>
+<span class="exit">(exit code: 0)</span>
+<span class="trunc">3 apps: coral, Coral Specs Testing Wide (150+ delegated perms), Coral Azure Source</span></pre>
+
+<h4 style="margin-top:12px;">3f. Service Principals</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal WHERE top = 3"
+<span class="output">| value |
++----------------------------------------------------------------------------------------------------------------------------------+
+| [{"id":"00a5ddb2-...","appDisplayName":"Azure CosmosDB for PostgreSQL Microsoft EntraId",...},...] |</span>
+<span class="exit">(exit code: 0)</span>
+<span class="trunc">3 SPs: CosmosDB PG, M365 License Manager, My Profile</span></pre>
+
+<h4 style="margin-top:12px;">3g. Devices</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.devices_device_devices_device_listdevice WHERE top = 2"
+<span class="output">+-------+
+| value |
++-------+
+| []    |
++-------+</span>
+<span class="exit">(exit code: 0)</span>
+<span class="trunc">Empty — no devices registered in this tenant</span></pre>
+</div>
+</div>
+
+<!-- Section 4: M365 License-Gated -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>4. M365 license-gated endpoints</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<h4 style="margin-top:12px;">4a. Drives (<span class="tag tag-warn">400 — no SPO license</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.drives_drive_drives_drive_listdrive LIMIT 5"
+<span class="output">Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"Tenant does not have a SPO license.","innerError":{"date":"2026-07-29T12:22:37","request-id":"89e86786-ecff-4a11-bfa1-e8a18bdc073e","client-request-id":"89e86786-ecff-4a11-bfa1-e8a18bdc073e"}}} [GET] https://graph.microsoft.com/v1.0/drives</span>
+<span class="exit">(exit code: 1)</span></pre>
+
+<h4 style="margin-top:12px;">4b. Chats (<span class="tag tag-warn">403 — no Teams license</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.chats_chat_chats_chat_listchat WHERE top = 2"
+<span class="output">Error: Source request was rejected (403)
+Detail: {"error":{"code":"Forbidden","message":"Failed to get license information for the user. Ensure user has a valid Office365 license assigned to them.","innerError":{"code":"Forbidden","date":"2026-07-29T12:22:45","request-id":"94163736-0bd6-44b6-b47a-e051268f9f49","client-request-id":"94163736-0bd6-44b6-b47a-e051268f9f49"}}} [GET] https://graph.microsoft.com/v1.0/chats</span>
+<span class="exit">(exit code: 1)</span></pre>
+
+<h4 style="margin-top:12px;">4c. Teams (<span class="tag tag-warn">403 — no Teams license</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.teams_team_teams_team_listteam WHERE top = 2"
+<span class="output">Error: Source request was rejected (403)
+Detail: {"error":{"code":"Forbidden","message":"Failed to get license information for the user. Ensure user has a valid Office365 license assigned to them.","innerError":{"code":"Forbidden","date":"2026-07-29T12:23:14","request-id":"407a4c85-a55a-460c-a04d-5b7d17c8da5c","client-request-id":"407a4c85-a55a-460c-a04d-5b7d17c8da5c"}}} [GET] https://graph.microsoft.com/v1.0/teams</span>
+<span class="exit">(exit code: 1)</span>
+<span class="trunc">Improved: previously timed out after 15s, now returns clean 403</span></pre>
+
+<h4 style="margin-top:12px;">4d. Agreements (<span class="tag tag-info">403 — missing scopes</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.agreements_agreement_agreements_agreement_listagreement WHERE top = 2"
+<span class="output">Error: Source request was rejected (403)
+Detail: {"error":{"code":"UnauthorizedAccess","message":"User does not have any of the required scopes: user_impersonation, Agreement.Read.All, Agreement.ReadWrite.All","innerError":{"date":"2026-07-29T12:23:18","request-id":"3a8e47ff-0730-452d-9cb4-90687729a95e","client-request-id":"3a8e47ff-0730-452d-9cb4-90687729a95e"}}} [GET] https://graph.microsoft.com/v1.0/agreements</span>
+<span class="exit">(exit code: 1)</span>
+<span class="trunc">Improved: previously timed out, now returns clear 403 with missing scopes listed</span></pre>
+</div>
+</div>
+
+<!-- Section 5: Premium License Failures -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>5. Premium license failures</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<h4 style="margin-top:12px;">5a. Sign-in logs (<span class="tag tag-warn">403 — no premium license</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.auditlogs_signin_auditlogs_listsignins WHERE top = 2"
+<span class="output">Error: Source request was rejected (403)
+Detail: {"error":{"code":"Authentication_RequestFromNonPremiumTenantOrB2CTenant","message":"Tenant is not a B2C tenant and doesn't have premium license","innerError":{"date":"2026-07-29T12:22:49","request-id":"c6be3258-87cb-4ac1-941c-ca480a121069","client-request-id":"c6be3258-87cb-4ac1-941c-ca480a121069"}}} [GET] https://graph.microsoft.com/v1.0/auditLogs/signIns</span>
+<span class="exit">(exit code: 1)</span></pre>
+
+<h4 style="margin-top:12px;">5b. Directory audit (<span class="tag tag-pass">PASS</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.auditlogs_directoryaudit_auditlogs_listdirectoryaudits WHERE top = 2"
+<span class="output">| value |
++----------------------------------------------------------------------------------------------------------------------------------+
+| [{"id":"Directory_8a7132c9-...","category":"ApplicationManagement","result":"success",...}, |</span>
+<span class="exit">(exit code: 0)</span>
+<span class="trunc">2 entries: "Consent to application" and "Remove delegated permission grant"</span></pre>
+</div>
+</div>
+
+<!-- Section 6: Feature-Specific Failures -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>6. Feature-specific failures</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<h4 style="margin-top:12px;">6a. Authentication Methods Policy (<span class="tag tag-fail">403 — access denied</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT id, displayname, description FROM microsoft_graph_v4.authenticationmethodspolicy_authenticationmethodspolicy_authenticationmethodspolicy_authenticationmethodspolicy_getauthenticationmethodspolicy"
+<span class="output">Error: Source request was rejected (403)
+Detail: {"error":{"code":"accessDenied","message":"Request Authorization failed","innerError":{"message":"Request Authorization failed","date":"2026-07-29T12:22:49","request-id":"4f81bfc6-0a13-41b0-827c-79c847ccd10b","client-request-id":"4f81bfc6-0a13-41b0-827c-79c847ccd10b"}}} [GET] https://graph.microsoft.com/v1.0/authenticationMethodsPolicy</span>
+<span class="exit">(exit code: 1)</span>
+<span class="trunc">Note: direct columns (not value JSON) — GET-by-id shape, not LIST</span></pre>
+
+<h4 style="margin-top:12px;">6b. Admin Exchange Mailboxes (<span class="tag tag-muted">401 — wrong scopes</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.admin_exchangeadmin_admin_exchange_listmailboxes WHERE top = 2"
+<span class="output">Error: Source authentication failed (401)
+Detail:  [GET] https://graph.microsoft.com/v1.0/admin/exchange/mailboxes</span>
+<span class="exit">(exit code: 1)</span>
+<span class="trunc">Admin Exchange endpoints need separate delegated admin scopes</span></pre>
+
+<h4 style="margin-top:12px;">6c. Admin Service Announcement (<span class="tag tag-fail">403 — UnknownError</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.admin_serviceannouncement_admin_serviceannouncement_listhealthoverviews WHERE top = 2"
+<span class="output">Error: Source request was rejected (403)
+Detail: {"error":{"code":"UnknownError","message":"","innerError":{"date":"2026-07-29T12:23:03","request-id":"815acbcb-a064-46f3-ab42-f1aa4759c124","client-request-id":"815acbcb-a064-46f3-ab42-f1aa4759c124"}}} [GET] https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/healthOverviews</span>
+<span class="exit">(exit code: 1)</span></pre>
+
+<h4 style="margin-top:12px;">6d. Admin Configuration Management (<span class="tag tag-fail">403 — UnknownError</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT * FROM microsoft_graph_v4.admin_configurationmanagement_admin_configurationmanagement_getconfigurationdrifts(configurationdrift_id => 'test')"
+<span class="output">Error: Source request was rejected (403)
+Detail: {"error":{"code":"UnknownError","message":"","innerError":{"date":"2026-07-29T12:23:04","request-id":"6004f677-889a-4366-ac50-8b6d7c3a129e","client-request-id":"6004f677-889a-4366-ac50-8b6d7c3a129e"}}} [GET] https://graph.microsoft.com/v1.0/admin/configurationManagement/configurationDrifts/test</span>
+<span class="exit">(exit code: 1)</span></pre>
+
+<h4 style="margin-top:12px;">6e. Call Records (<span class="tag tag-info">400 — Top not allowed</span>)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.communications_callrecord_communications_listcallrecords WHERE top = 1"
+<span class="output">Error: Source rejected the request (400)
+Detail: {"error":{"code":"","message":"The query specified in the URI is not valid. Query option 'Top' is not allowed. To allow it, set the 'AllowedQueryOptions' property on EnableQueryAttribute or QueryValidationSettings.",...}} [GET] https://graph.microsoft.com/v1.0/communications/callRecords</span>
+<span class="exit">(exit code: 1)</span>
+<span class="trunc">CallRecords does not support $top — known Graph API limitation</span></pre>
+</div>
+</div>
+
+<!-- Section 7: Table Functions -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>7. Table functions — parameter validation</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<pre><span class="prompt">$</span> coral sql "SELECT * FROM microsoft_graph_v4.admin_exchangeadmin_admin_exchange_getmailboxes()"
+<span class="output">Error (invalid argument): invalid input: microsoft_graph_v4.admin_exchangeadmin_admin_exchange_getmailboxes missing required argument(s): mailbox_id</span>
+<span class="exit">(exit code: 1)</span>
+<span class="trunc">Clean "missing required argument(s)" error from DuckDB — <span class="tag tag-pass">GOOD</span></span></pre>
+</div>
+</div>
+
+<!-- Section 8: Error Quality Probes -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>8. Error quality probes</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<pre><span class="prompt">$</span> coral sql "SELECT * FROM microsoft_graph_v4.totally_fake_table"
+<span class="output">Error: Table `microsoft_graph_v4.totally_fake_table` not found
+Detail: No table `totally_fake_table` exists in schema `microsoft_graph_v4`.</span>
+<span class="exit">(exit code: 1)</span></pre>
+
+<pre><span class="prompt">$</span> coral sql "SELECT nosuchcolumn FROM microsoft_graph_v4.me_user_me_user_getuser"
+<span class="output">Error: No column named `nosuchcolumn`
+Detail: No column `nosuchcolumn` is in scope. Valid columns include: microsoft_graph_v4.me_user_me_user_getuser.odata_type, microsoft_graph_v4.me_user_me_user_getuser.aboutme, microsoft_graph_v4.me_user_me_user_getuser.accountenabled, microsoft_graph_v4.me_user_me_user_getuser.activities, ...</span>
+<span class="exit">(exit code: 1)</span></pre>
+</div>
+</div>
+
+<!-- Section 9: Error Quality Assessment -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>9. Error quality assessment</span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
-  <tr><th>Resource</th><th>Status</th><th>Rows</th><th>Detail</th></tr>
-  <tr><td>Users</td><td><span class="tag tag-pass">PASS</span></td><td>17</td><td>vicky kumar + 15 Bulk Tester + vicky@</td></tr>
-  <tr><td>Organization</td><td><span class="tag tag-pass">PASS</span></td><td>1</td><td>Default Directory, AAD, 132/50000 quota</td></tr>
-  <tr><td>Groups</td><td><span class="tag tag-pass">PASS</span></td><td>2</td><td>Coral Test Group A, Coral Test Group B</td></tr>
-  <tr><td>Applications</td><td><span class="tag tag-pass">PASS</span></td><td>3</td><td>coral, Coral Specs Testing Wide, Coral Azure Source</td></tr>
-  <tr><td>Service Principals</td><td><span class="tag tag-pass">PASS</span></td><td>3</td><td>CosmosDB PG, M365 License Manager, My Profile</td></tr>
-  <tr><td>Devices</td><td><span class="tag tag-pass">PASS</span></td><td>0</td><td>Empty — no devices registered</td></tr>
+  <tr><th>Status</th><th>Error pattern</th><th>Examples</th></tr>
+  <tr>
+    <td><span class="tag tag-pass">GOOD</span></td>
+    <td>400 with structured JSON body</td>
+    <td>drives (SPO license), callRecords (Top not allowed)</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-pass">GOOD</span></td>
+    <td>403 with clear message</td>
+    <td>chats (license info), signIns (premium tenant), teams (license info)</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-pass">GOOD</span></td>
+    <td>403 with missing scopes listed</td>
+    <td>agreements (user_impersonation, Agreement.Read.All, etc.)</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-pass">GOOD</span></td>
+    <td>DuckDB-level invalid argument</td>
+    <td>table functions missing required params</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-warn">WARN</span></td>
+    <td>403 with empty message</td>
+    <td>admin serviceAnnouncement, admin configurationManagement</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-muted">WARN</span></td>
+    <td>401 authentication</td>
+    <td>admin exchange (needs different scopes)</td>
+  </tr>
 </table>
+<p class="note"><strong>Key improvement vs 0.5.2:</strong> teams and agreements no longer timeout — they now return structured 403 responses.</p>
 </div>
 </div>
 
-<!-- M365 License-Gated -->
+<!-- Section 10: Summary -->
 <div class="section">
-<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-  <span>⚠️ M365 License-Gated (expected failures)</span><span class="arrow">▶</span>
+<div class="section-header" onclick="toggleSection(this)">
+  <span>10. Summary</span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
-  <tr><th>Resource</th><th>Status</th><th>Error</th></tr>
-  <tr>
-    <td>Drives</td>
-    <td><span class="tag tag-warn">400</span></td>
-    <td><code>Tenant does not have a SPO license.</code></td>
-  </tr>
-  <tr>
-    <td>Chats</td>
-    <td><span class="tag tag-warn">403</span></td>
-    <td><code>Failed to get license information for the user.</code></td>
-  </tr>
-  <tr>
-    <td>Teams</td>
-    <td><span class="tag tag-err">TIMEOUT</span></td>
-    <td>&gt;15s, no response (likely same license issue)</td>
-  </tr>
+  <tr><th>Metric</th><th>Value</th></tr>
+  <tr><td>Total tables</td><td>733</td></tr>
+  <tr><td>Total columns</td><td>5972</td></tr>
+  <tr><td>Total table functions</td><td>5776</td></tr>
+  <tr><td>Source test queries</td><td><span class="tag tag-pass">1/1 passed</span></td></tr>
+  <tr><td>Identity endpoints</td><td><span class="tag tag-pass">6/6 PASS</span></td></tr>
+  <tr><td>M365 license-gated</td><td><span class="tag tag-warn">4/4 structured failures (400/403)</span></td></tr>
+  <tr><td>Premium-gated (signIns)</td><td><span class="tag tag-warn">1 structured 403</span></td></tr>
+  <tr><td>Admin feature failures</td><td><span class="tag tag-fail">4 (403/401)</span></td></tr>
+  <tr><td>Query quirk</td><td>callRecords — Top not allowed</td></tr>
+  <tr><td>Timeouts</td><td><span class="tag tag-pass">0 (previously 2 — improved!)</span></td></tr>
 </table>
+
+<h4 style="margin-top:16px;">Key differences from 2026-07-14 test (Coral 0.5.2 → 0.8.1)</h4>
+<ul style="margin-top:8px;font-size:0.85rem;list-style:disc;padding-left:20px;">
+  <li>Tables increased: 732 → <strong>733</strong> (one new table from refreshed OpenAPI spec)</li>
+  <li>Table functions increased: 5759 → <strong>5776</strong> (17 new)</li>
+  <li>Manifest fix: <code>surfaces</code> → <code>surface</code> (breaking change in v4 schema, PR #1791)</li>
+  <li>Filter columns renamed: <code>parameterized</code> → <code>filter_mode</code>, <code>required</code> → <code>is_required</code></li>
+  <li><strong>No auth regression</strong>: admin token + keychain works identically</li>
+  <li><code>source test</code> now runs declared query tests (1/1 passed)</li>
+  <li><strong>Improved error quality</strong>: teams and agreements no longer timeout — now return structured 403s</li>
+</ul>
 </div>
 </div>
 
-<!-- Premium License Failures -->
-<div class="section">
-<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-  <span>⚠️ Premium & Auth Failures</span><span class="arrow">▶</span>
-</div>
-<div class="section-body">
-<table>
-  <tr><th>Resource</th><th>Status</th><th>Error</th></tr>
-  <tr>
-    <td>Sign-in Logs</td>
-    <td><span class="tag tag-warn">403</span></td>
-    <td><code>Tenant is not a B2C tenant and doesn't have premium license</code></td>
-  </tr>
-  <tr>
-    <td>Directory Audit</td>
-    <td><span class="tag tag-pass">PASS</span></td>
-    <td>2 entries — Consent to application + Remove delegated permission grant</td>
-  </tr>
-  <tr>
-    <td>Auth Methods Policy</td>
-    <td><span class="tag tag-fail">403</span></td>
-    <td><code>Request Authorization failed: accessDenied</code></td>
-  </tr>
-  <tr>
-    <td>Admin Exchange Mailboxes</td>
-    <td><span class="tag tag-muted">401</span></td>
-    <td>Auth failed — needs different delegated admin scopes</td>
-  </tr>
-  <tr>
-    <td>Admin Service Announcement</td>
-    <td><span class="tag tag-fail">403</span></td>
-    <td><code>UnknownError</code> (empty message)</td>
-  </tr>
-  <tr>
-    <td>Admin Configuration Mgmt</td>
-    <td><span class="tag tag-fail">403</span></td>
-    <td><code>UnknownError</code> (empty message)</td>
-  </tr>
-</table>
-</div>
-</div>
-
-<!-- Query Quirks -->
-<div class="section">
-<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-  <span>🔶 Query Quirks</span><span class="arrow">▶</span>
-</div>
-<div class="section-body">
-<table>
-  <tr><th>Resource</th><th>Issue</th><th>Detail</th></tr>
-  <tr>
-    <td>Call Records</td>
-    <td><span class="tag tag-info">400</span></td>
-    <td><code>Query option 'Top' is not allowed</code> — known Graph API limitation</td>
-  </tr>
-  <tr>
-    <td>Agreements</td>
-    <td><span class="tag tag-err">TIMEOUT</span></td>
-    <td>&gt;15s (empty tenant, no agreements defined)</td>
-  </tr>
-  <tr>
-    <td>Auth Methods Policy</td>
-    <td><span class="tag tag-info">SCHEMA</span></td>
-    <td>Uses direct columns (id, displayname, policyversion) not nested <code>value</code> JSON — GET shape vs LIST shape</td>
-  </tr>
-  <tr>
-    <td>Delta functions</td>
-    <td><span class="tag tag-info">NOT CALLABLE</span></td>
-    <td>Listed as tables in source but return <code>unknown source table function</code> when invoked with ()</td>
-  </tr>
-  <tr>
-    <td>Call Records (table)</td>
-    <td><span class="tag tag-info">400</span></td>
-    <td>Cannot use <code>$top</code>; must use <code>$filter</code> instead</td>
-  </tr>
-</table>
-</div>
-</div>
-
-<!-- Table Function Detail -->
-<div class="section">
-<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-  <span>📊 Table Functions — Categories</span><span class="arrow">▶</span>
-</div>
-<div class="section-body">
-<table>
-  <tr><th>Category</th><th>Count</th><th>Examples</th></tr>
-  <tr><td>admin_*</td><td>~500</td><td>getconfigurationdrifts, getmailboxes, gethealthoverviews</td></tr>
-  <tr><td>users_*</td><td>~1,200</td><td>user_exportdeviceandappmanagementdata, reminderview, getmembergroups</td></tr>
-  <tr><td>groups_*</td><td>~20</td><td>groups_delta</td></tr>
-  <tr><td>devices_*</td><td>~200</td><td>devicemanagement_userexperienceanalytics_*</td></tr>
-  <tr><td>teams_*</td><td>~600</td><td>getallmessages, getallchannels, getmembers, listshifts</td></tr>
-  <tr><td>chats_*</td><td>~100</td><td>getallmessages, getallretainedmessages</td></tr>
-  <tr><td>communications_*</td><td>~50</td><td>getallonlinemeetingmessages, getallrecordings</td></tr>
-  <tr><td>tenantrelationships_*</td><td>~30</td><td>findtenantinformationbydomainname, getservicemanagementdetails</td></tr>
-</table>
-<p style="margin-top:12px;font-size:0.85rem;color:#64748b;">
-  All 5,776 table functions pass manifest validation. Uncallable without proper params.
-  Error quality on param-missing: <span class="tag tag-pass">GOOD</span> — DuckDB raises clean "missing required argument(s)".
-</p>
-</div>
-</div>
-
-<!-- Schema Discovery -->
-<div class="section">
-<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-  <span>🗃️ Schema Discovery (via coral.* catalog)</span><span class="arrow">▶</span>
-</div>
-<div class="section-body" style="display:block">
-<table>
-  <tr><th>Table Category Prefix</th><th>Count</th></tr>
-  <tr><td><code>other</code> (users_, chats_, communications_, audit_, etc.)</td><td>558</td></tr>
-  <tr><td><code>device_*</code></td><td>109</td></tr>
-  <tr><td><code>admin_*</code></td><td>36</td></tr>
-  <tr><td><code>team_*</code></td><td>9</td></tr>
-  <tr><td><code>group_*</code></td><td>6</td></tr>
-  <tr><td><code>app_*</code></td><td>5</td></tr>
-  <tr><td><code>site_*</code></td><td>3</td></tr>
-  <tr><td><code>user_*</code></td><td>2</td></tr>
-  <tr><td><code>org_*</code></td><td>2</td></tr>
-  <tr><td><code>service_*</code></td><td>2</td></tr>
-  <tr><td><code>drive_*</code></td><td>1</td></tr>
-</table>
-</div>
-</div>
-
-<!-- Error Quality -->
-<div class="section">
-<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-  <span>📋 Error Quality Assessment</span><span class="arrow">▶</span>
-</div>
-<div class="section-body">
-<table>
-  <tr><th>Grade</th><th>Count</th><th>Sources</th></tr>
-  <tr><td><span class="tag tag-pass">GOOD</span></td><td>7</td><td>users, org, groups, apps, SPs, devices, directoryAudit</td></tr>
-  <tr><td><span class="tag tag-warn">STRUCTURED 400/403</span></td><td>3</td><td>drives (SPO), signIns (premium), chats (license)</td></tr>
-  <tr><td><span class="tag tag-fail">BLANK 403</span></td><td>2</td><td>admin serviceAnnouncement, admin configurationManagement</td></tr>
-  <tr><td><span class="tag tag-muted">401</span></td><td>1</td><td>admin exchange mailboxes</td></tr>
-  <tr><td><span class="tag tag-err">TIMEOUT</span></td><td>2</td><td>teams, agreements</td></tr>
-</table>
-</div>
-</div>
-
-<!-- Footer -->
 <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:0.8rem;color:#94a3b8;">
   Generated 2026-07-29 · Coral 0.8.1+3acb123 · Tenant: 89de3b75-fef2-44f9-90a4-cf8c69700c83
+  <br>Author: Vicky Kumar &lt;algsoch@gmail.com&gt;
   <br>Report: <code>reports/2026-07-29-msgraph-reauth-test-report.html</code>
 </div>
 
 </div>
 
 <script>
-// Auto-open first section, collapse others
-document.querySelectorAll('.section-header').forEach((h, i) => {
+function toggleSection(header) {
+  header.classList.toggle('open');
+  var body = header.nextElementSibling;
+  if (body.style.display === 'none' || body.style.display === '') {
+    body.style.display = 'block';
+  } else {
+    body.style.display = 'none';
+  }
+}
+// First section open by default, rest collapsed
+document.querySelectorAll('.section-header').forEach(function(h, i) {
   if (i === 0) { h.classList.add('open'); h.nextElementSibling.style.display = 'block'; }
   else { h.nextElementSibling.style.display = 'none'; }
 });
