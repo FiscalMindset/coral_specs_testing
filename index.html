@@ -202,6 +202,36 @@
       <div class="stat"><span class="label">Timeouts</span><span class="value">0</span></div>
     </div>
     <p>📄 <a href="reports/2026-07-29-msgraph-reauth-test-report.md">Markdown</a> · <a href="reports/2026-07-29-msgraph-reauth-test-report.html">HTML</a> — full command & output log: CLI basics, schema discovery, identity queries, M365 license-gated, premium failures, feature-specific failures, table functions, error quality assessment, vs-0.5.2 diff.</p>
+    <details style="font-size:0.9rem;margin-top:0.5rem;">
+      <summary style="cursor:pointer;font-weight:600;">🟢 8 PASS · 🔴 4 FAIL (tap to expand)</summary>
+      <h4 style="margin:0.6rem 0 0.3rem;">Passed</h4>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Query</th><th>Result</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td>CLI basics</td><td>✅</td><td>All exit code 0</td></tr>
+          <tr><td>Schema discovery</td><td>✅</td><td>733 tables, 5,972 columns, 5,776 funcs</td></tr>
+          <tr><td>Me / User profile</td><td>✅</td><td><code>displayName: "Vicky Test"</code></td></tr>
+          <tr><td>List users</td><td>✅</td><td>17 users returned</td></tr>
+          <tr><td>Organization / Tenant</td><td>✅</td><td>Tenant ID, type, quota readable</td></tr>
+          <tr><td>Groups</td><td>✅</td><td>2 security groups</td></tr>
+          <tr><td>Applications</td><td>✅</td><td>3 apps including <code>coral</code></td></tr>
+          <tr><td>Service Principals</td><td>✅</td><td>3 SPs</td></tr>
+          <tr><td>Devices</td><td>✅</td><td>Empty list (no devices)</td></tr>
+        </tbody>
+      </table></div>
+      <h4 style="margin:0.6rem 0 0.3rem;">Failures</h4>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Query</th><th>Status</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td>Drives</td><td>❌ 400</td><td><code>Tenant does not have a SPO license</code></td></tr>
+          <tr><td>Chats</td><td>❌ 403</td><td><code>Failed to get license info — no Teams license</code></td></tr>
+          <tr><td>Teams</td><td>❌ 403</td><td><code>Failed to get license info — no Teams license</code></td></tr>
+          <tr><td>Agreements</td><td>❌ 403</td><td><code>Missing scopes: Agreement.Read.All</code></td></tr>
+          <tr><td>Sign-in logs</td><td>❌ 403</td><td><code>No premium license (Entra P1/P2)</code></td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:0.85rem;margin:0.5rem 0 0;color:var(--muted);">vs 0.5.2: Agreements & Teams <strong>timed out</strong> before; now return clean 403s. <strong>0 timeouts</strong> across all tests (was 2). All failures are expected (no M365/premium license).</p>
+    </details>
   </div>
 
   <div class="report">

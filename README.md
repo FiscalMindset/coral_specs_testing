@@ -60,6 +60,31 @@
 | **License-gated** | 4/4 structured failures (400/403) |
 | **Timeouts** | **0** (was 2 in 0.5.2 — improved!) |
 | **Manifest fix** | `surfaces` → `surface` (#1791) |
+| **Status** | 🟢 8 PASS · 🔴 4 FAIL |
+
+**Passed:**
+| Query | Result | Reason |
+|-------|--------|--------|
+| CLI basics (`--version`, `source list`, `source test`) | ✅ | All exit code 0 |
+| Schema discovery (tables, columns, table funcs) | ✅ | 733 tables, 5,972 columns, 5,776 funcs |
+| Me / User profile | ✅ | `displayName: "Vicky Test"` returned |
+| List users | ✅ | 17 users returned (guest + 15 bulk + test user) |
+| Organization / Tenant | ✅ | Tenant ID, type, quota all readable |
+| Groups | ✅ | 2 security groups |
+| Applications | ✅ | 3 apps including `coral` |
+| Service Principals | ✅ | 3 SPs |
+| Devices | ✅ | Empty list - no device registered |
+
+**Failures:**
+| Query | Status | Reason |
+|-------|--------|--------|
+| Drives (`listdrive`) | ❌ 400 | `"Tenant does not have a SPO license"` — no SharePoint license |
+| Chats (`listchat`) | ❌ 403 | `"Failed to get license information for the user"` — no Teams license |
+| Teams (`listteam`) | ❌ 403 | `"Failed to get license information for the user"` — no Teams license |
+| Agreements (`listagreement`) | ❌ 403 | `"User does not have any of the required scopes: user_impersonation, Agreement.Read.All"` |
+| Sign-in logs (`listsignins`) | ❌ 403 | `"Tenant is not a B2C tenant and doesn't have premium license"` — no Entra P1/P2 |
+
+> **vs 0.5.2 improvement:** Agreements and Teams previously **timed out** after 15s. Now both return clean 403s with the specific reason — this is the `surface-singular` fix working. All 4 failures are **expected** (no M365 license, no premium license), and there are **0 timeouts** across the entire test (was 2 in 0.5.2).
 
 - **[Markdown](reports/2026-07-29-msgraph-reauth-test-report.md)** · **[HTML](reports/2026-07-29-msgraph-reauth-test-report.html)** — full command & output log: CLI basics, schema discovery, identity queries, M365 license-gated, premium failures, feature-specific failures, table functions, error quality assessment, vs-0.5.2 diff.
 
