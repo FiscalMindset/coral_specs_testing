@@ -299,6 +299,9 @@ function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function nl(s) {
+  return s.replace(/\\r\\n/g, '\n').replace(/\\r/g, '\n').replace(/\\n/g, '\n');
+}
 
 function badge(s) {
   var c = s.toLowerCase().replace('fail_','');
@@ -325,7 +328,7 @@ function renderRows(rows, total, startIdx) {
     h += '<td><button class="expand-btn" onclick="toggle(&quot;' + id + '&quot;)">' + (isPass ? 'View Output' : 'View Error') + '</button></td>';
     h += '</tr>';
     h += '<tr id="' + id + '" class="detail-row"><td colspan="4">';
-    h += '<div class="detail-label">Command</div><pre>' + esc(cmd) + '</pre>';
+    h += '<div class="detail-label">Command</div><pre>' + nl(esc(cmd)) + '</pre>';
     h += '<div class="detail-label">Exit Code: ' + r.exit_code + '</div>';
     if (isPass) {
       h += '<div class="detail-label">Output</div>';
@@ -334,13 +337,13 @@ function renderRows(rows, total, startIdx) {
         var parsed = JSON.parse(out);
         out = JSON.stringify(parsed, null, 2);
       } catch (e) {}
-      h += '<div class="pass-detail"><pre class="output">' + esc(out.slice(0, 5000)) + (out.length > 5000 ? '...' : '') + '</pre></div>';
+      h += '<div class="pass-detail"><pre class="output">' + nl(esc(out.slice(0, 5000))) + (out.length > 5000 ? '...' : '') + '</pre></div>';
     } else {
-      h += '<div class="error-detail">' + esc(r.detail) + '</div>';
+      h += '<div class="error-detail">' + nl(esc(r.detail)) + '</div>';
       var out2 = r.output || '';
       if (out2 && out2 !== 'No output data') {
         h += '<div class="detail-label">Raw Output</div>';
-        h += '<pre class="output">' + esc(out2.slice(0, 3000)) + (out2.length > 3000 ? '...' : '') + '</pre>';
+        h += '<pre class="output">' + nl(esc(out2.slice(0, 3000))) + (out2.length > 3000 ? '...' : '') + '</pre>';
       }
     }
     h += '</td></tr>';
