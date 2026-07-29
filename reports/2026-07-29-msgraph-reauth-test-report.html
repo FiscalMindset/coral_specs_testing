@@ -120,7 +120,7 @@
 <!-- Section 1: CLI Basics -->
 <div class="section">
 <div class="section-header open" onclick="toggleSection(this)">
-  <span>1. CLI basics</span><span class="arrow">▶</span>
+  <span>1. CLI basics <span class="tag tag-pass">PASS</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <pre><span class="prompt">$</span> coral --version
@@ -206,7 +206,7 @@ web_scraper                0.1.0    imported  none</span>
 <!-- Section 2: Schema Discovery -->
 <div class="section">
 <div class="section-header open" onclick="toggleSection(this)">
-  <span>2. Schema discovery via coral.* catalog tables</span><span class="arrow">▶</span>
+  <span>2. Schema discovery via coral.* catalog tables <span class="tag tag-pass">PASS</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <pre><span class="prompt">$</span> coral sql "SELECT count(*) AS tables FROM coral.tables WHERE schema_name='microsoft_graph_v4'"
@@ -346,7 +346,7 @@ web_scraper                0.1.0    imported  none</span>
 <!-- Section 4: M365 License-Gated -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>4. M365 license-gated endpoints</span><span class="arrow">▶</span>
+  <span>4. M365 license-gated endpoints <span class="tag tag-warn">4/4 structured 400/403</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <h4 style="margin-top:12px;">4a. Drives (<span class="tag tag-warn">400 — no SPO license</span>)</h4>
@@ -380,7 +380,7 @@ Detail: {"error":{"code":"UnauthorizedAccess","message":"User does not have any 
 <!-- Section 5: Premium License Failures -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>5. Premium license failures</span><span class="arrow">▶</span>
+  <span>5. Premium license failures <span class="tag tag-pass">1 PASS</span> <span class="tag tag-warn">1 403</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <h4 style="margin-top:12px;">5a. Sign-in logs (<span class="tag tag-warn">403 — no premium license</span>)</h4>
@@ -402,7 +402,7 @@ Detail: {"error":{"code":"Authentication_RequestFromNonPremiumTenantOrB2CTenant"
 <!-- Section 6: Feature-Specific Failures -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>6. Feature-specific failures</span><span class="arrow">▶</span>
+  <span>6. Feature-specific failures <span class="tag tag-fail">3 403</span> <span class="tag tag-muted">1 401</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <h4 style="margin-top:12px;">6a. Authentication Methods Policy (<span class="tag tag-fail">403 — access denied</span>)</h4>
@@ -443,7 +443,7 @@ Detail: {"error":{"code":"","message":"The query specified in the URI is not val
 <!-- Section 7: Table Functions -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>7. Table functions — parameter validation</span><span class="arrow">▶</span>
+  <span>7. Table functions — parameter validation <span class="tag tag-pass">GOOD</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <pre><span class="prompt">$</span> coral sql "SELECT * FROM microsoft_graph_v4.admin_exchangeadmin_admin_exchange_getmailboxes()"
@@ -456,7 +456,7 @@ Detail: {"error":{"code":"","message":"The query specified in the URI is not val
 <!-- Section 8: Error Quality Probes -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>8. Error quality probes</span><span class="arrow">▶</span>
+  <span>8. Error quality probes <span class="tag tag-pass">PASS</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <pre><span class="prompt">$</span> coral sql "SELECT * FROM microsoft_graph_v4.totally_fake_table"
@@ -474,7 +474,7 @@ Detail: No column `nosuchcolumn` is in scope. Valid columns include: microsoft_g
 <!-- Section 9: Error Quality Assessment -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>9. Error quality assessment</span><span class="arrow">▶</span>
+  <span>9. Error quality assessment <span class="tag tag-pass">4 GOOD</span> <span class="tag tag-warn">2 WARN</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
@@ -517,7 +517,7 @@ Detail: No column `nosuchcolumn` is in scope. Valid columns include: microsoft_g
 <!-- Section 10: Summary -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>10. Summary</span><span class="arrow">▶</span>
+  <span>10. Summary <span class="tag tag-pass">0 timeouts</span> <span class="tag tag-pass">+1 table</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
