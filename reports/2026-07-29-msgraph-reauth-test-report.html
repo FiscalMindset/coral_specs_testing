@@ -1491,15 +1491,93 @@ tenantrelationships_tenantrelationship_tenantrelationships_tenantrelationship_ge
 users_user_functions_users_delta
 users_user_users_user_listuser</pre>
 
-<h4>12.6 Verdict</h4>
+<h4>12.6 Genuine Spec Bugs (actionable by reviewer)</h4>
+<p>Tables where the Coral manifest endpoint, query, or audience is definitively wrong — not a license/permission/tenant issue. These need source-spec fixes.</p>
+
+<table>
+  <tr><th>Category</th><th>Count</th><th>Fix</th></tr>
+  <tr><td><span class="tag tag-fail">Wrong URL (No HTTP resource found)</span></td><td>13</td><td>Update endpoint path in manifest</td></tr>
+  <tr><td><span class="tag tag-fail">Deprecated/beta API</span></td><td>13</td><td>Remove or replace with v1.0 equivalent</td></tr>
+  <tr><td><span class="tag tag-fail">Wrong audience (not for AAD tenant)</span></td><td>12</td><td>Fix tenant type or remove</td></tr>
+  <tr><td><span class="tag tag-fail">Needs entityId parameter</span></td><td>4</td><td>Add required parameter to spec</td></tr>
+  <tr><td><span class="tag tag-fail">Unsupported query (search/delta)</span></td><td>3</td><td>Change query pattern in spec</td></tr>
+  <tr><td><strong>Total actionable</strong></td><td><strong>45</strong></td><td></td></tr>
+</table>
+
+<h4>12.6a Wrong URL (13)</h4>
+<pre style="max-height:150px;overflow-y:auto;">agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance
+filteroperators_filteroperatorschema_filteroperators_filteroperatorschema_listfilteroperatorschema
+functions_attributemappingfunctionschema_functions_attributemappingfunctionschema_listattributemappingfunctionschema
+identity_authenticationeventsflow_identity_listauthenticationeventsflows_asexternalusersselfservicesignupeventsflow
+identity_conditionalaccessroot_identity_conditionalaccess_getdeleteditems
+identity_identitycontainer_identity_identitycontainer_getidentitycontainer
+identity_riskpreventioncontainer_identity_getriskprevention
+identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackagesuggestions
+identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listavailableaccesspackages
+identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcontrolconfigurations
+identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerolescopes
+identitygovernance_termsofusecontainer_identitygovernance_gettermsofuse
+identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreementacceptances</pre>
+
+<h4>12.6b Deprecated/beta API (13)</h4>
+<pre style="max-height:150px;overflow-y:auto;">appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs
+chats_chat_functions_chats_getallmessages
+chats_chat_functions_chats_getallretainedmessages
+communications_adhoccall_communications_adhoccalls_getallrecordings
+communications_adhoccall_communications_adhoccalls_getalltranscripts
+communications_adhoccall_communications_listadhoccalls
+communications_onlinemeeting_communications_onlinemeetings_getallrecordings
+communications_onlinemeeting_communications_onlinemeetings_getalltranscripts
+copilot_aiinteractionhistory_copilot_getinteractionhistory
+copilot_aiinteractionhistory_copilot_interactionhistory_getallenterpriseinteractions
+copilot_aiuser_copilot_listusers
+teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate
+teamwork_deletedteam_teamwork_deletedteams_getallmessages</pre>
+
+<h4>12.6c Wrong audience (12)</h4>
+<pre style="max-height:150px;overflow-y:auto;">admin_configurationmanagement_admin_getconfigurationmanagement
+admin_edge_admin_edge_getinternetexplorermode
+admin_edge_admin_getedge
+admin_exchangeadmin_admin_getexchange
+admin_sharepoint_admin_getsharepoint
+admin_teamsadminroot_admin_getteams
+admin_teamsadminroot_admin_teams_getpolicy
+admin_teamsadminroot_admin_teams_gettelephonenumbermanagement
+copilot_copilotadmin_copilot_admin_getcatalog
+identity_identityverifiedidroot_identity_getverifiedid
+storage_filestorage_storage_getfilestorage
+storage_storagesettings_storage_getsettings</pre>
+
+<h4>12.6d Needs entityId parameter (4)</h4>
+<pre style="max-height:100px;overflow-y:auto;">certificatebasedauthconfiguration_certificatebasedauthconfiguration_*_list*
+communications_onlinemeeting_communications_listonlinemeetings
+permissiongrants_resourcespecificpermissiongrant_*_list*
+scopedrolememberships_scopedrolemembership_*_list*</pre>
+
+<h4>12.6e Unsupported query (3)</h4>
+<pre style="max-height:100px;overflow-y:auto;">directory_directoryobject_directory_listdeleteditems
+directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject
+directoryobjects_directoryobject_functions_directoryobjects_delta</pre>
+
+<h4>12.7 Verdict</h4>
 <table>
   <tr><th>Question</th><th>Answer</th></tr>
   <tr><td>Can app-only replace delegated auth?</td><td><span class="tag tag-fail">No</span> — they are complementary (82 common, 30 app-only, 47 delegated-only)</td></tr>
   <tr><td>Does app-only unlock anything new?</td><td><span class="tag tag-pass">Yes</span> — security, rolemanagement, users, places_room, serviceprincipals, etc.</td></tr>
   <tr><td>What does app-only miss vs delegated?</td><td><span class="tag tag-fail">47 tables</span> — all <code>me_*</code> (delegated-only endpoints), education</td></tr>
   <tr><td>Combined max coverage?</td><td><span class="tag tag-pass">159/733 (21.7%)</span> — up from ~15% with either method alone</td></tr>
+  <tr><td>Genuine spec bugs to fix?</td><td><span class="tag tag-fail">45 tables</span> — wrong URLs, deprecated APIs, wrong audience, missing params</td></tr>
 </table>
-<p class="note"><strong>Recommendation</strong>: Source should support <strong>both</strong> auth methods, or detect which token type is provided and route accordingly. The current manifest with a single secret input forces choosing one.</p>
+
+<h4>12.8 Making tokens permanent (avoiding expiry during long test runs)</h4>
+<p>63 tables failed with "Lifetime validation failed, the token is expired" during the 3.3h app-only run. This happens because Microsoft access tokens expire after <strong>~1 hour</strong> and Coral's SQL runner does not automatically refresh them mid-run.</p>
+<table>
+  <tr><th>Approach</th><th>Solution</th></tr>
+  <tr><td><strong>For app-only</strong></td><td>Coral should re-authenticate with client credentials when it gets a 401. If it doesn't, this is a <strong>Coral SDK bug</strong> — the Graph client should handle token refresh transparently.</td></tr>
+  <tr><td><strong>For delegated</strong></td><td>Use <code>offline_access</code> scope to get a refresh token (90-day lifetime). Coral must store it and use it to get fresh access tokens.</td></tr>
+  <tr><td><strong>Workaround (now)</strong></td><td>Split the test into smaller batches (e.g. 200 tables each). Each batch completes within the 1-hour access token window.</td></tr>
+</table>
+<p class="note"><strong>For the Coral source itself</strong>: The secret input accepts a token. If using app-only, store the client secret and let the provider handle re-authentication. If using delegated, store a refresh token (obtained with <code>offline_access</code>) and refresh before it expires (90 days). The 90-day refresh token is essentially "permanent" for testing purposes — just re-auth once per quarter.</p>
 
 </div>
 </div>

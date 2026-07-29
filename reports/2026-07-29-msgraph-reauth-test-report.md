@@ -1542,7 +1542,90 @@ users_user_functions_users_delta
 users_user_users_user_listuser
 ```
 
-### 12.6 Verdict
+### 12.6 Genuine Spec Bugs (actionable by reviewer)
+
+Tables where the Coral manifest endpoint, query, or audience is definitively wrong — not a license/permission/tenant issue.
+
+| Category | Count | Fix |
+|----------|-------|-----|
+| ❌ Wrong URL (No HTTP resource found) | 13 | Update endpoint path in manifest |
+| ❌ Deprecated/beta API | 13 | Remove or replace with v1.0 equivalent |
+| ❌ Wrong audience (not for AAD tenant) | 12 | Fix tenant type or remove |
+| ❌ Needs entityId parameter | 4 | Add required parameter to spec |
+| ❌ Unsupported query (search/delta) | 3 | Change query pattern in spec |
+| **Total actionable** | **45** | |
+
+#### 12.6a Wrong URL (13)
+
+```
+agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance
+filteroperators_filteroperatorschema_filteroperators_filteroperatorschema_listfilteroperatorschema
+functions_attributemappingfunctionschema_functions_attributemappingfunctionschema_listattributemappingfunctionschema
+identity_authenticationeventsflow_identity_listauthenticationeventsflows_asexternalusersselfservicesignupeventsflow
+identity_conditionalaccessroot_identity_conditionalaccess_getdeleteditems
+identity_identitycontainer_identity_identitycontainer_getidentitycontainer
+identity_riskpreventioncontainer_identity_getriskprevention
+identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackagesuggestions
+identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listavailableaccesspackages
+identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcontrolconfigurations
+identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerolescopes
+identitygovernance_termsofusecontainer_identitygovernance_gettermsofuse
+identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreementacceptances
+```
+
+#### 12.6b Deprecated/beta API (13)
+
+```
+appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs
+chats_chat_functions_chats_getallmessages
+chats_chat_functions_chats_getallretainedmessages
+communications_adhoccall_communications_adhoccalls_getallrecordings
+communications_adhoccall_communications_adhoccalls_getalltranscripts
+communications_adhoccall_communications_listadhoccalls
+communications_onlinemeeting_communications_onlinemeetings_getallrecordings
+communications_onlinemeeting_communications_onlinemeetings_getalltranscripts
+copilot_aiinteractionhistory_copilot_getinteractionhistory
+copilot_aiinteractionhistory_copilot_interactionhistory_getallenterpriseinteractions
+copilot_aiuser_copilot_listusers
+teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate
+teamwork_deletedteam_teamwork_deletedteams_getallmessages
+```
+
+#### 12.6c Wrong audience (12)
+
+```
+admin_configurationmanagement_admin_getconfigurationmanagement
+admin_edge_admin_edge_getinternetexplorermode
+admin_edge_admin_getedge
+admin_exchangeadmin_admin_getexchange
+admin_sharepoint_admin_getsharepoint
+admin_teamsadminroot_admin_getteams
+admin_teamsadminroot_admin_teams_getpolicy
+admin_teamsadminroot_admin_teams_gettelephonenumbermanagement
+copilot_copilotadmin_copilot_admin_getcatalog
+identity_identityverifiedidroot_identity_getverifiedid
+storage_filestorage_storage_getfilestorage
+storage_storagesettings_storage_getsettings
+```
+
+#### 12.6d Needs entityId parameter (4)
+
+```
+certificatebasedauthconfiguration_certificatebasedauthconfiguration_*_list*
+communications_onlinemeeting_communications_listonlinemeetings
+permissiongrants_resourcespecificpermissiongrant_*_list*
+scopedrolememberships_scopedrolemembership_*_list*
+```
+
+#### 12.6e Unsupported query (3)
+
+```
+directory_directoryobject_directory_listdeleteditems
+directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject
+directoryobjects_directoryobject_functions_directoryobjects_delta
+```
+
+### 12.7 Verdict
 
 | Question | Answer |
 |----------|--------|
@@ -1550,8 +1633,19 @@ users_user_users_user_listuser
 | Does app-only unlock anything new? | **Yes** — security, rolemanagement, users, places_room, serviceprincipals, etc. |
 | What does app-only miss vs delegated? | **47 tables** — all `me_*` (delegated-only endpoints), education |
 | Combined max coverage? | **159/733 (21.7%)** — up from ~15% with either method alone |
+| Genuine spec bugs to fix? | **45 tables** — wrong URLs, deprecated APIs, wrong audience, missing params |
 
-**Recommendation**: Source should support **both** auth methods, or detect which token type is provided and route accordingly. The current manifest with a single secret input forces choosing one.
+### 12.8 Making tokens permanent (avoiding expiry during long test runs)
+
+63 tables failed with "Lifetime validation failed, the token is expired" during the 3.3h app-only run. Microsoft access tokens expire after **~1 hour** and Coral's SQL runner does not auto-refresh mid-run.
+
+| Approach | Solution |
+|----------|----------|
+| **For app-only** | Coral should re-authenticate with client credentials on 401. If it doesn't, this is a **Coral SDK bug** — the Graph client should handle token refresh transparently. |
+| **For delegated** | Use `offline_access` scope to get a refresh token (90-day lifetime). Coral stores it and refreshes access tokens automatically. |
+| **Workaround (now)** | Split the test into smaller batches (e.g. 200 tables each). Each batch completes within the 1-hour access token window. |
+
+**For the source itself**: The secret input accepts a token. For app-only, store the client secret and let the provider handle re-auth. For delegated, store a refresh token (obtained with `offline_access`) — it lasts 90 days, essentially "permanent" for testing. Just re-auth quarterly.
 
 ---
 
