@@ -64,7 +64,8 @@ tr:hover { background: #161b22; }
 .detail-row.visible { display: table-row; }
 .detail-row td { padding: 16px 12px; background: #0d1117; }
 .detail-label { font-size: 11px; color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 4px; }
-pre, .output { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; background: #161b22; padding: 8px 12px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+pre, .output { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; background: #161b22; padding: 8px 12px; border-radius: 4px; overflow-x: auto; white-space: pre; }
+@media (max-width: 640px) { pre, .output { font-size: 10px; padding: 6px 8px; } }
 .output { max-height: 300px; overflow-y: auto; }
 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap; }
