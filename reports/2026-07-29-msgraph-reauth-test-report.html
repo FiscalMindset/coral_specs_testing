@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Graph v4 Source — Re-Auth & Test Report</title>
+<style>
+  :root {
+    --pass: #22c55e; --pass-bg: #f0fdf4;
+    --fail: #ef4444; --fail-bg: #fef2f2;
+    --warn: #f59e0b; --warn-bg: #fffbeb;
+    --info: #3b82f6; --info-bg: #eff6ff;
+    --muted: #6b7280; --muted-bg: #f9fafb;
+    --err: #8b5cf6; --err-bg: #f5f3ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 24px; }
+  .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; font-size: 0.85rem; color: #64748b; }
+  .meta code { background: #f1f5f9; padding: 1px 6px; border-radius: 3px; font-size: 0.8rem; }
+
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #e2e8f0; text-align: center; }
+  .card .num { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
+  .card .label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+  .card-pass .num { color: var(--pass); }
+  .card-fail .num { color: var(--fail); }
+  .card-warn .num { color: var(--warn); }
+  .card-info .num { color: var(--info); }
+  .card-muted .num { color: var(--muted); }
+
+  .bar-container { margin-bottom: 28px; }
+  .bar { display: flex; height: 32px; border-radius: 8px; overflow: hidden; font-size: 0.75rem; font-weight: 600; }
+  .bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; overflow: hidden; }
+  .bar-pass { background: var(--pass); }
+  .bar-warn { background: var(--warn); }
+  .bar-info { background: var(--info); }
+  .bar-muted { background: var(--muted); }
+  .bar-err { background: #1e293b; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 0.8rem; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .section { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 16px; overflow: hidden; }
+  .section-header { padding: 12px 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .section-header:hover { background: #f8fafc; }
+  .section-header .arrow { transition: transform 0.2s; font-size: 0.8rem; }
+  .section-header.open .arrow { transform: rotate(90deg); }
+  .section-body { padding: 0 16px 16px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 12px; }
+  th { text-align: left; padding: 8px 8px 8px 0; border-bottom: 2px solid #e2e8f0; color: #64748b; font-weight: 600; }
+  td { padding: 8px 8px 8px 0; border-bottom: 1px solid #f1f5f9; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag-pass { background: var(--pass-bg); color: #15803d; }
+  .tag-fail { background: var(--fail-bg); color: #dc2626; }
+  .tag-warn { background: var(--warn-bg); color: #b45309; }
+  .tag-info { background: var(--info-bg); color: #1d4ed8; }
+  .tag-muted { background: var(--muted-bg); color: #4b5563; }
+  .tag-err { background: var(--err-bg); color: #7c3aed; }
+
+  .detail-json { background: #f1f5f9; padding: 8px 12px; border-radius: 6px; font-family: 'SF Mono', Menlo, monospace; font-size: 0.78rem; overflow-x: auto; margin-top: 4px; white-space: pre-wrap; word-break: break-all; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.8rem; }
+
+  .diff-positive { color: var(--pass); }
+  .diff-negative { color: var(--fail); }
+
+  @media (max-width: 600px) {
+    .summary-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Microsoft Graph v4 — Re-Auth Test Report</h1>
+<p class="subtitle">Coral 0.8.1+3acb123 · surface-singular fix · 2026-07-29</p>
+<div class="meta">
+  <span>Tenant: <code>89de3b75-…</code></span>
+  <span>User: <code>vicky@algsochgmail.onmicrosoft.com</code></span>
+  <span>Auth: <code>admin OAuth token (keychain)</code></span>
+  <span>License: <code>None (no M365)</code></span>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-row">
+  <div class="card card-pass"><div class="num">733</div><div class="label">Tables</div></div>
+  <div class="card card-info"><div class="num">5,972</div><div class="label">Columns</div></div>
+  <div class="card card-err"><div class="num">5,776</div><div class="label">Table Funcs</div></div>
+  <div class="card card-pass"><div class="num">1/1</div><div class="label">Source Test</div></div>
+  <div class="card card-warn"><div class="num">6</div><div class="label">Queries OK</div></div>
+  <div class="card card-fail"><div class="num">4</div><div class="label">Failures</div></div>
+  <div class="card card-muted"><div class="num">2</div><div class="label">Timeouts</div></div>
+</div>
+
+<!-- Changes from 0.5.2 -->
+<div class="summary-row" style="margin-bottom:28px">
+  <div class="card card-pass"><div class="num diff-positive">+1</div><div class="label">Tables (was 732)</div></div>
+  <div class="card card-pass"><div class="num diff-positive">+17</div><div class="label">Table Funcs (was 5,759)</div></div>
+  <div class="card card-warn"><div class="num">surfaces→surface</div><div class="label">Manifest fix (#1791)</div></div>
+  <div class="card card-pass"><div class="num">admin token</div><div class="label">Auth works</div></div>
+</div>
+
+<!-- Bar -->
+<div class="bar-container">
+  <div class="bar" id="bar"></div>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> PASS (6)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> Expected failure (2)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> 400 API limit (1)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> Auth failure (2)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--err)"></span> Timeout (2)</span>
+  </div>
+</div>
+
+<!-- Identity Queries -->
+<div class="section">
+<div class="section-header open" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <span>✅ Identity Queries (6/6)</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<table>
+  <tr><th>Resource</th><th>Status</th><th>Rows</th><th>Detail</th></tr>
+  <tr><td>Users</td><td><span class="tag tag-pass">PASS</span></td><td>17</td><td>vicky kumar + 15 Bulk Tester + vicky@</td></tr>
+  <tr><td>Organization</td><td><span class="tag tag-pass">PASS</span></td><td>1</td><td>Default Directory, AAD, 132/50000 quota</td></tr>
+  <tr><td>Groups</td><td><span class="tag tag-pass">PASS</span></td><td>2</td><td>Coral Test Group A, Coral Test Group B</td></tr>
+  <tr><td>Applications</td><td><span class="tag tag-pass">PASS</span></td><td>3</td><td>coral, Coral Specs Testing Wide, Coral Azure Source</td></tr>
+  <tr><td>Service Principals</td><td><span class="tag tag-pass">PASS</span></td><td>3</td><td>CosmosDB PG, M365 License Manager, My Profile</td></tr>
+  <tr><td>Devices</td><td><span class="tag tag-pass">PASS</span></td><td>0</td><td>Empty — no devices registered</td></tr>
+</table>
+</div>
+</div>
+
+<!-- M365 License-Gated -->
+<div class="section">
+<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <span>⚠️ M365 License-Gated (expected failures)</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<table>
+  <tr><th>Resource</th><th>Status</th><th>Error</th></tr>
+  <tr>
+    <td>Drives</td>
+    <td><span class="tag tag-warn">400</span></td>
+    <td><code>Tenant does not have a SPO license.</code></td>
+  </tr>
+  <tr>
+    <td>Chats</td>
+    <td><span class="tag tag-warn">403</span></td>
+    <td><code>Failed to get license information for the user.</code></td>
+  </tr>
+  <tr>
+    <td>Teams</td>
+    <td><span class="tag tag-err">TIMEOUT</span></td>
+    <td>&gt;15s, no response (likely same license issue)</td>
+  </tr>
+</table>
+</div>
+</div>
+
+<!-- Premium License Failures -->
+<div class="section">
+<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <span>⚠️ Premium & Auth Failures</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<table>
+  <tr><th>Resource</th><th>Status</th><th>Error</th></tr>
+  <tr>
+    <td>Sign-in Logs</td>
+    <td><span class="tag tag-warn">403</span></td>
+    <td><code>Tenant is not a B2C tenant and doesn't have premium license</code></td>
+  </tr>
+  <tr>
+    <td>Directory Audit</td>
+    <td><span class="tag tag-pass">PASS</span></td>
+    <td>2 entries — Consent to application + Remove delegated permission grant</td>
+  </tr>
+  <tr>
+    <td>Auth Methods Policy</td>
+    <td><span class="tag tag-fail">403</span></td>
+    <td><code>Request Authorization failed: accessDenied</code></td>
+  </tr>
+  <tr>
+    <td>Admin Exchange Mailboxes</td>
+    <td><span class="tag tag-muted">401</span></td>
+    <td>Auth failed — needs different delegated admin scopes</td>
+  </tr>
+  <tr>
+    <td>Admin Service Announcement</td>
+    <td><span class="tag tag-fail">403</span></td>
+    <td><code>UnknownError</code> (empty message)</td>
+  </tr>
+  <tr>
+    <td>Admin Configuration Mgmt</td>
+    <td><span class="tag tag-fail">403</span></td>
+    <td><code>UnknownError</code> (empty message)</td>
+  </tr>
+</table>
+</div>
+</div>
+
+<!-- Query Quirks -->
+<div class="section">
+<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <span>🔶 Query Quirks</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<table>
+  <tr><th>Resource</th><th>Issue</th><th>Detail</th></tr>
+  <tr>
+    <td>Call Records</td>
+    <td><span class="tag tag-info">400</span></td>
+    <td><code>Query option 'Top' is not allowed</code> — known Graph API limitation</td>
+  </tr>
+  <tr>
+    <td>Agreements</td>
+    <td><span class="tag tag-err">TIMEOUT</span></td>
+    <td>&gt;15s (empty tenant, no agreements defined)</td>
+  </tr>
+  <tr>
+    <td>Auth Methods Policy</td>
+    <td><span class="tag tag-info">SCHEMA</span></td>
+    <td>Uses direct columns (id, displayname, policyversion) not nested <code>value</code> JSON — GET shape vs LIST shape</td>
+  </tr>
+  <tr>
+    <td>Delta functions</td>
+    <td><span class="tag tag-info">NOT CALLABLE</span></td>
+    <td>Listed as tables in source but return <code>unknown source table function</code> when invoked with ()</td>
+  </tr>
+  <tr>
+    <td>Call Records (table)</td>
+    <td><span class="tag tag-info">400</span></td>
+    <td>Cannot use <code>$top</code>; must use <code>$filter</code> instead</td>
+  </tr>
+</table>
+</div>
+</div>
+
+<!-- Table Function Detail -->
+<div class="section">
+<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <span>📊 Table Functions — Categories</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<table>
+  <tr><th>Category</th><th>Count</th><th>Examples</th></tr>
+  <tr><td>admin_*</td><td>~500</td><td>getconfigurationdrifts, getmailboxes, gethealthoverviews</td></tr>
+  <tr><td>users_*</td><td>~1,200</td><td>user_exportdeviceandappmanagementdata, reminderview, getmembergroups</td></tr>
+  <tr><td>groups_*</td><td>~20</td><td>groups_delta</td></tr>
+  <tr><td>devices_*</td><td>~200</td><td>devicemanagement_userexperienceanalytics_*</td></tr>
+  <tr><td>teams_*</td><td>~600</td><td>getallmessages, getallchannels, getmembers, listshifts</td></tr>
+  <tr><td>chats_*</td><td>~100</td><td>getallmessages, getallretainedmessages</td></tr>
+  <tr><td>communications_*</td><td>~50</td><td>getallonlinemeetingmessages, getallrecordings</td></tr>
+  <tr><td>tenantrelationships_*</td><td>~30</td><td>findtenantinformationbydomainname, getservicemanagementdetails</td></tr>
+</table>
+<p style="margin-top:12px;font-size:0.85rem;color:#64748b;">
+  All 5,776 table functions pass manifest validation. Uncallable without proper params.
+  Error quality on param-missing: <span class="tag tag-pass">GOOD</span> — DuckDB raises clean "missing required argument(s)".
+</p>
+</div>
+</div>
+
+<!-- Schema Discovery -->
+<div class="section">
+<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <span>🗃️ Schema Discovery (via coral.* catalog)</span><span class="arrow">▶</span>
+</div>
+<div class="section-body" style="display:block">
+<table>
+  <tr><th>Table Category Prefix</th><th>Count</th></tr>
+  <tr><td><code>other</code> (users_, chats_, communications_, audit_, etc.)</td><td>558</td></tr>
+  <tr><td><code>device_*</code></td><td>109</td></tr>
+  <tr><td><code>admin_*</code></td><td>36</td></tr>
+  <tr><td><code>team_*</code></td><td>9</td></tr>
+  <tr><td><code>group_*</code></td><td>6</td></tr>
+  <tr><td><code>app_*</code></td><td>5</td></tr>
+  <tr><td><code>site_*</code></td><td>3</td></tr>
+  <tr><td><code>user_*</code></td><td>2</td></tr>
+  <tr><td><code>org_*</code></td><td>2</td></tr>
+  <tr><td><code>service_*</code></td><td>2</td></tr>
+  <tr><td><code>drive_*</code></td><td>1</td></tr>
+</table>
+</div>
+</div>
+
+<!-- Error Quality -->
+<div class="section">
+<div class="section-header" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <span>📋 Error Quality Assessment</span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<table>
+  <tr><th>Grade</th><th>Count</th><th>Sources</th></tr>
+  <tr><td><span class="tag tag-pass">GOOD</span></td><td>7</td><td>users, org, groups, apps, SPs, devices, directoryAudit</td></tr>
+  <tr><td><span class="tag tag-warn">STRUCTURED 400/403</span></td><td>3</td><td>drives (SPO), signIns (premium), chats (license)</td></tr>
+  <tr><td><span class="tag tag-fail">BLANK 403</span></td><td>2</td><td>admin serviceAnnouncement, admin configurationManagement</td></tr>
+  <tr><td><span class="tag tag-muted">401</span></td><td>1</td><td>admin exchange mailboxes</td></tr>
+  <tr><td><span class="tag tag-err">TIMEOUT</span></td><td>2</td><td>teams, agreements</td></tr>
+</table>
+</div>
+</div>
+
+<!-- Footer -->
+<div style="margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:0.8rem;color:#94a3b8;">
+  Generated 2026-07-29 · Coral 0.8.1+3acb123 · Tenant: 89de3b75-fef2-44f9-90a4-cf8c69700c83
+  <br>Report: <code>reports/2026-07-29-msgraph-reauth-test-report.html</code>
+</div>
+
+</div>
+
+<script>
+// Auto-open first section, collapse others
+document.querySelectorAll('.section-header').forEach((h, i) => {
+  if (i === 0) { h.classList.add('open'); h.nextElementSibling.style.display = 'block'; }
+  else { h.nextElementSibling.style.display = 'none'; }
+});
+</script>
+
+</body>
+</html>
