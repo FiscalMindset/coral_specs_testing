@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coral Specs Testing — Vicky Kumar</title>
+<meta name="description" content="Real-world testing of the Coral microsoft_graph_v4 source connector — by Vicky Kumar (@FiscalMindset).">
+<meta name="author" content="Vicky Kumar (algsoch@gmail.com)">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #0f766e;
+    --code-bg: #f3f4f6;
+    --row-alt: #f9fafb;
+    --tag-pass: #22c55e;
+    --tag-pass-bg: #f0fdf4;
+    --tag-warn: #f59e0b;
+    --tag-warn-bg: #fffbeb;
+    --tag-blue: #3b82f6;
+    --tag-blue-bg: #eff6ff;
+    --tag-purple: #8b5cf6;
+    --tag-purple-bg: #f5f3ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --muted: #8b949e;
+      --border: #30363d;
+      --accent: #39d0a8;
+      --code-bg: #161b22;
+      --row-alt: #161b22;
+      --tag-pass-bg: #052e16;
+      --tag-warn-bg: #451a03;
+      --tag-blue-bg: #0c1929;
+      --tag-purple-bg: #1e0a30;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 4rem;
+  }
+  h1 { font-size: 1.9rem; margin: 0 0 0.25rem; line-height: 1.2; }
+  h2 { font-size: 1.25rem; margin-top: 2.25rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; margin-top: 1.5rem; }
+  p, li { word-wrap: break-word; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+  }
+  code { padding: 0.1em 0.35em; font-size: 0.9em; }
+  pre {
+    padding: 0.85rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    border: 1px solid var(--border);
+  }
+  pre code { background: transparent; padding: 0; }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 0.75rem 0 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    min-width: 380px;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+  .badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    vertical-align: middle;
+    margin-left: 0.4rem;
+  }
+  .badge-pass { background: var(--tag-pass-bg); color: var(--tag-pass); }
+  .badge-warn { background: var(--tag-warn-bg); color: var(--tag-warn); }
+  .badge-blue { background: var(--tag-blue-bg); color: var(--tag-blue); }
+  .badge-purple { background: var(--tag-purple-bg); color: var(--tag-purple); }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.5rem;
+    margin: 0.75rem 0 1rem;
+  }
+  .stat {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.55rem 0.7rem;
+    background: var(--code-bg);
+  }
+  .stat .label { display: block; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat .value { display: block; font-size: 1.05rem; font-weight: 600; margin-top: 0.15rem; word-break: break-word; }
+  .report {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin: 0.75rem 0 1rem;
+    background: var(--code-bg);
+  }
+  .report h3 { margin: 0 0 0.35rem; font-size: 1rem; display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+  .report p { margin: 0.35rem 0; font-size: 0.92rem; }
+  .avatar { border-radius: 50%; vertical-align: middle; }
+  .hero { text-align: center; margin-bottom: 1.5rem; }
+  .hero img { border-radius: 50%; margin-bottom: 0.5rem; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+  footer { margin-top: 2.5rem; font-size: 0.85rem; color: var(--muted); text-align: center; }
+  @media (max-width: 520px) {
+    h1 { font-size: 1.55rem; }
+    h2 { font-size: 1.1rem; }
+    main { padding: 1rem 0.85rem 3rem; }
+    table { font-size: 0.85rem; min-width: 320px; }
+    .stat .value { font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <div class="hero">
+    <a href="https://github.com/FiscalMindset"><img src="https://github.com/FiscalMindset.png?size=100" width="100" height="100" alt="Vicky Kumar avatar" class="avatar"></a>
+    <h1>🐠 Coral Specs Testing</h1>
+    <p><strong>Real-world testing of the <a href="https://github.com/withcoral/coral">Coral</a> <code>microsoft_graph_v4</code> source connector — by <a href="https://github.com/FiscalMindset">Vicky Kumar (@FiscalMindset)</a>.</strong></p>
+    <p>
+      <span class="badge badge-pass">733 tables</span>
+      <span class="badge badge-blue">5,776 table funcs</span>
+      <span class="badge badge-pass">6/6 identity PASS</span>
+      <span class="badge badge-pass">0 timeouts</span>
+      <span class="badge badge-purple">reports frozen</span>
+    </p>
+    <p style="font-size:0.85rem;color:var(--muted);">Live repo: <a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a></p>
+  </div>
+
+  <hr>
+
+  <h2>👤 About the tester</h2>
+  <div class="table-wrap"><table>
+    <tbody>
+      <tr><th>Name</th><td>Vicky Kumar</td></tr>
+      <tr><th>GitHub</th><td><a href="https://github.com/FiscalMindset">@FiscalMindset</a> (commits also authored as <code>npdimagine</code>)</td></tr>
+      <tr><th>Emails</th><td><code>npdimagine@gmail.com</code> (personal) · <code>algsoch@gmail.com</code> (admin / Entra tenant)</td></tr>
+      <tr><th>Project</th><td>withcoral/coral — testing <code>microsoft_graph_v4</code> source connector (Microsoft Graph API via Coral)</td></tr>
+      <tr><th>Reporting repo</th><td><a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a> (public)</td></tr>
+      <tr><th>Contacts</th><td>Matt Henderson (hired) · Andrea Ambu (engineer; receives reports)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>🔐 Microsoft account in use</h2>
+  <div class="table-wrap"><table>
+    <tbody>
+      <tr><th>Tenant</th><td><code>algsochgmail.onmicrosoft.com</code> (Azure for Students)</td></tr>
+      <tr><th>Tenant ID</th><td><code>89de3b75-fef2-44f9-90a4-cf8c69700c83</code></td></tr>
+      <tr><th>Admin account</th><td><code>algsoch@gmail.com</code> (Global Administrator)</td></tr>
+      <tr><th>Test user</th><td><code>vicky@algsochgmail.onmicrosoft.com</code></td></tr>
+      <tr><th>Sign-in methods</th><td>Interactive OAuth (keychain) · <code>az</code> admin token (1h)</td></tr>
+      <tr><th>Coral app ID</th><td><code>4eedabf0-b27e-4c98-ac7b-4c7f5d504bee</code></td></tr>
+      <tr><th>License state</th><td>No M365 — identity works, file/Teams endpoints return structured errors</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>📊 Reports</h2>
+  <p>Each report has a matching <code>.md</code> (raw) and <code>.html</code> (responsive) version. Reports are <strong>frozen</strong> once committed.</p>
+
+  <div class="report" style="border-left:4px solid var(--tag-pass);">
+    <h3>🆕 2026-07-29 — Re-auth test: Coral 0.8.1 / surface-singular fix <span class="badge badge-pass">current</span></h3>
+    <div class="stats">
+      <div class="stat"><span class="label">Coral</span><span class="value">0.8.1</span></div>
+      <div class="stat"><span class="label">Tables</span><span class="value">733</span></div>
+      <div class="stat"><span class="label">Table funcs</span><span class="value">5,776</span></div>
+      <div class="stat"><span class="label">Identity</span><span class="value">6/6 PASS</span></div>
+      <div class="stat"><span class="label">Timeouts</span><span class="value">0</span></div>
+    </div>
+    <p>📄 <a href="reports/2026-07-29-msgraph-reauth-test-report.md">Markdown</a> · <a href="reports/2026-07-29-msgraph-reauth-test-report.html">HTML</a> — full command & output log: CLI basics, schema discovery, identity queries, M365 license-gated, premium failures, feature-specific failures, table functions, error quality assessment, vs-0.5.2 diff.</p>
+  </div>
+
+  <div class="report">
+    <h3>2026-07-14 — Microsoft Graph v4 connector: no-license test battery <span class="badge badge-blue">Complete</span></h3>
+    <div class="stats">
+      <div class="stat"><span class="label">Date (UTC)</span><span class="value">2026-07-14</span></div>
+      <div class="stat"><span class="label">Time taken</span><span class="value">~3h 40m</span></div>
+      <div class="stat"><span class="label">Commands</span><span class="value">39</span></div>
+      <div class="stat"><span class="label">Output lines</span><span class="value">612</span></div>
+    </div>
+    <p>📄 <a href="reports/2026-07-14-msgraph-connector-test-report.md">Markdown</a> · <a href="reports/2026-07-14-msgraph-connector-test-report.html">HTML</a> — install, OAuth, materialization, query ergonomics, error UX, performance, catalog search findings.</p>
+    <p>📄 <a href="reports/2026-07-14-full-command-output-log.md">Markdown</a> · <a href="reports/2026-07-14-full-command-output-log.html">HTML</a> — every coral command run verbatim with actual output and exit code.</p>
+    <p>📄 <a href="reports/2026-07-14-directory-data-test-log.md">Markdown</a> · <a href="reports/2026-07-14-directory-data-test-log.html">HTML</a> — real-data testing without M365 license: 18 users + 2 groups queried through the connector.</p>
+  </div>
+
+  <h2>🧪 Test environment</h2>
+  <ul>
+    <li><strong>Coral CLI</strong> <code>0.5.2+cf744bd</code> (Jul 14) → <code>0.8.1+3acb123</code> (Jul 29) — macOS + Linux (Ubuntu droplet)</li>
+    <li><strong>Microsoft Entra</strong> test tenant (Azure for Students), delegated OAuth, admin-consented</li>
+    <li><strong>No M365 license</strong> — identity queries work; file/Teams endpoints return structured 400/403 errors (no timeouts)</li>
+  </ul>
+
+  <h2>📐 Reporting rules (enforced)</h2>
+  <ul>
+    <li>Responsive HTML renders + matching <code>.md</code> source for every report.</li>
+    <li><strong>No fake data, no placeholders</strong> — every value from a real run.</li>
+    <li><strong>Frozen reports</strong> — never modify existing reports; new testing → new file.</li>
+    <li><strong>Author:</strong> <code>Vicky Kumar &lt;algsoch@gmail.com&gt;</code> — no AI/Claude co-author trailer.</li>
+  </ul>
+
+  <footer>
+    Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-07-29
+  </footer>
+</main>
+</body>
+</html>
