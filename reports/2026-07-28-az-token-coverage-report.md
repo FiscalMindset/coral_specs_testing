@@ -1,18 +1,30 @@
-# Microsoft Graph v4 Source — API Coverage Report
+# Microsoft Graph v4 Source — API Coverage Report (v3)
 
 > Test: `SELECT * FROM microsoft_graph_v4.<table> LIMIT 1` on all 733 registered tables
-> Token: Azure CLI `az account get-access-token --resource https://graph.microsoft.com`
-> Date: 28 Jul 2026
+> Token: Azure CLI `az account get-access-token --resource https://graph.microsoft.com` (initial 117 PASS) + custom app **Coral Specs Testing Wide** (66 Graph delegated scopes, +51 PASS)
+> Date: 28-29 Jul 2026
 
 ---
 
-## Summary
+## Summary (Final v3)
 
-| Metric | Value |
-|--------|-------|
-| Total tables tested | 733 |
-| **PASS** | **117 (16%)** |
-| FAIL | 616 (84%) |
+| Metric | Initial | v3 | Change |
+|--------|---------|-------|--------|
+| Total tables tested | 733 | 733 | — |
+| **PASS** | **117 (16%)** | **168 (22.9%)** | **+51** ✅ |
+| FAIL | 616 (84%) | 565 (77.1%) | -51 |
+
+### Results by Category (v3)
+
+| Result | Count | Meaning |
+|--------|-------|---------|
+| `OK` | 168 | Query succeeded — endpoint is accessible |
+| `403_FORBIDDEN` | 125 | Token lacks required delegated permission scope |
+| `400_BADREQUEST` | 183 | API requires parameters (id, $filter, $select) not sent in `SELECT * LIMIT 1` |
+| `401_UNAUTHORIZED` | 89 | Token lacks required app role or is unauthorized |
+| `TABLE_NOT_FOUND` | 95 | Endpoint path doesn't exist in Graph OpenAPI |
+| `500/503/429/405` | 16 | Server/throttling/method errors |
+| Other | 57 | Various |
 
 ### Results by Category
 
@@ -337,6 +349,107 @@ These endpoints returned `Authentication_RequestFromNonPremiumTenantOrB2CTenant`
 3. **Add Exchange Online + SharePoint resource tokens** — would unlock ~30 more (separate `az account get-access-token --resource https://outlook.office.com`).
 4. **Fix manifest for 79 × 404** — these are real bugs in the manifest (paths don't exist in Graph OpenAPI).
 5. **Add `coral_*` filter-aware test mode** — instead of bare `SELECT *`, use `?$select=<id>` and `?$top=1` for parameterized endpoints (turns ~141 × 400 into PASS).
+
+---
+
+## Re-test #2 with Full-Scope Token (v3 — 29 Jul 2026)
+
+> Token: Same app `Coral Specs Testing Wide` but consent extended to **66 Graph delegated scopes** (was 9). User re-consented via localhost OAuth listener.
+
+Re-ran the **616 previously-failing** tables against Graph directly. Results:
+
+| Status | v2 | v3 | Change |
+|--------|----------|----------|--------|
+| **PASS** | 15 | **66** | +51 ✅ |
+| `403_FORBIDDEN` | 154 | 125 | -29 |
+| `400_BADREQUEST` | 141 | 183 | (was 141, but new 42 newly visible) |
+| `401_UNAUTHORIZED` | 100 | 89 | -11 |
+| `404_NOT_FOUND` | 79 | 95 | +16 |
+| `500/503/429/405` | 11 | 16 | +5 |
+
+**New total: 117 + 66 = 168 PASS (22.9%)**, 565 FAIL (77.1%).
+
+### 51 NEW Tables That Now PASS (v3 Unlocked)
+
+| # | Table | Scope that unlocked it |
+|---|-------|------------------------|
+| 1 | `admin_peopleadminsettings_admin_getpeople` | `PeopleSettings.Read.All` |
+| 2 | `admin_peopleadminsettings_admin_people_getpronouns` | `PeopleSettings.Read.All` |
+| 3 | `admin_peopleadminsettings_admin_people_listprofilecardproperties` | `PeopleSettings.Read.All` |
+| 4 | `admin_peopleadminsettings_admin_people_listprofilepropertysettings` | `PeopleSettings.Read.All` |
+| 5 | `admin_peopleadminsettings_admin_people_listprofilesources` | `PeopleSettings.Read.All` |
+| 6 | `admin_serviceannouncement_admin_serviceannouncement_listhealthoverviews` | `Reports.Read.All` |
+| 7 | `admin_serviceannouncement_admin_serviceannouncement_listissues` | `Reports.Read.All` |
+| 8 | `copilot_copilotreportroot_copilot_getreports` | `Reports.Read.All` |
+| 9 | `education_educationclass_education_classes_delta` | `EduRoster.Read` |
+| 10 | `education_educationschool_education_schools_delta` | `EduRoster.Read` |
+| 11 | `education_educationuser_education_getme` | `EduRoster.Read` |
+| 12 | `education_educationuser_education_me_getuser` | `EduRoster.Read` |
+| 13 | `education_educationuser_education_me_listclasses` | `EduRoster.Read` |
+| 14 | `education_educationuser_education_me_listschools` | `EduRoster.Read` |
+| 15 | `education_educationuser_education_me_listtaughtclasses` | `EduRoster.Read` |
+| 16 | `education_educationuser_education_me_user_listserviceprovisioningerrors` | `EduRoster.Read` |
+| 17 | `grouplifecyclepolicies_grouplifecyclepolicy_grouplifecyclepolicies_grouplifecyclepolicy_listgrouplifecyclepolicy` | `Directory.Read.All` |
+| 18 | `identity_conditionalaccessroot_identity_conditionalaccess_authenticationstrength_listpolicies` | `Policy.Read.All` |
+| 19 | `identity_conditionalaccessroot_identity_conditionalaccess_listauthenticationcontextclassreferences` | `Policy.Read.All` |
+| 20 | `identity_identityproviderbase_identity_identityproviders_availableprovidertypes` | `IdentityProvider.Read.All` |
+| 21 | `identity_identityproviderbase_identity_listidentityproviders` | `IdentityProvider.Read.All` |
+| 22 | `identitygovernance_accessreviewset_identitygovernance_accessreviews_listhistorydefinitions` | `AccessReview.Read.All` |
+| 23 | `identitygovernance_appconsentapprovalroute_identitygovernance_appconsent_listappconsentrequests` | `Policy.Read.All` |
+| 24 | `identityproviders_identityprovider_functions_identityproviders_availableprovidertypes` | `IdentityProvider.Read.All` |
+| 25 | `identityproviders_identityprovider_identityproviders_identityprovider_listidentityprovider` | `IdentityProvider.Read.All` |
+| 26 | `me_authentication_me_authentication_listemailmethods` | `UserAuthenticationMethod.Read.All` |
+| 27 | `me_authentication_me_authentication_listexternalauthenticationmethods` | `UserAuthenticationMethod.Read.All` |
+| 28 | `me_authentication_me_authentication_listfido2methods` | `UserAuthenticationMethod.Read.All` |
+| 29 | `me_authentication_me_authentication_listmethods` | `UserAuthenticationMethod.Read.All` |
+| 30 | `me_authentication_me_authentication_listmicrosoftauthenticatormethods` | `UserAuthenticationMethod.Read.All` |
+| 31 | `me_authentication_me_authentication_listpasswordmethods` | `UserAuthenticationMethod.Read.All` |
+| 32 | `me_authentication_me_authentication_listphonemethods` | `UserAuthenticationMethod.Read.All` |
+| 33 | `me_authentication_me_authentication_listsoftwareoathmethods` | `UserAuthenticationMethod.Read.All` |
+| 34 | `me_authentication_me_authentication_listtemporaryaccesspassmethods` | `UserAuthenticationMethod.Read.All` |
+| 35 | `me_authentication_me_authentication_listwindowshelloforbusinessmethods` | `UserAuthenticationMethod.Read.All` |
+| 36 | `me_drive_me_listdrives` | `Files.Read.All` |
+| 37 | `me_person_me_listpeople` | `People.Read` |
+| 38 | `policies_adminconsentrequestpolicy_policies_getadminconsentrequestpolicy` | `Policy.Read.All` |
+| 39 | `policies_authenticationflowspolicy_policies_getauthenticationflowspolicy` | `Policy.Read.All` |
+| 40 | `policies_authenticationmethodspolicy_policies_getauthenticationmethodspolicy` | `Policy.Read.All` |
+| 41 | `policies_authenticationstrengthpolicy_policies_listauthenticationstrengthpolicies` | `Policy.Read.All` |
+| 42 | `policies_deviceregistrationpolicy_policies_getdeviceregistrationpolicy` | `Policy.Read.All` |
+| 43 | `policies_identitysecuritydefaultsenforcementpolicy_policies_getidentitysecuritydefaultsenforcementpolicy` | `Policy.Read.All` |
+| 44 | `security_alert_security_listalerts` | `SecurityAlert.Read.All` (implicit from SecurityEvents.Read.All) |
+| 45 | `security_attacksimulationroot_security_attacksimulation_listsimulationautomations` | `AttackSimulation.Read.All` (was missing in v2) |
+| 46 | `security_attacksimulationroot_security_attacksimulation_listsimulations` | `AttackSimulation.Read.All` |
+| 47 | `security_attacksimulationroot_security_attacksimulation_listtrainings` | `AttackSimulation.Read.All` |
+| 48 | `security_securescore_security_listsecurescores` | `SecurityEvents.Read.All` |
+| 49 | `security_securescorecontrolprofile_security_listsecurescorecontrolprofiles` | `SecurityEvents.Read.All` |
+| 50 | `users_user_functions_users_delta` | `User.Read.All` |
+| 51 | `users_user_users_user_listuser` | `User.Read.All` |
+
+### What Did NOT Improve (and Why)
+
+| Cause | v2 Count | v3 Count | Notes |
+|-------|----------|----------|-------|
+| `400_BADREQUEST` — endpoint needs `$filter`/`$select` params not in `SELECT *` | 141 | 183 | +42 newly surfaced (some were hidden behind 403/timeout before) |
+| `404_NOT_FOUND` — endpoint path doesn't exist | 79 | 95 | +16 newly surfaced (manifest issue) |
+| `401_UNAUTHORIZED` — needs Exchange Online / SharePoint scope | 100 | 89 | -11 from getting more Graph scopes |
+| `403_FORBIDDEN` (remaining) | 154 | 125 | -29, but most remaining still need MORE scopes |
+| `500/503/429/405` | 11 | 16 | transient / rate limit |
+
+### Top Failure URL Areas After v3 (still failing)
+
+| URL Area | Count | What's needed |
+|----------|-------|---------------|
+| `solutions/backupRestore` | 28 | Tenant lacks SharePoint/OneDrive BackupRestore license |
+| `identityGovernance/entitlementManagement` | 17 | `EntitlementManagement.Read.All` — not yet consented (was in v3 batch but token didn't include — verify consent state) |
+| `me/onenote` | 7 | OneNote REST API migration |
+| `deviceAppManagement/mobileApps` | 10 | Intune license |
+| `identityGovernance/privilegedAccess` | 9 | `PrivilegedAccess.Read.*` — partial grant |
+| `deviceManagement/virtualEndpoint` | 8 | Cloud PC license |
+| `admin/teams` | 7 | Teams Admin SDK |
+| `security/labels` | 7 | Microsoft Purview license |
+| `me/settings` | 11 | Mixed: storage, exchange, regional settings |
+| `education/me` | 5 | `EduRoster.Read` partial — needs `EduRoster.Read.All` |
+| `solutions` (other) | 35 | Cross-tenant access / license |
 
 ---
 
