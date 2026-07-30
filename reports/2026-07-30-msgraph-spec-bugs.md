@@ -1,6 +1,6 @@
 # Microsoft Graph v4 — Genuine Spec Bugs (45 tables)
 
-**Date:** 2026-07-29 | **Source:** `microsoft_graph_v4` | **Scope:** 45 tables with OpenAPI-to-DSL parsing errors
+**Date:** 2026-07-30 | **Source:** `microsoft_graph_v4` | **Scope:** 45 tables with OpenAPI-to-DSL parsing errors
 
 These are **not** auth, license, or tenant configuration issues. They are bugs in how Coral's spec generator parsed the Microsoft Graph OpenAPI v2 spec. Each table listed here would fail for **any** AAD tenant with **any** credentials.
 
@@ -120,7 +120,7 @@ SELECT 1 AS ok FROM microsoft_graph_v4.appcatalogs_appcatalogs_appcatalogs_appca
 ```json
 // → Error: Source resource was not found (404)
 // → Detail:
-{"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-29T18:56:40","request-id":"...","client-request-id":"..."}}}
+{"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-30T18:56:40","request-id":"...","client-request-id":"..."}}}
 ```
 
 ---
@@ -162,7 +162,7 @@ SELECT 1 AS ok FROM microsoft_graph_v4.admin_configurationmanagement_admin_getco
 ```json
 // → Error: Source rejected the request (400)
 // → Detail:
-{"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.XTA,False).","innerError":{"date":"2026-07-29T19:..."}}}
+{"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.XTA,False).","innerError":{"date":"2026-07-30T19:..."}}}
 ```
 
 ---
@@ -191,7 +191,7 @@ SELECT 1 AS ok FROM microsoft_graph_v4.scopedrolememberships_scopedrolemembershi
 ```json
 // → Error: Source rejected the request (400)
 // → Detail:
-{"error":{"code":"Request_UnsupportedQuery","message":"Direct queries to this resource type are not supported.","innerError":{"date":"2026-07-29T19:34:..."}}}
+{"error":{"code":"Request_UnsupportedQuery","message":"Direct queries to this resource type are not supported.","innerError":{"date":"2026-07-30T19:34:..."}}}
 ```
 
 ---
@@ -217,7 +217,7 @@ SELECT 1 AS ok FROM microsoft_graph_v4.directory_directoryobject_directory_listd
 ```json
 // → Error: Source rejected the request (400)
 // → Detail:
-{"error":{"code":"Request_UnsupportedQuery","message":"Searches against this resource are not supported. Only specific instances can be queried.","innerError":{"date":"2026-07-29T19:34:..."}}}
+{"error":{"code":"Request_UnsupportedQuery","message":"Searches against this resource are not supported. Only specific instances can be queried.","innerError":{"date":"2026-07-30T19:34:..."}}}
 ```
 
 ---
