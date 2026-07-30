@@ -54,6 +54,20 @@
 <h1>Microsoft Graph v4 — Genuine Spec Bugs</h1>
 <p class="subtitle">45 tables where the Coral OpenAPI-to-DSL parsing produces wrong endpoints, queries, or audience targeting. These are NOT auth/license/tenant issues — they require source-spec fixes by the Coral team.</p>
 
+<div class="section" style="border-left:3px solid #2563eb;">
+<div class="section-body">
+  <h2 style="font-size:1rem;margin-bottom:8px;">Test Methodology</h2>
+  <p>Each table was queried via Coral SQL using the following command pattern. Tables that returned a valid row (any data) passed; tables that returned an error were classified by error type.</p>
+  <pre style="background:#1e293b;color:#e2e8f0;padding:10px 14px;border-radius:6px;font-size:0.8rem;overflow-x:auto;margin:8px 0;">SELECT 1 AS ok FROM microsoft_graph_v4.&lt;table_name&gt; LIMIT 1</pre>
+  <p>Example raw Coral SQL query for a specific table:</p>
+  <pre style="background:#1e293b;color:#e2e8f0;padding:10px 14px;border-radius:6px;font-size:0.8rem;overflow-x:auto;margin:8px 0;">coral sql \
+  --task-id "&lt;task_id&gt;" \
+  --intent "test if this table is functional" \
+  --query "SELECT 1 AS ok FROM microsoft_graph_v4.agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance LIMIT 1"</pre>
+  <p><strong>Total tables tested:</strong> 733 | <strong style="color:#16a34a;">Passed:</strong> 112 | <strong style="color:#dc2626;">Spec bugs identified:</strong> 45 | <strong>Auth/config failures:</strong> 576</p>
+</div>
+</div>
+
 <div class="summary-cards">
   <div class="card danger">
     <div class="num">13</div>
@@ -111,6 +125,16 @@
 </table>
 
 <div class="note"><strong>Root cause:</strong> The Microsoft Graph OpenAPI spec defines multiple servers per operation. Coral's DSL parser always uses <code>graph.microsoft.com</code> and ignores the per-operation <code>servers</code> override. <strong>Fix:</strong> Update the Coral parser to respect per-endpoint <code>servers</code> in the OpenAPI spec, or add a URL override mechanism in the manifest.</div>
+
+<h3 style="font-size:0.9rem;margin:12px 0 6px;">Actual Coral SQL output</h3>
+<pre style="background:#1e293b;color:#e2e8f0;padding:10px 14px;border-radius:6px;font-size:0.75rem;overflow-x:auto;margin:0;">coral sql --task-id "&lt;task_id&gt;" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance LIMIT 1
+"
+
+→ Error: Source resource was not found (404)
+→ Detail: {"error":{"code":"","message":"No HTTP resource was found
+  that matches the request URI 'https://api.termsofuse.identitygovernance
+  .azure.com/v2.0/agree…'"}}</pre>
 </div>
 </div>
 
@@ -143,6 +167,16 @@
 </table>
 
 <div class="note"><strong>Root cause:</strong> Microsoft removed these v1.0 endpoints (some are beta-only now, some are fully deprecated). Coral's spec generator includes them because they're still present in the OpenAPI spec snapshot or are generated with wrong <code>x-ms-</code> extension handling. <strong>Fix:</strong> Audit each endpoint against current Graph API &amp; remove from the generated tables, or add a deprecated filter in the parser.</div>
+
+<h3 style="font-size:0.9rem;margin:12px 0 6px;">Actual Coral SQL output</h3>
+<pre style="background:#1e293b;color:#e2e8f0;padding:10px 14px;border-radius:6px;font-size:0.75rem;overflow-x:auto;margin:0;">coral sql --task-id "&lt;task_id&gt;" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs LIMIT 1
+"
+
+→ Error: Source resource was not found (404)
+→ Detail: {"error":{"code":"NotFound","message":"Requested API is not
+  supported. Please check the path.","innerError":{"date":"2026-07-29T18:56:40",
+  "request-id":"...","client-request-id":"..."}}}</pre>
 </div>
 </div>
 
@@ -174,6 +208,16 @@
 </table>
 
 <div class="note"><strong>Root cause:</strong> The OpenAPI spec includes endpoints for multiple Microsoft cloud offerings (Business Central, Edge, Exchange admin, SharePoint admin, etc.) that use a different auth model than the standard AAD tenant. Coral doesn't filter by <code>x-ms-audience</code> or similar tags. <strong>Fix:</strong> Add audience filtering in the parser or mark these as tenant-specific in the manifest.</div>
+
+<h3 style="font-size:0.9rem;margin:12px 0 6px;">Actual Coral SQL output</h3>
+<pre style="background:#1e293b;color:#e2e8f0;padding:10px 14px;border-radius:6px;font-size:0.75rem;overflow-x:auto;margin:0;">coral sql --task-id "&lt;task_id&gt;" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.admin_configurationmanagement_admin_getconfigurationmanagement LIMIT 1
+"
+
+→ Error: Source rejected the request (400)
+→ Detail: {"error":{"code":"BadRequest","message":"This API is not
+  supported for AAD accounts (no addressUrl for Microsoft.XTA,False).",
+  "innerError":{"date":"2026-07-29T19:..."}}}</pre>
 </div>
 </div>
 
@@ -197,6 +241,16 @@
 </table>
 
 <div class="note"><strong>Root cause:</strong> The OpenAPI spec marks these as path-level operations requiring <code>{entityId}</code> in the URL, but Coral's parser generates a list-endpoint instead. <strong>Fix:</strong> Add a required parameter to these table definitions, or override them as function-style tables that accept an entity ID.</div>
+
+<h3 style="font-size:0.9rem;margin:12px 0 6px;">Actual Coral SQL output</h3>
+<pre style="background:#1e293b;color:#e2e8f0;padding:10px 14px;border-radius:6px;font-size:0.75rem;overflow-x:auto;margin:0;">coral sql --task-id "&lt;task_id&gt;" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.scopedrolememberships_scopedrolemembership_scopedrolememberships_scopedrolemembership_listscopedrolemembership LIMIT 1
+"
+
+→ Error: Source rejected the request (400)
+→ Detail: {"error":{"code":"Request_UnsupportedQuery","message":
+  "Direct queries to this resource type are not supported.",
+  "innerError":{"date":"2026-07-29T19:34:..."}}}</pre>
 </div>
 </div>
 
@@ -219,6 +273,16 @@
 </table>
 
 <div class="note"><strong>Root cause:</strong> Same as #4 — the parser generates a list/query endpoint for resources that only support get-by-ID. The <code>directoryObjects</code> and <code>directory/deletedItems</code> endpoints require a specific object ID. <strong>Fix:</strong> Convert these to entity-ID-based lookups or remove if they have no valid list pattern.</div>
+
+<h3 style="font-size:0.9rem;margin:12px 0 6px;">Actual Coral SQL output</h3>
+<pre style="background:#1e293b;color:#e2e8f0;padding:10px 14px;border-radius:6px;font-size:0.75rem;overflow-x:auto;margin:0;">coral sql --task-id "&lt;task_id&gt;" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.directory_directoryobject_directory_listdeleteditems LIMIT 1
+"
+
+→ Error: Source rejected the request (400)
+→ Detail: {"error":{"code":"Request_UnsupportedQuery","message":
+  "Searches against this resource are not supported. Only specific
+  instances can be queried.","innerError":{"date":"2026-07-29T19:34:..."}}}</pre>
 </div>
 </div>
 

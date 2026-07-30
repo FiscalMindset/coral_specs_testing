@@ -6,6 +6,27 @@ These are **not** auth, license, or tenant configuration issues. They are bugs i
 
 ---
 
+## Test Methodology
+
+Every table in the `microsoft_graph_v4` source (733 total) was probed with:
+
+```sql
+SELECT 1 AS ok FROM microsoft_graph_v4.<table_name> LIMIT 1
+```
+
+Tables that returned a valid row **passed**; tables that returned an error were classified by error type. **112 passed**, **45 have spec bugs**, **576 are auth/config failures**.
+
+Example raw command:
+
+```bash
+coral sql \
+  --task-id "<task_id>" \
+  --intent "test if this table is functional" \
+  --query "SELECT 1 AS ok FROM microsoft_graph_v4.agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance LIMIT 1"
+```
+
+---
+
 ## Summary
 
 | Category | Count | Root Cause |
@@ -45,6 +66,20 @@ Coral sends the request to `graph.microsoft.com/v1.0/...` but the actual endpoin
 
 **Fix:** The Coral OpenAPI parser must respect per-endpoint `servers` overrides in the OpenAPI spec, or the manifest generator should accept a `baseUrl` override for these endpoints.
 
+**Actual Coral SQL output:**
+
+```bash
+coral sql --task-id "<task_id>" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance LIMIT 1
+"
+```
+
+```json
+// → Error: Source resource was not found (404)
+// → Detail:
+{"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/agree…'"}}
+```
+
 ---
 
 ## 2. Deprecated / Removed API (13 tables)
@@ -74,6 +109,20 @@ These endpoints return `"Requested API is not supported"` — they were fully re
 
 **Fix:** Audit each against current Graph API docs and remove dead endpoints from the spec source.
 
+**Actual Coral SQL output:**
+
+```bash
+coral sql --task-id "<task_id>" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs LIMIT 1
+"
+```
+
+```json
+// → Error: Source resource was not found (404)
+// → Detail:
+{"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-29T18:56:40","request-id":"...","client-request-id":"..."}}}
+```
+
 ---
 
 ## 3. Wrong Audience (12 tables)
@@ -102,6 +151,20 @@ These endpoints exist but target non-AAD tenant types (Business Central, Edge, E
 
 **Fix:** Add audience/tenant-type filtering in the parser, or mark with `x-ms-audience` header in manifest.
 
+**Actual Coral SQL output:**
+
+```bash
+coral sql --task-id "<task_id>" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.admin_configurationmanagement_admin_getconfigurationmanagement LIMIT 1
+"
+```
+
+```json
+// → Error: Source rejected the request (400)
+// → Detail:
+{"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.XTA,False).","innerError":{"date":"2026-07-29T19:..."}}}
+```
+
 ---
 
 ## 4. Needs entityId Parameter (4 tables)
@@ -117,6 +180,20 @@ These return `"Direct queries to this resource type are not supported"` — they
 
 **Fix:** Make these function-style tables with a required entity ID parameter, or document as `needs_entity_id` in manifest.
 
+**Actual Coral SQL output:**
+
+```bash
+coral sql --task-id "<task_id>" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.scopedrolememberships_scopedrolemembership_scopedrolememberships_scopedrolemembership_listscopedrolemembership LIMIT 1
+"
+```
+
+```json
+// → Error: Source rejected the request (400)
+// → Detail:
+{"error":{"code":"Request_UnsupportedQuery","message":"Direct queries to this resource type are not supported.","innerError":{"date":"2026-07-29T19:34:..."}}}
+```
+
 ---
 
 ## 5. Unsupported Query Pattern (3 tables)
@@ -128,6 +205,20 @@ These return `"Direct queries to this resource type are not supported"` — they
 | `directoryobjects_directoryobject_functions_directoryobjects_delta` | `"Delta query is not supported for this resource."` |
 
 **Fix:** Convert to get-by-ID lookups or remove list endpoints. The delta function may need a different manifest approach entirely.
+
+**Actual Coral SQL output:**
+
+```bash
+coral sql --task-id "<task_id>" --intent "test" --query "
+SELECT 1 AS ok FROM microsoft_graph_v4.directory_directoryobject_directory_listdeleteditems LIMIT 1
+"
+```
+
+```json
+// → Error: Source rejected the request (400)
+// → Detail:
+{"error":{"code":"Request_UnsupportedQuery","message":"Searches against this resource are not supported. Only specific instances can be queried.","innerError":{"date":"2026-07-29T19:34:..."}}}
+```
 
 ---
 
