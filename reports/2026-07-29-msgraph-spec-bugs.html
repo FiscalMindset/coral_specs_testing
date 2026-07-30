@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Graph v4 — Genuine Spec Bugs (45 tables)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; color: #1e293b; padding: 24px; line-height: 1.5; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 24px; }
+  .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+  .card .num { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
+  .card .label { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+  .card .fix { font-size: 0.75rem; color: #475569; margin-top: 6px; }
+  .card.danger .num { color: #dc2626; }
+  .card.warn .num { color: #d97706; }
+  .card.info .num { color: #2563eb; }
+  .card.neutral .num { color: #7c3aed; }
+  .section { background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+  .section-header { background: #f1f5f9; padding: 12px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .section-header:hover { background: #e2e8f0; }
+  .section-header h2 { font-size: 1rem; font-weight: 600; }
+  .section-header .badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .badge.red { background: #fecaca; color: #991b1b; }
+  .badge.orange { background: #fed7aa; color: #9a3412; }
+  .badge.blue { background: #bfdbfe; color: #1e40af; }
+  .badge.purple { background: #e9d5ff; color: #6b21a8; }
+  .badge.gray { background: #e2e8f0; color: #334155; }
+  .section-body { padding: 16px; }
+  .section-body p { font-size: 0.88rem; color: #475569; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-bottom: 12px; }
+  th { background: #f8fafc; text-align: left; padding: 8px 10px; font-weight: 600; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8fafc; }
+  .err-block { font-family: 'SF Mono', 'Consolas', 'Monaco', monospace; font-size: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 6px 8px; word-break: break-all; max-height: 80px; overflow-y: auto; }
+  .tbl-name { font-family: 'SF Mono', 'Consolas', 'Monaco', monospace; font-size: 0.75rem; word-break: break-all; }
+  .url-snippet { color: #64748b; font-family: monospace; font-size: 0.75rem; margin-top: 2px; }
+  .note { font-size: 0.82rem; color: #64748b; background: #f8fafc; border-radius: 6px; padding: 10px 14px; border-left: 3px solid #94a3b8; margin-top: 8px; }
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .summary-cards { grid-template-columns: repeat(2, 1fr); }
+    td, th { padding: 6px 8px; }
+    .err-block { max-height: 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Microsoft Graph v4 — Genuine Spec Bugs</h1>
+<p class="subtitle">45 tables where the Coral OpenAPI-to-DSL parsing produces wrong endpoints, queries, or audience targeting. These are NOT auth/license/tenant issues — they require source-spec fixes by the Coral team.</p>
+
+<div class="summary-cards">
+  <div class="card danger">
+    <div class="num">13</div>
+    <div class="label">Wrong URL</div>
+    <div class="fix">Base URL mismatch in OpenAPI spec</div>
+  </div>
+  <div class="card warn">
+    <div class="num">13</div>
+    <div class="label">Deprecated API</div>
+    <div class="fix">Endpoint removed from Graph</div>
+  </div>
+  <div class="card info">
+    <div class="num">12</div>
+    <div class="label">Wrong Audience</div>
+    <div class="fix">BP/CPIM/Edge-specific only</div>
+  </div>
+  <div class="card neutral">
+    <div class="num">4</div>
+    <div class="label">Needs entityId</div>
+    <div class="fix">Direct listing not supported</div>
+  </div>
+  <div class="card neutral">
+    <div class="num">3</div>
+    <div class="label">Unsupported Query</div>
+    <div class="fix">Search/delta not allowed</div>
+  </div>
+</div>
+
+<!-- Section 1: Wrong URL -->
+<div class="section">
+<div class="section-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <h2>1. Wrong URL <span class="badge red">13 tables</span></h2>
+  <span style="color:#94a3b8;font-size:0.8rem;">▼</span>
+</div>
+<div class="section-body">
+<p>Coral sends the request to <code>graph.microsoft.com/v1.0/...</code> but the actual endpoint lives at a different base URL (e.g., <code>api.termsofuse.identitygovernance.azure.com</code>, <code>syncfabric.windowsazure.com</code>, <code>cpim.windows.net</code>). The OpenAPI spec has multiple <code>servers</code> entries but the Coral parser always uses the default.</p>
+
+<table>
+<thead><tr><th style="width:50%;">Table Name</th><th style="width:50%;">Actual URL Coral Tried → Error</th></tr></thead>
+<tbody>
+<tr><td class="tbl-name">agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance</td><td><div class="err-block">https://api.termsofuse.identitygovernance.azure.com/v2.0/agree… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">filteroperators_filteroperatorschema_filteroperators_filteroperatorschema_listfilteroperatorschema</td><td><div class="err-block">https://syncfabric.windowsazure.com/… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">functions_attributemappingfunctionschema_functions_attributemappingfunctionschema_listattributemappingfunctionschema</td><td><div class="err-block">https://syncfabric.windowsazure.com/… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identity_authenticationeventsflow_identity_listauthenticationeventsflows_asexternalusersselfservicesignupeventsflow</td><td><div class="err-block">https://cpim.windows.net/graph/… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identity_conditionalaccessroot_identity_conditionalaccess_getdeleteditems</td><td><div class="err-block">https://na.prod.graph.ipc.msidentity.com/… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identity_identitycontainer_identity_identitycontainer_getidentitycontainer</td><td><div class="err-block">https://cpim.windows.net/graph/… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identity_riskpreventioncontainer_identity_getriskprevention</td><td><div class="err-block">https://cpim.windows.net/graph/… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackagesuggestions</td><td><div class="err-block">https://igaelm-asev3-ecapi-cus.… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listavailableaccesspackages</td><td><div class="err-block">https://igaelm-asev3-ecapi-cus.… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcontrolconfigurations</td><td><div class="err-block">https://igaelm-asev3-ecapi-cus.… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerolescopes</td><td><div class="err-block">https://igaelm-asev3-ecapi-cus.… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identitygovernance_termsofusecontainer_identitygovernance_gettermsofuse</td><td><div class="err-block">https://api.termsofuse.identitygovernance.azure.com/… → No HTTP resource was found</div></td></tr>
+<tr><td class="tbl-name">identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreementacceptances</td><td><div class="err-block">https://api.termsofuse.identitygovernance.azure.com/… → No HTTP resource was found</div></td></tr>
+</tbody>
+</table>
+
+<div class="note"><strong>Root cause:</strong> The Microsoft Graph OpenAPI spec defines multiple servers per operation. Coral's DSL parser always uses <code>graph.microsoft.com</code> and ignores the per-operation <code>servers</code> override. <strong>Fix:</strong> Update the Coral parser to respect per-endpoint <code>servers</code> in the OpenAPI spec, or add a URL override mechanism in the manifest.</div>
+</div>
+</div>
+
+<!-- Section 2: Deprecated API -->
+<div class="section">
+<div class="section-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <h2>2. Deprecated / Removed API <span class="badge orange">13 tables</span></h2>
+  <span style="color:#94a3b8;font-size:0.8rem;">▼</span>
+</div>
+<div class="section-body">
+<p>These endpoints return <code>"Requested API is not supported"</code> — they were removed from Microsoft Graph but the OpenAPI spec (or Coral's parsers of it) still includes them.</p>
+
+<table>
+<thead><tr><th style="width:55%;">Table Name</th><th style="width:45%;">Error</th></tr></thead>
+<tbody>
+<tr><td class="tbl-name">appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">chats_chat_functions_chats_getallmessages</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">chats_chat_functions_chats_getallretainedmessages</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">communications_adhoccall_communications_adhoccalls_getallrecordings</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">communications_adhoccall_communications_adhoccalls_getalltranscripts</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">communications_adhoccall_communications_listadhoccalls</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">communications_onlinemeeting_communications_onlinemeetings_getallrecordings</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">communications_onlinemeeting_communications_onlinemeetings_getalltranscripts</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">copilot_aiinteractionhistory_copilot_getinteractionhistory</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">copilot_aiinteractionhistory_copilot_interactionhistory_getallenterpriseinteractions</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">copilot_aiuser_copilot_listusers</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+<tr><td class="tbl-name">teamwork_deletedteam_teamwork_deletedteams_getallmessages</td><td><div class="err-block">"Requested API is not supported. Please check the path."</div></td></tr>
+</tbody>
+</table>
+
+<div class="note"><strong>Root cause:</strong> Microsoft removed these v1.0 endpoints (some are beta-only now, some are fully deprecated). Coral's spec generator includes them because they're still present in the OpenAPI spec snapshot or are generated with wrong <code>x-ms-</code> extension handling. <strong>Fix:</strong> Audit each endpoint against current Graph API &amp; remove from the generated tables, or add a deprecated filter in the parser.</div>
+</div>
+</div>
+
+<!-- Section 3: Wrong Audience -->
+<div class="section">
+<div class="section-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <h2>3. Wrong Audience <span class="badge blue">12 tables</span></h2>
+  <span style="color:#94a3b8;font-size:0.8rem;">▼</span>
+</div>
+<div class="section-body">
+<p>These endpoints exist but for non-AAD tenant types — Business Central, Edge-specific, Exchange-specific, or partner tenants. They return <code>"This API is not supported for AAD accounts"</code> when called with a standard work/school account tenant.</p>
+
+<table>
+<thead><tr><th style="width:55%;">Table Name</th><th style="width:45%;">Error</th></tr></thead>
+<tbody>
+<tr><td class="tbl-name">admin_configurationmanagement_admin_getconfigurationmanagement</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">admin_edge_admin_edge_getinternetexplorermode</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">admin_edge_admin_getedge</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">admin_exchangeadmin_admin_getexchange</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">admin_sharepoint_admin_getsharepoint</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">admin_teamsadminroot_admin_getteams</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">admin_teamsadminroot_admin_teams_getpolicy</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">admin_teamsadminroot_admin_teams_gettelephonenumbermanagement</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">copilot_copilotadmin_copilot_admin_getcatalog</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">identity_identityverifiedidroot_identity_getverifiedid</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">storage_filestorage_storage_getfilestorage</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+<tr><td class="tbl-name">storage_storagesettings_storage_getsettings</td><td><div class="err-block">"This API is not supported for AAD accounts"</div></td></tr>
+</tbody>
+</table>
+
+<div class="note"><strong>Root cause:</strong> The OpenAPI spec includes endpoints for multiple Microsoft cloud offerings (Business Central, Edge, Exchange admin, SharePoint admin, etc.) that use a different auth model than the standard AAD tenant. Coral doesn't filter by <code>x-ms-audience</code> or similar tags. <strong>Fix:</strong> Add audience filtering in the parser or mark these as tenant-specific in the manifest.</div>
+</div>
+</div>
+
+<!-- Section 4: Needs entityId -->
+<div class="section">
+<div class="section-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <h2>4. Needs entityId Parameter <span class="badge purple">4 tables</span></h2>
+  <span style="color:#94a3b8;font-size:0.8rem;">▼</span>
+</div>
+<div class="section-body">
+<p>These tables return <code>"Direct queries to this resource type are not supported"</code> — they can only be queried with a specific entity ID, not listed. The Coral parser generates them as <code>_list</code> tables without requiring the mandatory ID parameter.</p>
+
+<table>
+<thead><tr><th style="width:55%;">Table Name</th><th style="width:45%;">Error</th></tr></thead>
+<tbody>
+<tr><td class="tbl-name">certificatebasedauthconfiguration_*_list*</td><td><div class="err-block">"Direct queries to this resource type are not supported."</div></td></tr>
+<tr><td class="tbl-name">communications_onlinemeeting_communications_listonlinemeetings</td><td><div class="err-block">"VideoTeleConference ID is required." (needs joinWebUrl parameter)</div></td></tr>
+<tr><td class="tbl-name">permissiongrants_resourcespecificpermissiongrant_*_list*</td><td><div class="err-block">"Direct queries to this resource type are not supported."</div></td></tr>
+<tr><td class="tbl-name">scopedrolememberships_scopedrolemembership_*_list*</td><td><div class="err-block">"Direct queries to this resource type are not supported."</div></td></tr>
+</tbody>
+</table>
+
+<div class="note"><strong>Root cause:</strong> The OpenAPI spec marks these as path-level operations requiring <code>{entityId}</code> in the URL, but Coral's parser generates a list-endpoint instead. <strong>Fix:</strong> Add a required parameter to these table definitions, or override them as function-style tables that accept an entity ID.</div>
+</div>
+</div>
+
+<!-- Section 5: Unsupported Query -->
+<div class="section">
+<div class="section-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+  <h2>5. Unsupported Query Pattern <span class="badge purple">3 tables</span></h2>
+  <span style="color:#94a3b8;font-size:0.8rem;">▼</span>
+</div>
+<div class="section-body">
+<p>These return <code>"Searches against this resource are not supported"</code> or <code>"Delta query is not supported"</code> — they can only be fetched by specific ID or via a different query pattern.</p>
+
+<table>
+<thead><tr><th style="width:55%;">Table Name</th><th style="width:45%;">Error</th></tr></thead>
+<tbody>
+<tr><td class="tbl-name">directory_directoryobject_directory_listdeleteditems</td><td><div class="err-block">"Searches against this resource are not supported. Only specific instances can be queried."</div></td></tr>
+<tr><td class="tbl-name">directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject</td><td><div class="err-block">"Searches against this resource are not supported. Only specific instances can be queried."</div></td></tr>
+<tr><td class="tbl-name">directoryobjects_directoryobject_functions_directoryobjects_delta</td><td><div class="err-block">"Delta query is not supported for this resource."</div></td></tr>
+</tbody>
+</table>
+
+<div class="note"><strong>Root cause:</strong> Same as #4 — the parser generates a list/query endpoint for resources that only support get-by-ID. The <code>directoryObjects</code> and <code>directory/deletedItems</code> endpoints require a specific object ID. <strong>Fix:</strong> Convert these to entity-ID-based lookups or remove if they have no valid list pattern.</div>
+</div>
+</div>
+
+</div>
+</body>
+</html>
