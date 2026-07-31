@@ -9,9 +9,9 @@
   <img src="https://img.shields.io/badge/tables-733-22c55e" alt="733 tables">
   <img src="https://img.shields.io/badge/table_funcs-5,776-3b82f6" alt="5776 table funcs">
   <img src="https://img.shields.io/badge/identity_tests-6/6_PASS-22c55e" alt="6/6 PASS">
-  <img src="https://img.shields.io/badge/timeouts-0-success" alt="0 timeouts">
+  <img src="https://img.shields.io/badge/timeouts-30_retry--clear-f59e0b" alt="30 timeouts (retry-clear)">
   <img src="https://img.shields.io/badge/reports_frozen-✓-8b5cf6" alt="reports frozen">
-  <img src="https://img.shields.io/badge/last_updated-2026--07--29-6b7280" alt="last updated 2026-07-29">
+  <img src="https://img.shields.io/badge/last_updated-2026--07--31-6b7280" alt="last updated 2026-07-31">
 </p>
 
 ---
@@ -48,7 +48,29 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Every report has a matching `.md` (raw) and `.html` (responsive) version.
 
-### 🆕 2026-07-29 — Re-auth test: Coral 0.8.1 / surface-singular fix
+### 🆕 2026-07-31 — Full 733-table re-run: delegated, 0 expired_token
+
+| | |
+|---|---|
+| **Date** | 2026-07-31 |
+| **Coral** | `0.8.1+3acb123` (homebrew) |
+| **Tables tested** | **733 / 733** (100%) |
+| **Pass (delegated)** | 122 |
+| **expired_token failures** | **0** (Jul 29 re-run had 63) |
+| **Timeouts (30s cutoff)** | 30 — all resolve on retry (2 PASS, rest structured 400/403/404) |
+| **Spec bugs** | 45 genuine — all still unfixed |
+| **App-only-only gap** | 20 of 30 now pass delegated |
+| **Status** | 🟢 COMPLETE — no connector regression |
+
+**Headline changes vs Jul 29 delegated:**
+- `me_*` 26 → **36**, `identity_*` 0 → **7**, `security_*` 0 → **3**, `auditlogs_*` 0 → **3**, `devices_*` 0 → **2**, `applications_*` 0 → **2**
+- `places_*` 4 → **0** — keychain token re-consented without `Place.Read.All` (token change, not a connector regression)
+- All 45 genuine spec bugs from Jul 30 still reproduce (40/45 exact, 5 reclassified)
+- **Recommendation:** re-run with 120s timeout to clear the 30-timeout bucket
+
+- **[Markdown](reports/2026-07-31-msgraph-reauth-test-report.md)** · **[HTML](reports/2026-07-31-msgraph-reauth-test-report.html)** — full 733-table delegated re-run: status distribution, per-prefix passes vs Jul 29, spec-bug recheck (45), app-only-only recheck (30), timeout analysis, places regression, verdict.
+
+### 2026-07-29 — Re-auth test: Coral 0.8.1 / surface-singular fix
 
 | | |
 |---|---|
@@ -121,4 +143,4 @@
 
 ---
 
-<p align="center"><sub>Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-07-29</sub></p>
+<p align="center"><sub>Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-07-31</sub></p>
