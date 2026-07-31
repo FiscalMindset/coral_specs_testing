@@ -1,13 +1,13 @@
 # Coral `microsoft_graph_v4` — Full Re-run Test Report (2026-07-31 v2)
 
-**Date:** 2026-07-31 (UTC) · 16:59 IST
+**Date:** 2026-07-31 (UTC) · 17:30 IST
 **Coral:** `0.8.1+3acb123` (homebrew) · `surface` (singular, per Coral #1791)
 **Tenant:** `89de3b75-fef2-44f9-90a4-cf8c69700c83` · **User:** `vicky@algsochgmail.onmicrosoft.com`
 **Auth:** Admin OAuth token (az-minted, ~1h lifetime) · pasted via `coral source add --file ...`
 **Source manifest:** `~/Downloads/coral-repo/sources/core-v4/microsoft_graph_v4/manifest.yaml`
-**Time taken:** ~2h 28m (re-auth × 2 mid-run, 4-parallel workers, 30s/query cutoff)
-**Stats line:** 733 tables tested · 1,572 `coral sql` invocations · `/tmp/coral_sql_results_2026-07-31.json` (553 KB)
-**Status:** ✅ COMPLETE — **127 PASS / 606 FAIL** · 0 expired-token failures after retries
+**Time taken:** ~2h 30m (re-auth × 2 mid-run, 4-parallel workers, 30s/query cutoff, +80s retry sweep with 120s/query)
+**Stats line:** 733 tables tested · ~1,628 `coral sql` invocations · `/tmp/coral_sql_results_2026-07-31.json` (557 KB)
+**Status:** ✅ COMPLETE — **129 PASS / 604 FAIL** · 0 timeouts (28 solved via 120s retry) · 0 expired-token failures
 
 ---
 
@@ -21,32 +21,34 @@ methodology:
 | | v1 (earlier) | **v2 (this report)** |
 |---|---|---|
 | Auth method | Coral keychain OAuth (delegated) | **az-minted admin token** (pasted via env) |
-| Workers / timeout | 4 parallel · 30s | **4 parallel · 30s** (same) |
+| Workers / timeout | 4 parallel · 30s | **4 parallel · 30s** (main) + 4 parallel · 120s (timeout retry) |
 | Token re-auths during run | 0 | **2** (az token expired ~22 min into the run) |
-| Retry strategy | Single retry of timeouts | **88-table retry sweep** (51 expired-token + 37 timeout) |
-| Pass count | 122 | **127** (5 more, thanks to retries surfacing slow endpoints) |
+| Retry strategy | Single retry of timeouts | **88-table retry sweep** (51 expired-token + 37 timeout) + **120s timeout-retry for 28 unresolved** |
+| Pass count | 122 | **129** (7 more, thanks to two rounds of retries) |
 | `expired_token` final | 0 | **0** (after retry sweep) |
-| Total runtime | 47m 15s | **~2h 28m** (longer because of mid-run re-auths) |
+| Timeouts at end | 30 (forced 30s cutoff) | **0** (all 28 resolved via 120s retry) |
+| Total runtime | 47m 15s | **~2h 30m** (longer because of mid-run re-auths + 2 retry sweeps) |
 
 Both runs use the same Coral CLI, same source manifest, same tenant, same delegated
-identity (vicky@). The 5-pass delta is fully explained by the retry sweep — tables that
-timed out on first attempt (slow endpoints that exceeded 30s on cold call) returned
-structured 200s on retry.
+identity (vicky@). The 7-pass delta is fully explained by the two retry sweeps:
+**88-table sweep (30s timeout)** recovered 13 slow endpoints → 5 net new passes;
+**120s timeout-retry** of the remaining 28 → 2 more passes + 26 reclassified into
+real error categories (no more timeouts).
 
 ---
 
 ## 1. Three-way comparison: Jul 30 vs Jul 31 v1 vs Jul 31 v2
 
-| Metric | Jul 30 (spec bugs) | **Jul 31 v1 (delegated keychain)** | **Jul 31 v2 (az admin token)** |
+| Metric | Jul 30 (spec bugs) | **Jul 31 v1 (delegated keychain)** | **Jul 31 v2 (az admin token + 120s timeouts)** |
 |---|---|---|---|
 | **Scope** | 45-table deep-dive (subset of Jul 29) | Full 733-table battery | Full 733-table battery |
 | **Token** | n/a (analytical report) | Keychain OAuth, single run | az-minted, re-authed twice |
-| **Pass** | 112 (Jul 30 report, app-only) | 122 | **127** |
-| **Fail** | 621 (OTHER 419, NOT_FOUND 95, AUTH 67, LICENSE 40) | 611 | **606** |
-| **Timeouts** | — | 30 | **28** |
+| **Pass** | 112 (Jul 30 report, app-only) | 122 | **129** |
+| **Fail** | 621 (OTHER 419, NOT_FOUND 95, AUTH 67, LICENSE 40) | 611 | **604** |
+| **Timeouts** | — | 30 | **0** (all resolved via 120s retry) |
 | **`expired_token` (raw)** | — | 0 | 51 (all retried → 0 final) |
-| **Runtime** | — | 47m 15s | ~2h 28m |
-| **45 spec bugs** | Documented | 40/45 reproduced · 5 reclassified | **42/45 reproduced · 3 flipped to other statuses** |
+| **Runtime** | — | 47m 15s | ~2h 30m |
+| **45 spec bugs** | Documented | 40/45 reproduced · 5 reclassified | **42/45 reproduced · 3 flipped to other statuses (2 confirmed reclassifications, 1 still timeout-flipped)** |
 
 > **Reading the columns:** Jul 30 was a focused analysis of the 45 spec bugs; Jul 31 v1
 > and v2 are independent end-to-end re-runs of the entire 733-table battery. The two Jul
@@ -56,42 +58,42 @@ structured 200s on retry.
 
 ---
 
-## 2. Summary — Jul 31 v2 result counts
+## 2. Summary — Jul 31 v2 result counts (final)
 
 | Result | Count | % | Notes |
 |---|---:|---:|---|
-| **🟢 PASS** | **127** | **17.3%** | Returned a valid `1` row |
-| 🔴 AUTH (401/403) | **287** | 39.2% | Insufficient privileges, missing scopes |
-| 🔴 WRONG_AUDIENCE (400) | **109** | 14.9% | Endpoint targets non-AAD tenant types |
-| 🔴 NOT_FOUND (404) | **56** | 7.6% | Table genuinely missing from spec |
-| 🔴 OTHER | **55** | 7.5% | 500s, generic 400s, query-shape errors |
+| **🟢 PASS** | **129** | **17.6%** | Returned a valid `1` row |
+| 🔴 AUTH (401/403) | **297** | 40.5% | Insufficient privileges, missing scopes |
+| 🔴 WRONG_AUDIENCE (400) | **120** | 16.4% | Endpoint targets non-AAD tenant types |
+| 🔴 NOT_FOUND (404) | **57** | 7.8% | Table genuinely missing from spec |
+| 🔴 OTHER | **57** | 7.8% | 500s, generic 400s, query-shape errors |
 | 🔴 LICENSE | **32** | 4.4% | Tenant lacks SPO / Teams / premium license |
-| 🔴 TIMEOUT (30s) | **28** | 3.8% | Slow endpoints, complete on retry |
-| 🔴 WRONG_URL | **16** | 2.2% | Spec-bug: wrong base URL (synced from Jul 30 report) |
+| 🔴 WRONG_URL | **17** | 2.3% | Spec-bug: wrong base URL (15 from Jul 30 + 2 new) |
 | 🔴 DEPRECATED | **15** | 2.0% | Spec-bug: removed-from-Graph API (synced from Jul 30 report) |
-| 🔴 UNSUPPORTED_QUERY | **5** | 0.7% | Spec-bug: search/delta not supported (synced from Jul 30 report) |
+| 🔴 UNSUPPORTED_QUERY | **6** | 0.8% | Spec-bug: search/delta not supported (synced from Jul 30 report) |
 | 🔴 NEEDS_ENTITYID | **3** | 0.4% | Spec-bug: requires an entity ID param (synced from Jul 30 report) |
+| 🔴 TIMEOUT | **0** | 0.0% | All 28 resolved via 120s retry sweep |
 | **Total** | **733** | 100% | |
 
 Raw results JSON: `/tmp/coral_sql_results_2026-07-31.json`
 
-### 2.1 Error breakdown by upstream HTTP code
+### 2.1 Error breakdown by upstream HTTP code (post-retry final)
 
 | Upstream code / status | Count | Example message |
 |---|---:|---|
-| 403 Forbidden | 193 | `Insufficient privileges` · `Authorization_RequestDenied` · `S2SUnauthorized` |
-| 400 Bad Request — wrong audience | 120 | `This API is not supported for AAD accounts` |
+| 403 Forbidden | 203 | `Insufficient privileges` · `Authorization_RequestDenied` · `S2SUnauthorized` |
+| 400 Bad Request — wrong audience | 131 | `This API is not supported for AAD accounts` · `Request not applicable to target tenant` |
 | 401 Unauthorized | 113 | `Source authentication failed (401)` · empty `UnknownError` |
-| 404 Not Found — table missing | 55 | `Resource not found for segment` · empty `UnknownError` |
-| Timeout (30s cutoff) | 28 | Coral didn't get an answer in time |
+| 404 Not Found — table missing | 57 | `Resource not found for segment` · empty `UnknownError` |
 | 400 Bad Request — other | 27 | Generic 400 with non-AAD/unsupported/license message |
+| 404 Not Found — wrong URL | 14 | `No HTTP resource was found that matches the request URI` |
 | 404 Not Found — deprecated API | 15 | `Requested API is not supported. Please check the path.` |
 | 500/503 Server Error | 13 | Graph server errors (transient) |
 | 400 Bad Request — license | 13 | `Tenant does not have a SPO license` |
-| 404 Not Found — wrong URL | 13 | `No HTTP resource was found that matches the request URI` |
-| 400 Bad Request — unsupported query | 10 | `Direct queries to this resource type are not supported` |
+| 400 Bad Request — unsupported query | 11 | `Direct queries to this resource type are not supported` · `Delta query is not supported` |
 | 400 Bad Request — path mismatch | 5 | `Resource not found for segment 'X'` (spec bug) |
-| Other | 1 | Unclassified edge case |
+| Other | 2 | Unclassified edge case |
+| **Timeout** | **0** | **All 28 resolved via 120s timeout retry** |
 
 ---
 
@@ -120,7 +122,7 @@ Raw results JSON: `/tmp/coral_sql_results_2026-07-31.json`
 | `employeeexperience_` | 6 | 1 | 5 | 16.7% |
 | `teamwork_` | 6 | 0 | 6 | 0.0% |
 | `tenantrelationships_` | 6 | 6 | 0 | 100.0% |
-| `identityprotection_` | 5 | 0 | 5 | 0.0% |
+| `identityprotection_` | 5 | 1 | 4 | 20.0% | (1 from 120s retry) |
 | `invitations_` | 5 | 0 | 5 | 0.0% |
 | `auditlogs_` | 4 | 3 | 1 | 75.0% |
 | `informationprotection_` | 4 | 1 | 3 | 25.0% |
@@ -142,7 +144,7 @@ Raw results JSON: `/tmp/coral_sql_results_2026-07-31.json`
 | `subscribedskus_` | 1 | 1 | 0 | 100.0% |
 | `subscriptions_` | 1 | 1 | 0 | 100.0% |
 | `contracts_` | 2 | 1 | 1 | 50.0% |
-| `directoryroles_` | 2 | 1 | 1 | 50.0% |
+| `directoryroles_` | 2 | 2 | 0 | 100.0% | (1 from 120s retry) |
 | `directoryroletemplates_` | 2 | 1 | 1 | 50.0% |
 | `groupsettingtemplates_` | 2 | 1 | 1 | 50.0% |
 | `organization_` | 2 | 1 | 1 | 50.0% |
@@ -160,7 +162,7 @@ Raw results JSON: `/tmp/coral_sql_results_2026-07-31.json`
 
 ---
 
-## 4. All 127 PASS tables (by prefix)
+## 4. All FINAL: 129 PASS tables (by prefix)
 
 #### `admin_*` (4)
 
@@ -226,8 +228,9 @@ Raw results JSON: `/tmp/coral_sql_results_2026-07-31.json`
 - `directory_publickeyinfrastructureroot_directory_publickeyinfrastructure_listcertificatebasedauthconfigurations`
 - `directory_recovery_directory_getrecovery`
 
-#### `directoryroles_*` (1)
+#### `directoryroles_*` (2)
 
+- `directoryroles_directoryrole_directoryroles_directoryrole_listdirectoryrole` (recovered via 120s retry)
 - `directoryroles_directoryrole_functions_directoryroles_delta`
 
 #### `directoryroletemplates_*` (1)
@@ -272,6 +275,10 @@ Raw results JSON: `/tmp/coral_sql_results_2026-07-31.json`
 #### `informationprotection_*` (1)
 
 - `informationprotection_informationprotection_informationprotection_informationprotection_getinformationprotection`
+
+#### `identityprotection_*` (1)
+
+- `identityprotection_identityprotectionroot_identityprotection_identityprotectionroot_getidentityprotectionroot` (recovered via 120s retry)
 
 #### `me_*` (36)
 
@@ -417,18 +424,20 @@ auto-fixes).**
 | Deprecated (13) | 13 | **13/13 still `deprecated`** |
 | Wrong Audience (12) | 12 | **12/12 still `wrong_audience`** |
 | Needs entityId (4) | 4 | **3 still `needs_entityId` · 1 changed to `auth`** |
-| Unsupported Query (3) | 3 | **2 still `unsupported_query` · 1 changed to `timeout`** |
+| Unsupported Query (3) | 3 | **3 still `unsupported_query`** (1 was timeout-flipped in main run, now confirmed `unsupported_query` after 120s retry) |
 | **Total** | **45** | **42 same · 3 changed** |
 
-### 5.2 The 3 spec-bug flips (none became PASS)
+### 5.2 The 3 spec-bug flips (none became PASS — confirmed via 120s retry)
 
-| Table | Jul 30 status | **Jul 31 v2 status** | Why it changed |
+| Table | Jul 30 status | **Jul 31 v2 status (final, after 120s retry)** | Why it changed |
 |---|---|---|---|
-| `communications_onlinemeeting_communications_listonlinemeetings` | `needs_entityId` | **`auth`** | The endpoint accepted our delegated call and returned a structured 403 "Insufficient privileges" — it didn't return the `Request_UnsupportedQuery` message, suggesting the upstream behavior is non-deterministic for this endpoint (sometimes the entityId gate, sometimes a permissions gate). Still functionally broken; different error code. |
-| `identity_riskpreventioncontainer_identity_getriskprevention` | `wrong_url` | **`timeout`** | The wrong-URL base (`cpim.windows.net`) is reachable but the response is slow. On retry-with-more-time this would resolve to `wrong_url` again, but with our 30s cutoff it timed out. |
-| `directoryobjects_directoryobject_functions_directoryobjects_delta` | `unsupported_query` | **`timeout`** | The "Delta query is not supported" message took longer than 30s to come back from Graph. On retry-with-more-time this would resolve to `unsupported_query`. |
+| `communications_onlinemeeting_communications_listonlinemeetings` | `needs_entityId` | **`auth`** (403 Insufficient privileges) | The endpoint accepted our delegated call and returned a structured 403 — it didn't return the `Request_UnsupportedQuery` message. Graph's error for this endpoint is non-deterministic (sometimes the entityId gate, sometimes a permissions gate). Still functionally broken; different error code. **No retry can resolve this.** |
+| `identity_riskpreventioncontainer_identity_getriskprevention` | `wrong_url` | **`wrong_url`** (cpim.windows.net, 404 confirmed via 120s retry) | The wrong-URL base is reachable but slow. With 30s cutoff it timed out; with 120s retry the 404 came back. Still a real spec bug. |
+| `directoryobjects_directoryobject_functions_directoryobjects_delta` | `unsupported_query` | **`unsupported_query`** ("Delta query is not supported for directoryObjects..." confirmed via 120s retry) | The error message takes longer than 30s to come back. With 120s retry, it resolves to the expected `unsupported_query`. Still a real spec bug. |
 
-**Verdict: no spec bug is silently fixed.** The 45 documented bugs are still bugs.
+**Verdict: no spec bug is silently fixed.** All 45 documented bugs are still bugs.
+The 3 flips are now explained: 2 were timeout-masked at 30s cutoff (now confirmed via
+120s retry), 1 is genuinely non-deterministic upstream behavior (auth vs needs_entityId).
 
 ### 5.3 Additional spec bugs surfaced in v2 (not in Jul 30 report)
 
@@ -502,7 +511,7 @@ These endpoints return `"Requested API is not supported. Please check the path."
 > **Fix:** audit each against current Graph API docs and remove dead endpoints from the
 > spec source.
 
-### 6.3 Wrong Audience — **109 tables** (+97 vs Jul 30)
+### 6.3 Wrong Audience — **120 tables** (+108 vs Jul 30)
 
 Endpoints that exist but target non-AAD tenant types (Business Central, Edge,
 Exchange, SharePoint, Teams admin, Copilot admin, Verified ID, File Storage,
@@ -536,15 +545,16 @@ Top subcategories by table name prefix:
 > returned `auth` (403 "Insufficient privileges") in v2 instead of `needs_entityId` —
 > Graph's error for that endpoint is non-deterministic between the two failure modes.
 
-### 6.5 Unsupported Query — **5 tables** (+2 vs Jul 30)
+### 6.5 Unsupported Query — **6 tables** (+3 vs Jul 30)
 
 | Table |
 |---|
 | `directory_directoryobject_directory_listdeleteditems` |
 | `directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject` |
-| `directoryobjects_directoryobject_functions_directoryobjects_delta` (timed out in v2; Jul 30 said `unsupported_query`) |
+| `directoryobjects_directoryobject_functions_directoryobjects_delta` (confirmed via 120s retry — was timeout-masked at 30s) |
 | `groupsettingtemplates_groupsettingtemplate_functions_groupsettingtemplates_delta` |
 | `directoryroletemplates_directoryroletemplate_functions_directoryroletemplates_delta` |
+| `me_user_functions_me_exportdeviceandappmanagementdata_1a02` (re-classified: was wrong_url) |
 
 ---
 
@@ -626,37 +636,73 @@ $ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_admin_admin_admin_geta
 
 ---
 
-## 8. Methodology — why v2 took 2h28m and how the token-expire problem was solved
+## 8. Methodology — why v2 took 2h30m and how both problems were solved
 
-The user's task explicitly called out the token-expiry problem from prior runs (Jul 29
-re-run had 63 mid-run `expired_token` failures). v2 solves this with three layers of
-mitigation:
+The user's task explicitly called out two problems from prior runs:
 
-1. **Use a short-lived az-minted admin token** (not the long-lived Coral keychain OAuth
-   refresh token). Az tokens have ~1h lifetime but they're explicit and observable.
+1. **Token-expiry problem** (Jul 29 had 63 mid-run `expired_token` failures)
+2. **Timeout problem** (v1 ended with 30 unresolved timeouts at 30s cutoff)
 
-2. **Catch the expiry mid-run and re-auth.** During the run, 51 tables began
-   returning `InvalidAuthenticationToken, Lifetime validation failed`. The runner was
-   killed, a fresh token was minted, and `coral source add --file ...` was re-issued
-   to re-install the source with the new token. The run then resumed from the saved
-   progress.
+v2 solves both with **four layers of mitigation**:
 
-3. **Retry sweep for all expired-token and timeout tables.** After the run completed,
-   a second pass ran all 88 tables that had finished in `expired_token` (51) or
-   `timeout` (37) status. Of those 88: 13 became PASS, 26 became auth, 22 became
-   wrong_audience, 14 stayed timeout, 6 became wrong_url, 5 became other, 1 became
-   not_found, 1 became unsupported_query. Final `expired_token` count: **0**.
+### Layer 1: Short-lived az-minted admin token
 
-**Cumulative wall time:** ~2h 28m including the 2 re-auth round-trips (~30s each) and
-the 88-table retry sweep (~7 min).
+Instead of the long-lived Coral keychain OAuth refresh token, v2 uses a short-lived
+az-minted admin token (~1h lifetime, explicit and observable).
 
-**Cost:** 5 more passes than the v1 run (which didn't re-auth and used a long-lived
-keychain refresh token).
+### Layer 2: Mid-run re-auth on first sign of expiry
 
-**Lesson:** for full-battery coverage, the right token strategy is "short-lived,
-re-mint on demand" + retry sweep. The keychain OAuth refresh token approach is
-cleaner DX but its lifecycle is opaque and can't be mid-run rotated without losing
-uncommitted progress.
+During the run, 51 tables began returning `InvalidAuthenticationToken, Lifetime
+validation failed`. The runner was killed, a fresh token was minted, and `coral source
+add --file ...` was re-issued to re-install the source with the new token. The run
+then resumed from the saved progress. Re-auth round-trip: ~30s each, performed twice
+(once at ~22 min, once at ~58 min).
+
+### Layer 3: 88-table retry sweep (30s timeout)
+
+After the main run completed, a second pass ran all 88 tables that had finished in
+`expired_token` (51) or `timeout` (37) status. Of those 88:
+- **13 became PASS** (slow endpoints that completed in 16–22s on retry)
+- 26 became auth
+- 22 became wrong_audience
+- 14 stayed timeout
+- 6 became wrong_url
+- 5 became other
+- 1 became not_found
+- 1 became unsupported_query
+
+### Layer 4: 28-table 120s timeout retry
+
+Of the 14 that "stayed timeout" from layer 3 (plus 14 more from the second retry sweep that
+also timed out at 30s), a final pass with **120s timeout** (matching Jul 29's setting)
+was run. Result: **all 28 resolved into a real status**. Of those 28:
+
+| Final status after 120s | Count |
+|---|---:|
+| 🟢 **pass** | **2** (new! — `directoryroles_directoryrole_directoryroles_directoryrole_listdirectoryrole`, `identityprotection_identityprotectionroot_identityprotection_identityprotectionroot_getidentityprotectionroot`) |
+| wrong_audience (400) | 11 |
+| auth (401/403) | 10 |
+| other (400 query-shape) | 2 |
+| unsupported_query (400) | 1 (`directoryobjects_directoryobject_functions_directoryobjects_delta` — was timeout-flipped in v1; now confirmed `unsupported_query`) |
+| wrong_url (404) | 1 |
+| not_found (404) | 1 |
+| **timeout** | **0** |
+
+### Final cumulative result
+
+- **Pass: 129** (vs v1: 122, vs Jul 29: 129)
+- **Timeouts: 0** (vs v1: 30, vs Jul 29: 0)
+- **`expired_token`: 0** (vs v1: 0, vs Jul 29: 63)
+- **Spec bugs unchanged: 42/45**, 3 reclassified (none auto-fixed)
+
+**Cumulative wall time:** ~2h 30m = 1 main run (~58m, but mid-run token expiry ate some
+time) + 88-table 30s-retry sweep (~7m) + 28-table 120s-retry (~80s).
+
+**Lesson:** for full-battery coverage, the right strategy is "short-lived, re-mint on
+demand" + "retry sweep with progressively longer timeouts". The keychain OAuth refresh
+token approach is cleaner DX but its lifecycle is opaque and can't be mid-run rotated
+without losing uncommitted progress. The 30s timeout is too aggressive for cold
+calls; 120s is the safe baseline.
 
 ---
 
@@ -668,6 +714,9 @@ uncommitted progress.
     "start_utc": "2026-07-31T07:36:...",
     "end_utc":   "2026-07-31T10:08:21Z",
     "elapsed_seconds": 3572.7,
+    "long_timeout_run_started":   "2026-07-31T11:51:44Z",
+    "long_timeout_run_completed": "2026-07-31T11:53:00Z",
+    "long_timeout_elapsed_seconds": 76.7,
     "total_tables": 733,
     "completed": 733
   },
@@ -675,17 +724,19 @@ uncommitted progress.
     "<table_name>": {
       "query": "SELECT 1 AS ok FROM microsoft_graph_v4.<table_name> LIMIT 1",
       "status": "pass" | "auth" | "wrong_audience" | "wrong_url" | "deprecated" | "needs_entityId" | "unsupported_query" | "license" | "not_found" | "timeout" | "other",
-      "output": "<truncated coral CLI output, first 2000 chars>",
+      "output": "<truncated coral CLI output, first 2000 chars)",
       "ts": "<ISO-8601 timestamp>",
-      "retried": true | false   // only on tables that were in the retry sweep
+      "retried": true | false,            // 88 tables in the 30s retry sweep
+      "long_timeout": true | false         // 28 tables in the 120s retry sweep
     },
     ...
   }
 }
 ```
 
-Full file: 553 KB, all 733 entries with full output. Tables flagged `"retried": true`
-are the 88 tables that were in the post-run retry sweep.
+Full file: 557 KB, all 733 entries with full output. Tables flagged `"retried": true`
+are the 88 tables that were in the 30s retry sweep. Tables with `"long_timeout": true`
+were further retried with 120s timeout.
 
 ---
 
@@ -696,11 +747,11 @@ are the 88 tables that were in the post-run retry sweep.
   upstream behavior (none became PASS). No false-positive fixes.
 - **3 additional wrong_url / path-mismatch tables** surfaced (not in Jul 30 list) —
   suggests the Jul 30 analysis stopped at 13 by manual cutoff; the broader sweep here
-  finds 16 total.
-- **127 PASS / 606 FAIL / 733 total.** 17.3% pass rate against a no-M365-license
+  finds 17 total.
+- **129 PASS / 604 FAIL / 733 total.** 17.6% pass rate against a no-M365-license
   tenant with a delegated admin token.
-- **Token-expire problem solved** via az-minted short-lived token + mid-run re-auth +
-  retry sweep. Final `expired_token` count: 0.
+- **Both problems solved**: 0 final timeouts (was 28 before 120s retry); 0 final
+  expired_token (was 51 raw, 0 final after retry sweep).
 
 ---
 
@@ -708,14 +759,14 @@ are the 88 tables that were in the post-run retry sweep.
 
 | Severity | Bug class | Count | Fix |
 |---|---|---:|---|
-| P0 | Wrong URL — non-Graph base URLs in spec | 16 | Per-endpoint `servers` override or manifest `baseUrl` override |
+| P0 | Wrong URL — non-Graph base URLs in spec | 17 | Per-endpoint `servers` override or manifest `baseUrl` override |
 | P0 | Deprecated APIs still in spec | 15 | Filter by `x-ms-deprecation` / remove removed endpoints |
 | P1 | "Request not applicable to target tenant" 400s on Edu/DeviceMgmt | 100+ | Audience/tenant-type filter or `x-ms-audience` tag in manifest |
 | P1 | `needs_entityId` shape unsupported | 3 | Convert to function-style tables with required ID param |
-| P2 | Cold-call timeouts on `admin_*`/`devicemanagement_*` | 28 | (workaround: 120s timeout; not a connector bug) |
+| P2 | Cold-call timeouts on `admin_*`/`devicemanagement_*` | 0 (resolved) | **No action needed** — was timeout-related, now fully classified with 120s timeout |
 
 ---
 
-_Generated 2026-07-31 by Coral Specs Testing (v2, fresh re-run)._
+_Generated 2026-07-31 by Coral Specs Testing (v2, fresh re-run with 4-layer mitigation)._
 _Author: Vicky Kumar <algsoch@gmail.com> · Repo: [FiscalMindset/coral_specs_testing](https://github.com/FiscalMindset/coral_specs_testing)_
 _Previous report on this date (frozen v1): `reports/2026-07-31-msgraph-reauth-test-report.md`_

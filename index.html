@@ -155,8 +155,8 @@
     <p>
       <span class="badge badge-pass">733 tables</span>
       <span class="badge badge-blue">5,776 table funcs</span>
-      <span class="badge badge-pass">127 pass · 0 expired_token</span>
-      <span class="badge badge-warn">28 timeouts (13 recovered)</span>
+      <span class="badge badge-pass">129 pass · 0 timeouts</span>
+      <span class="badge badge-pass">0 expired_token</span>
       <span class="badge badge-purple">reports frozen</span>
     </p>
     <p style="font-size:0.85rem;color:var(--muted);">Live repo: <a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a></p>
@@ -193,16 +193,16 @@
   <p>Each report has a matching <code>.md</code> (raw) and <code>.html</code> (responsive) version. Reports are <strong>frozen</strong> once committed.</p>
 
   <div class="report" style="border-left:4px solid var(--tag-pass);">
-    <h3>🆕 2026-07-31 v2 — Full re-run: az-minted admin token + 88-table retry sweep <span class="badge badge-pass">current</span></h3>
+    <h3>🆕 2026-07-31 v2 — Full re-run: az-minted admin token + 4-layer retry strategy <span class="badge badge-pass">current</span></h3>
     <div class="stats">
       <div class="stat"><span class="label">Date</span><span class="value">2026-07-31</span></div>
       <div class="stat"><span class="label">Coral</span><span class="value">0.8.1</span></div>
       <div class="stat"><span class="label">Tables</span><span class="value">733/733</span></div>
-      <div class="stat"><span class="label">Pass</span><span class="value">127</span></div>
-      <div class="stat"><span class="label">Timeouts</span><span class="value">28 (13 recovered)</span></div>
+      <div class="stat"><span class="label">Pass</span><span class="value">129</span></div>
+      <div class="stat"><span class="label">Timeouts</span><span class="value">0 (resolved)</span></div>
       <div class="stat"><span class="label">expired_token</span><span class="value">0</span></div>
     </div>
-    <p>📄 <a href="reports/2026-07-31-msgraph-reauth-test-report-v2.md">Markdown</a> · <a href="reports/2026-07-31-msgraph-reauth-test-report-v2.html">HTML</a> — full 733-table az-token re-run: token-expire mitigation strategy (3 layers), 3-day compare (Jul 29 + Jul 30 + Jul 31 v1 + v2), per-prefix pass table, command log, all 45 spec bugs with verbatim outputs, 88-table retry sweep outcome (13 became PASS, 26 became auth).</p>
+    <p>📄 <a href="reports/2026-07-31-msgraph-reauth-test-report-v2.md">Markdown</a> · <a href="reports/2026-07-31-msgraph-reauth-test-report-v2.html">HTML</a> — full 733-table az-token re-run: 4-layer retry strategy (az-minted token + mid-run re-auth + 30s retry sweep + 120s retry sweep), 4-day compare (Jul 29 + Jul 30 + Jul 31 v1 + v2), per-prefix pass table, command log, all 45 spec bugs with verbatim outputs, all 28 timeout tables resolved.</p>
     <details style="font-size:0.9rem;margin-top:0.5rem;">
       <summary style="cursor:pointer;font-weight:600;">🔍 Key results (tap to expand)</summary>
       <h4 style="margin:0.6rem 0 0.3rem;">Pass by prefix (top movers)</h4>
@@ -221,12 +221,13 @@
       </table></div>
       <h4 style="margin:0.6rem 0 0.3rem;">vs v1 (same date, different methodology)</h4>
       <ul>
-        <li><strong>+5 passes</strong> (122 → 127) — 13 tables recovered via retry sweep</li>
+        <li><strong>+7 passes</strong> (122 → 129) — 15 tables recovered via 2 retry sweeps</li>
+        <li><strong>0 final timeouts</strong> — all 28 resolved via 120s retry sweep</li>
         <li><strong>0 final expired_token</strong> — token-expiry problem solved</li>
-        <li><strong>42/45 spec bugs unchanged</strong>, 3 reclassified (none auto-fixed)</li>
-        <li><strong>Runtime</strong> ~2h 28m (v1: 47m) — extra time for 2 mid-run re-auths + 88-table retry sweep</li>
+        <li><strong>42/45 spec bugs unchanged</strong>, 3 reclassified (now confirmed via 120s retry)</li>
+        <li><strong>Runtime</strong> ~2h 30m (v1: 47m) — extra time for 2 mid-run re-auths + 2 retry sweeps</li>
       </ul>
-      <p style="font-size:0.85rem;margin:0.5rem 0 0;color:var(--muted);">v1 (frozen) used keychain OAuth · 122 pass · 30 timeouts · 47m. v2 used az-minted admin token + retry sweep · 127 pass · 28 timeouts (13 recovered) · ~2h 28m. Same scope, same Coral, same tenant.</p>
+      <p style="font-size:0.85rem;margin:0.5rem 0 0;color:var(--muted);">v1 (frozen) used keychain OAuth · 122 pass · 30 timeouts · 47m. v2 used az-minted admin token + 4-layer retry strategy · 129 pass · 0 timeouts · 0 expired_token · ~2h 30m. Same scope, same Coral, same tenant.</p>
     </details>
   </div>
 

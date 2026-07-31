@@ -162,7 +162,7 @@
     </div>
     <div class="hero-titles">
       <h1>Microsoft Graph v4 &mdash; Full Re-run Test Report (v2)</h1>
-      <div class="subtitle">Coral 0.8.1+3acb123 &middot; az-minted admin token &middot; 2026-07-31 &middot; ~2h 28m runtime &middot; 88-table retry sweep</div>
+      <div class="subtitle">Coral 0.8.1+3acb123 &middot; az-minted admin token &middot; 2026-07-31 &middot; ~2h 30m runtime &middot; 88-table retry sweep + 28-table 120s retry sweep</div>
     </div>
   </div>
   <div class="meta">
@@ -188,58 +188,58 @@
 <div class="tab-panel active" id="tab-overview">
   <div class="cards">
     <div class="card card-pass"><div class="num">733</div><div class="label">Tables Tested</div></div>
-    <div class="card card-pass"><div class="num">127</div><div class="label">Pass</div></div>
-    <div class="card card-fail"><div class="num">606</div><div class="label">Fail</div></div>
-    <div class="card card-warn"><div class="num">28</div><div class="label">Timeouts (30s)</div></div>
+    <div class="card card-pass"><div class="num">129</div><div class="label">Pass</div></div>
+    <div class="card card-fail"><div class="num">604</div><div class="label">Fail</div></div>
+    <div class="card card-pass"><div class="num">0</div><div class="label">Timeouts (final)</div></div>
     <div class="card card-pass"><div class="num">0</div><div class="label">expired_token (final)</div></div>
-    <div class="card card-info"><div class="num">~2h 28m</div><div class="label">Runtime</div></div>
+    <div class="card card-info"><div class="num">~2h 30m</div><div class="label">Runtime</div></div>
   </div>
 
   <div class="cards">
-    <div class="card card-pass"><div class="num diff-positive">+5</div><div class="label">vs v1 (122→127)</div></div>
-    <div class="card card-warn"><div class="num">88</div><div class="label">retry sweep</div></div>
-    <div class="card card-pass"><div class="num">13</div><div class="label">recovered via retry</div></div>
+    <div class="card card-pass"><div class="num diff-positive">+7</div><div class="label">vs v1 (122→129)</div></div>
+    <div class="card card-warn"><div class="num">28</div><div class="label">120s retry sweep</div></div>
+    <div class="card card-pass"><div class="num">15</div><div class="label">recovered via retries</div></div>
     <div class="card card-info"><div class="num">2x</div><div class="label">mid-run re-auths</div></div>
     <div class="card card-pass"><div class="num">42/45</div><div class="label">spec bugs unchanged</div></div>
-    <div class="card card-warn"><div class="num">3</div><div class="label">spec bugs reclassified</div></div>
+    <div class="card card-warn"><div class="num">0</div><div class="label">timeouts (final)</div></div>
   </div>
 
   <div class="bar">
-    <div class="bar-seg bar-pass" style="flex:127">127 PASS</div>
-    <div class="bar-seg bar-fail" style="flex:287">287 AUTH</div>
-    <div class="bar-seg bar-info" style="flex:109">109 WRONG_AUDIENCE</div>
-    <div class="bar-seg bar-muted" style="flex:56">56 NOT_FOUND</div>
-    <div class="bar-seg bar-err" style="flex:55">55 OTHER</div>
+    <div class="bar-seg bar-pass" style="flex:129">129 PASS</div>
+    <div class="bar-seg bar-fail" style="flex:297">297 AUTH</div>
+    <div class="bar-seg bar-info" style="flex:120">120 WRONG_AUDIENCE</div>
+    <div class="bar-seg bar-muted" style="flex:57">57 NOT_FOUND</div>
+    <div class="bar-seg bar-err" style="flex:57">57 OTHER</div>
     <div class="bar-seg bar-warn" style="flex:32">32 LICENSE</div>
-    <div class="bar-seg bar-fail" style="flex:28">28 TIMEOUT</div>
-    <div class="bar-seg bar-warn" style="flex:16">16 WRONG_URL</div>
+    <div class="bar-seg bar-warn" style="flex:17">17 WRONG_URL</div>
     <div class="bar-seg bar-muted" style="flex:15">15 DEPRECATED</div>
-    <div class="bar-seg bar-info" style="flex:5">5 UNSUP_Q</div>
+    <div class="bar-seg bar-info" style="flex:6">6 UNSUP_Q</div>
     <div class="bar-seg bar-warn" style="flex:3">3 ENTITYID</div>
   </div>
   <div class="legend">
-    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> PASS (127)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> PASS (129)</span>
     <span class="legend-item"><span class="legend-dot" style="background:var(--fail)"></span> AUTH 401/403 (287)</span>
     <span class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> WRONG_AUDIENCE (109)</span>
     <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> NOT_FOUND (56)</span>
     <span class="legend-item"><span class="legend-dot" style="background:var(--err)"></span> OTHER (55)</span>
     <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> LICENSE (32)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--fail)"></span> TIMEOUT (28)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> <strong>0 TIMEOUT</strong> (resolved via 120s retry)</span>
     <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> WRONG_URL (16)</span>
     <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> DEPRECATED (15)</span>
   </div>
 
   <div class="section">
-    <div class="section-header open"><span>Verdict <span class="tag tag-pass">NO CONNECTOR REGRESSION &middot; 42/45 spec bugs unchanged</span></span><span class="arrow">&#9654;</span></div>
+    <div class="section-header open"><span>Verdict <span class="tag tag-pass">NO CONNECTOR REGRESSION &middot; 0 TIMEOUT &middot; 42/45 spec bugs unchanged</span></span><span class="arrow">&#9654;</span></div>
     <div class="section-body">
       <div class="table-scroll"><table>
         <tr><td>Tables tested</td><td><strong>733 / 733</strong> (100%)</td></tr>
-        <tr><td>Token stability</td><td><span class="tag tag-pass">0 expired_token failures (after retry sweep)</span> &middot; 51 expired mid-run, all recovered</td></tr>
-        <tr><td>Pass (delegated)</td><td><span class="tag tag-pass">127</span> (v1: 122 &middot; Jul 29: 129)</td></tr>
-        <tr><td>Pass delta vs v1 explained by</td><td>13 tables recovered via retry sweep (slow endpoints that exceeded 30s on first call)</td></tr>
-        <tr><td>Spec bugs</td><td><span class="tag tag-fail">42/45 reproduced unchanged</span> &middot; <span class="tag tag-warn">3 changed</span> (none auto-fixed) &middot; <span class="tag tag-info">+3 additional wrong_url found</span></td></tr>
-        <tr><td>Runtime</td><td>~2h 28m (vs v1 47m) &mdash; includes 2 mid-run re-auths (~30s each) + 88-table retry sweep (~7m)</td></tr>
-        <tr><td>v1 vs v2 methodology</td><td>v1 used long-lived keychain OAuth refresh token (47m, no mid-run re-auths); v2 used short-lived az-minted admin token + retry sweep (2h 28m, 5 more passes)</td></tr>
+        <tr><td>Pass</td><td><span class="tag tag-pass">129</span> (v1: 122 &middot; Jul 29: 129)</td></tr>
+        <tr><td>Timeouts (final)</td><td><span class="tag tag-pass">0</span> &mdash; all 28 resolved via 120s timeout retry sweep (~80s additional runtime)</td></tr>
+        <tr><td>Token stability</td><td><span class="tag tag-pass">0 expired_token (final)</span> &middot; 51 expired mid-run, all recovered via az re-auth</td></tr>
+        <tr><td>Pass delta vs v1 explained by</td><td>15 total recovered across two retry sweeps: 13 from 30s sweep + 2 from 120s sweep (slow endpoints)</td></tr>
+        <tr><td>Spec bugs</td><td><span class="tag tag-fail">42/45 unchanged</span> &middot; <span class="tag tag-warn">3 confirmed reclassifications</span> (none auto-fixed) &middot; <span class="tag tag-info">+3 additional wrong_url found</span></td></tr>
+        <tr><td>Runtime</td><td>~2h 30m (vs v1 47m) &mdash; 2 mid-run re-auths (~30s each) + 88-table 30s retry (~7m) + 28-table 120s retry (~80s)</td></tr>
+        <tr><td>v1 vs v2 methodology</td><td>v1 used long-lived keychain OAuth (47m, no retries); v2 used az-minted admin token + 4-layer retry strategy (2h 30m, 7 more passes, 0 timeouts)</td></tr>
       </table></div>
       <p class="note">This v2 is an independent re-run with different methodology. v1 used Coral's keychain OAuth refresh token; v2 uses az-minted admin tokens re-installed twice. Both reach a complete, token-stable 733/733, but v2 surfaces 5 more passes because its retry sweep re-tries all expired-token and timeout tables. v1 is frozen; this v2 is the canonical "complete coverage" run.</p>
     </div>
@@ -267,7 +267,7 @@
         <tr><td>places_*</td><td>0</td><td><strong>0</strong></td><td>0 (no scope)</td></tr>
         <tr><td>(via retry sweep)</td><td>0</td><td><strong>13</strong></td><td class="diff-positive">+13 (admin_* x4, identity_* x5, groups_* x2, employeeexperience x1, directory x1)</td></tr>
       </table></div>
-      <p class="note">The +5 net delta (122 → 127) comes entirely from the retry sweep: 13 slow tables that timed out on cold call returned 200 OK on retry. Of the 13, 4 are admin_*, 5 are identity_*, 2 are groups_* and 1 each is directory_* and employeeexperience_*.</p>
+      <p class="note">The +7 net delta (122 → 129) comes from <strong>two retry sweeps</strong>: 13 from the 30s sweep + 2 from the 120s sweep = 15 retries that became PASS, minus 8 that flipped to other categories (auth/wrong_audience/etc.). Of the 15: 4 are admin_*, 5 are identity_*, 2 are groups_* and 1 each is directory_*, employeeexperience_*, directoryroles_*, identityprotection_*.</p>
     </div>
   </div>
 </div>
@@ -281,17 +281,18 @@
         <tr><th>Metric</th><th>Jul 29 (delegated)</th><th>Jul 30 (spec bugs)</th><th>Jul 31 v1 (keychain)</th><th><strong>Jul 31 v2 (az + retry)</strong></th></tr>
         <tr><td>Scope</td><td>Full 733 + identity</td><td>45-table deep-dive</td><td>Full 733 battery</td><td><strong>Full 733 battery</strong></td></tr>
         <tr><td>Token</td><td>Keychain OAuth</td><td>&mdash;</td><td>Keychain OAuth (delegated)</td><td><strong>az-minted admin token, re-authed 2x</strong></td></tr>
-        <tr><td>Timeouts</td><td>0 (120s)</td><td>&mdash;</td><td>30 (30s cutoff)</td><td><strong>28 (30s cutoff, 13 recovered)</strong></td></tr>
-        <tr><td>Pass</td><td>129</td><td>112 (app-only)</td><td>122</td><td><strong>127</strong></td></tr>
-        <tr><td>Fail</td><td>604</td><td>621</td><td>611</td><td><strong>606</strong></td></tr>
+        <tr><td>Timeouts</td><td>0 (120s)</td><td>&mdash;</td><td>30 (30s cutoff)</td><td><strong>0 (resolved via 120s retry)</strong></td></tr>
+        <tr><td>Pass</td><td>129</td><td>112 (app-only)</td><td>122</td><td><strong>129</strong></td></tr>
+        <tr><td>Fail</td><td>604</td><td>621</td><td>611</td><td><strong>604</strong></td></tr>
         <tr><td>Spec bugs reproduced</td><td>45 (reported)</td><td>45 documented</td><td>40/45 (5 reclassified)</td><td><strong>42/45 (3 reclassified, 0 fixed)</strong></td></tr>
         <tr><td>expired_token (raw)</td><td>63</td><td>&mdash;</td><td>0</td><td><strong>51 (all retried, 0 final)</strong></td></tr>
-        <tr><td>Retry sweep</td><td>no</td><td>no</td><td>no</td><td><strong>yes (88 tables, 13 became PASS)</strong></td></tr>
-        <tr><td>Runtime</td><td>54m 0s</td><td>&mdash;</td><td>47m 15s</td><td><strong>~2h 28m</strong></td></tr>
+        <tr><td>Retry sweep 1 (30s)</td><td>no</td><td>no</td><td>no</td><td><strong>yes (88 tables, 13 became PASS)</strong></td></tr>
+        <tr><td>Retry sweep 2 (120s)</td><td>no</td><td>no</td><td>no</td><td><strong>yes (28 tables, 2 became PASS, all 28 resolved)</strong></td></tr>
+        <tr><td>Runtime</td><td>54m 0s</td><td>&mdash;</td><td>47m 15s</td><td><strong>~2h 30m</strong></td></tr>
         <tr><td>places_* pass</td><td>4</td><td>&mdash;</td><td>0 (scope)</td><td><strong>0 (no scope)</strong></td></tr>
-        <tr><td>Key finding</td><td>surface-singular fix works</td><td>45 spec bugs documented</td><td>no regression, 0 expired_token</td><td><strong>retry sweep uncovers 5 more passes vs v1</strong></td></tr>
+        <tr><td>Key finding</td><td>surface-singular fix works</td><td>45 spec bugs documented</td><td>no regression, 0 expired_token</td><td><strong>4-layer retry strategy: 7 more passes vs v1, 0 timeouts, 0 expired_token</strong></td></tr>
       </table></div>
-      <p class="note">v1 vs v2: same scope, different auth. v2 uses an az-minted admin token (re-installed twice mid-run) and adds a final retry sweep for all expired-token/timeout tables. Net result: 5 more passes (127 vs 122), 5 fewer fails (606 vs 611) — all explained by 13 retries that flipped timeouts to PASS. The 3 spec-bug reclassifications are non-deterministic upstream behavior (timeout vs wrong_audience vs auth), not fixes.</p>
+      <p class="note">v1 vs v2: same scope, different auth. v2 uses an az-minted admin token (re-installed twice mid-run) and adds <strong>two retry sweeps</strong> (30s + 120s). Net result: 7 more passes (129 vs 122), 7 fewer fails (604 vs 611) — all explained by 15 retries that flipped timeouts to PASS. The 3 spec-bug reclassifications are confirmed via 120s retry (timeout→wrong_url/unsupported_query, needs_entityId→auth).</p>
     </div>
   </div>
 
@@ -301,7 +302,7 @@
       <ul>
         <li><strong>v1 strategy</strong>: long-lived keychain OAuth refresh token &mdash; ran for 47m without re-auth but couldn't recover from timeouts (only did ad-hoc /tmp/retimeout.py probes for 5 tables).</li>
         <li><strong>v2 strategy</strong>: short-lived az-minted admin token pasted via env var &mdash; re-authed twice mid-run when the token expired; after the main run, ran an 88-table retry sweep covering all 51 expired-token and 37 timeout tables.</li>
-        <li><strong>Result</strong>: 13 of the 88 retried tables returned PASS on the second attempt (slow endpoints). The 5 net gain in pass count (122 → 127) is exactly: 13 retries that became PASS, minus 8 retries that flipped to other categories (auth/wrong_audience/etc.).</li>
+        <li><strong>Result</strong>: 13 of the 88 retried tables returned PASS in the 30s sweep, plus 2 of the 28 returned PASS in the 120s sweep = 15 retries that became PASS. The 7 net gain in pass count (122 → 129) is exactly: 15 retries that became PASS, minus 8 retries that flipped to other categories (auth/wrong_audience/etc.).</li>
         <li><strong>Trade-off</strong>: v2 takes ~2h 28m vs v1's 47m. The extra time is the 2 re-auths + 88-table retry sweep. The pass-rate gain is small (5 tables) but the data is more complete (no expired-token failures left in the final set).</li>
       </ul>
     </div>
@@ -315,7 +316,7 @@
     <div class="section-body">
       <div class="table-scroll"><table>
         <tr><th>Result</th><th>Count</th><th>%</th><th>Notes</th></tr>
-        <tr><td><span class="tag tag-pass">Pass</span></td><td><strong>127</strong></td><td>17.3%</td><td>Returned a valid <code>1</code> row</td></tr>
+        <tr><td><span class="tag tag-pass">Pass</span></td><td><strong>129</strong></td><td>17.6%</td><td>Returned a valid <code>1</code> row</td></tr>
         <tr><td><span class="tag tag-fail">AUTH (401/403)</span></td><td>287</td><td>39.2%</td><td>Insufficient privileges, missing scopes</td></tr>
         <tr><td><span class="tag tag-info">WRONG_AUDIENCE (400)</span></td><td>109</td><td>14.9%</td><td>Endpoint targets non-AAD tenant types</td></tr>
         <tr><td><span class="tag tag-muted">NOT_FOUND (404)</span></td><td>56</td><td>7.6%</td><td>Table genuinely missing from spec</td></tr>
@@ -534,7 +535,7 @@ Hint: Credentials for this source are invalid or expired. Re-install it to refre
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;&quot;,&quot;message&quot;:&quot;No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/agreementAcceptances?x-scenario=MSGraph&amp;x-tenantid=[tenantId]'.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:16:11&quot;,&quot;request-id&quot;:&quot;0beb8868-67de-4ed7-ae1c-336264fb00f7&quot;,&quot;client-request-id&quot;:&quot;0beb8868-67de-4ed7-ae1c-336264fb00f7&quot;}}} [GET] https://graph.microsoft.com/v1.0/agreementAcceptances
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -562,7 +563,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.filteroperators_filteroperatorschema_filteroperators_filteroperatorschema_listfilteroperatorschema LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;Message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://syncfabric.windowsazure.com/api/filterOperators?api-version=2.0'.\&quot;}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:01:06&quot;,&quot;request-id&quot;:&quot;6917b94c-3d33-4da1-919c-85e33a2465f7&quot;,&quot;client-request-id&quot;:&quot;6917b94c-3d33-4da1-919c-85e33a2465f7&quot;}}} [GET] https://graph.microsoft.com/v1.0/filterOperators
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -590,7 +591,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.functions_attributemappingfunctionschema_functions_attributemappingfunctionschema_listattributemappingfunctionschema LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;Message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://syncfabric.windowsazure.com/api/functions?api-version=2.0'.\&quot;}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:01:12&quot;,&quot;request-id&quot;:&quot;df1e535c-984d-4606-8703-38fbc0f27c2b&quot;,&quot;client-request-id&quot;:&quot;df1e535c-984d-4606-8703-38fbc0f27c2b&quot;}}} [GET] https://graph.microsoft.com/v1.0/functions
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -618,7 +619,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identity_authenticationeventsflow_identity_listauthenticationeventsflows_asexternalusersselfservicesignupeventsflow LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://cpim.windows.net/graph/identity/authenticationEventsFlows/Microsoft.Cpim.Api.DataModels.ExternalUsersSelfServiceSignUpEventsFlow'.\&quot;,\&quot;messageDetail\&quot;:\&quot;No type was found that matches the controller named 'identity'.\&quot;,\&quot;stackTrace\&quot;:null}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:01:38&quot;,&quot;request-id&quot;:&quot;327c9ff5-9ffb-4123-b082-9efe1ea413a0&quot;,&quot;client-request-id&quot;:&quot;327c9ff5-9ffb-4123-b082-9efe1ea413a0&quot;}}} [GET] https://graph.microsoft.com/v1.0/identity/authenticationEventsFlows/graph.externalUsersSelfServiceSignUpEventsFlow
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -646,7 +647,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identity_conditionalaccessroot_identity_conditionalaccess_getdeleteditems LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;Message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://na.prod.graph.ipc.msidentity.com/conditionalAccess/deletedItems'.\&quot;,\&quot;MessageDetail\&quot;:\&quot;No type was found that matches the controller named 'deletedItems'.\&quot;}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:02:09&quot;,&quot;request-id&quot;:&quot;09706abe-e868-45ee-9eae-3ede6b9a7752&quot;,&quot;client-request-id&quot;:&quot;09706abe-e868-45ee-9eae-3ede6b9a7752&quot;}}} [GET] https://graph.microsoft.com/v1.0/identity/conditionalAccess/deletedItems
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -674,19 +675,19 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identity_identitycontainer_identity_identitycontainer_getidentitycontainer LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://cpim.windows.net/graph/identity'.\&quot;,\&quot;messageDetail\&quot;:\&quot;No type was found that matches the controller named 'identity'.\&quot;,\&quot;stackTrace\&quot;:null}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:02:43&quot;,&quot;request-id&quot;:&quot;a0aeb4af-8beb-4614-a2a5-5d4c35115210&quot;,&quot;client-request-id&quot;:&quot;a0aeb4af-8beb-4614-a2a5-5d4c35115210&quot;}}} [GET] https://graph.microsoft.com/v1.0/identity
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
     </div>
   </div>
 </article>
-<article class="bug-card" data-cat="wrong_url" data-status="timeout" data-search="identity_riskpreventioncontainer_identity_getriskprevention identity_riskpreventioncontainer_getriskprevention">
+<article class="bug-card" data-cat="wrong_url" data-status="wrong_url" data-search="identity_riskpreventioncontainer_identity_getriskprevention identity_riskpreventioncontainer_getriskprevention">
   <div class="bug-card-head" onclick="toggleBug(this)">
     <div class="bug-card-title">
       <code class="bug-table">identity_riskpreventioncontainer_identity_getriskprevention</code>
       <div class="bug-tags">
-        <span class="tag tag-warn">timeout</span>
+        <span class="tag tag-warn">wrong_url</span>
         <span class="tag tag-warn">Wrong URL</span>
       </div>
     </div>
@@ -702,8 +703,10 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identity_riskpreventioncontainer_identity_getriskprevention LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (timeout)</span></div>
-      <pre class="out"><span class="output">Timeout after 30s</span></pre>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
+      <pre class="out"><span class="output">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://cpim.windows.net/graph/identity/riskPrevention'.\&quot;,\&quot;messageDetail\&quot;:\&quot;No type was found that matches the controller named 'identity'.\&quot;,\&quot;stackTrace\&quot;:null}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T11:52:14&quot;,&quot;request-id&quot;:&quot;5a7332b6-1b0e-45e6-a919-f3190ef92f0a&quot;,&quot;client-request-id&quot;:&quot;5a7332b6-1b0e-45e6-a919-f3190ef92f0a&quot;}}} [GET] https://graph.microsoft.com/v1.0/identity/riskPrevention
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
     </div>
   </div>
 </article>
@@ -728,7 +731,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackagesuggestions LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;&quot;,&quot;message&quot;:&quot;No HTTP resource was found that matches the request URI 'https://igaelm-asev3-ecapi-cus.igaelm-asev3-environment-cus.p.azurewebsites.net/api/v1/accessPackageSuggestions'.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:12:14&quot;,&quot;request-id&quot;:&quot;413dd9ab-4500-481e-b3e1-13325a6770c3&quot;,&quot;client-request-id&quot;:&quot;413dd9ab-4500-481e-b3e1-13325a6770c3&quot;}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/accessPackageSuggestions
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -756,7 +759,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listavailableaccesspackages LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;&quot;,&quot;message&quot;:&quot;No HTTP resource was found that matches the request URI 'https://igaelm-asev3-ecapi-cus.igaelm-asev3-environment-cus.p.azurewebsites.net/api/v1/availableAccessPackages'.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:12:55&quot;,&quot;request-id&quot;:&quot;bd128dd2-698b-433a-9617-6cdb7bd51d30&quot;,&quot;client-request-id&quot;:&quot;bd128dd2-698b-433a-9617-6cdb7bd51d30&quot;}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/availableAccessPackages
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -784,7 +787,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcontrolconfigurations LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;&quot;,&quot;message&quot;:&quot;No HTTP resource was found that matches the request URI 'https://igaelm-asev3-ecapi-cus.igaelm-asev3-environment-cus.p.azurewebsites.net/api/v1/controlConfigurations'.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:13:14&quot;,&quot;request-id&quot;:&quot;49340b5b-1219-4cb7-999f-d721cebf24dc&quot;,&quot;client-request-id&quot;:&quot;49340b5b-1219-4cb7-999f-d721cebf24dc&quot;}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/controlConfigurations
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -812,7 +815,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerolescopes LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://igaelm-asev3-ecapi-cus.igaelm-asev3-environment-cus.p.azurewebsites.net/api/v1/resourceRoleScopes'.\&quot;}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:13:46&quot;,&quot;request-id&quot;:&quot;5160042c-a02b-4075-b264-fc9ca852ce2c&quot;,&quot;client-request-id&quot;:&quot;5160042c-a02b-4075-b264-fc9ca852ce2c&quot;}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/resourceRoleScopes
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -840,7 +843,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_termsofusecontainer_identitygovernance_gettermsofuse LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;Message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/identityGovernance/termsOfUse?x-scenario=MSGraph&amp;x-tenantid=[tenantId]'.\&quot;}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:17:58&quot;,&quot;request-id&quot;:&quot;7a80270c-1d88-4501-8521-7994e4bc2e95&quot;,&quot;client-request-id&quot;:&quot;7a80270c-1d88-4501-8521-7994e4bc2e95&quot;}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/termsOfUse
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -868,7 +871,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreementacceptances LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_url)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_url, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;Message\&quot;:\&quot;No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/identityGovernance/termsOfUse/agreementAcceptances?x-scenario=MSGraph&amp;x-tenantid=[tenantId]'.\&quot;}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:18:23&quot;,&quot;request-id&quot;:&quot;a1bedc0c-47e3-4cbb-b3ad-bcda2e22e69b&quot;,&quot;client-request-id&quot;:&quot;a1bedc0c-47e3-4cbb-b3ad-bcda2e22e69b&quot;}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/termsOfUse/agreementAcceptances
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -896,7 +899,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:16:24&quot;,&quot;request-id&quot;:&quot;3e0c502a-a769-43a8-b72a-eedfd2ed5210&quot;,&quot;client-request-id&quot;:&quot;3e0c502a-a769-43a8-b72a-eedfd2ed5210&quot;}}} [GET] https://graph.microsoft.com/v1.0/appCatalogs
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -924,7 +927,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.chats_chat_functions_chats_getallmessages LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:18:28&quot;,&quot;request-id&quot;:&quot;8ba495e6-a705-4a97-877b-91b3cc6fcb6d&quot;,&quot;client-request-id&quot;:&quot;8ba495e6-a705-4a97-877b-91b3cc6fcb6d&quot;}}} [GET] https://graph.microsoft.com/v1.0/chats/getAllMessages()
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -952,7 +955,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.chats_chat_functions_chats_getallretainedmessages LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:18:42&quot;,&quot;request-id&quot;:&quot;f1e0d504-c8af-42e3-8405-3fc3c07c6358&quot;,&quot;client-request-id&quot;:&quot;f1e0d504-c8af-42e3-8405-3fc3c07c6358&quot;}}} [GET] https://graph.microsoft.com/v1.0/chats/getAllRetainedMessages()
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -980,7 +983,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_adhoccalls_getallrecordings LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:18:53&quot;,&quot;request-id&quot;:&quot;3a3be5f5-8c64-45fa-9d5c-a0b2d057538f&quot;,&quot;client-request-id&quot;:&quot;3a3be5f5-8c64-45fa-9d5c-a0b2d057538f&quot;}}} [GET] https://graph.microsoft.com/v1.0/communications/adhocCalls/getAllRecordings(userId='@userId',startDateTime=@startDateTime,endDateTime=@endDateTime)
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1008,7 +1011,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_adhoccalls_getalltranscripts LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:19:04&quot;,&quot;request-id&quot;:&quot;cf6e7970-bdd1-41d5-bfd3-a43baeeed186&quot;,&quot;client-request-id&quot;:&quot;cf6e7970-bdd1-41d5-bfd3-a43baeeed186&quot;}}} [GET] https://graph.microsoft.com/v1.0/communications/adhocCalls/getAllTranscripts(userId='@userId',startDateTime=@startDateTime,endDateTime=@endDateTime)
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1036,7 +1039,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_listadhoccalls LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:19:15&quot;,&quot;request-id&quot;:&quot;bd2b68fc-77e4-41d3-9000-300a48685d60&quot;,&quot;client-request-id&quot;:&quot;bd2b68fc-77e4-41d3-9000-300a48685d60&quot;}}} [GET] https://graph.microsoft.com/v1.0/communications/adhocCalls
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1064,7 +1067,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_onlinemeeting_communications_onlinemeetings_getallrecordings LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:20:20&quot;,&quot;request-id&quot;:&quot;c2d7559a-2b77-4878-856a-fc30c491ed8c&quot;,&quot;client-request-id&quot;:&quot;c2d7559a-2b77-4878-856a-fc30c491ed8c&quot;}}} [GET] https://graph.microsoft.com/v1.0/communications/onlineMeetings/getAllRecordings(meetingOrganizerUserId='@meetingOrganizerUserId',startDateTime=@startDateTime,endDateTime=@endDateTime)
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1092,7 +1095,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_onlinemeeting_communications_onlinemeetings_getalltranscripts LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:20:30&quot;,&quot;request-id&quot;:&quot;ed70a6c8-184c-46fb-aca4-86180e5cf6a7&quot;,&quot;client-request-id&quot;:&quot;ed70a6c8-184c-46fb-aca4-86180e5cf6a7&quot;}}} [GET] https://graph.microsoft.com/v1.0/communications/onlineMeetings/getAllTranscripts(meetingOrganizerUserId='@meetingOrganizerUserId',startDateTime=@startDateTime,endDateTime=@endDateTime)
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1120,7 +1123,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.copilot_aiinteractionhistory_copilot_getinteractionhistory LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:21:55&quot;,&quot;request-id&quot;:&quot;d79e9ece-ee25-49c3-ac03-71c0c7d78614&quot;,&quot;client-request-id&quot;:&quot;d79e9ece-ee25-49c3-ac03-71c0c7d78614&quot;}}} [GET] https://graph.microsoft.com/v1.0/copilot/interactionHistory
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1148,7 +1151,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.copilot_aiinteractionhistory_copilot_interactionhistory_getallenterpriseinteractions LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:22:06&quot;,&quot;request-id&quot;:&quot;158a4ff4-3fb3-4f1b-88a8-0ba3646f2d03&quot;,&quot;client-request-id&quot;:&quot;158a4ff4-3fb3-4f1b-88a8-0ba3646f2d03&quot;}}} [GET] https://graph.microsoft.com/v1.0/copilot/interactionHistory/getAllEnterpriseInteractions()
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1176,7 +1179,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.copilot_aiuser_copilot_listusers LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:22:16&quot;,&quot;request-id&quot;:&quot;77f3e1dc-36f1-484c-8232-4b6d77cf41a9&quot;,&quot;client-request-id&quot;:&quot;77f3e1dc-36f1-484c-8232-4b6d77cf41a9&quot;}}} [GET] https://graph.microsoft.com/v1.0/copilot/users
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1204,7 +1207,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T10:06:11&quot;,&quot;request-id&quot;:&quot;b4eac421-dcce-4ee7-b5d2-f2c44da11edc&quot;,&quot;client-request-id&quot;:&quot;b4eac421-dcce-4ee7-b5d2-f2c44da11edc&quot;}}} [GET] https://graph.microsoft.com/v1.0/teamsTemplates
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1232,7 +1235,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.teamwork_deletedteam_teamwork_deletedteams_getallmessages LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (deprecated)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (deprecated, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source resource was not found (404)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T10:06:30&quot;,&quot;request-id&quot;:&quot;4eba1910-0188-4490-b893-2d9623201bc8&quot;,&quot;client-request-id&quot;:&quot;4eba1910-0188-4490-b893-2d9623201bc8&quot;}}} [GET] https://graph.microsoft.com/v1.0/teamwork/deletedTeams/getAllMessages()
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</span></pre>
@@ -1260,7 +1263,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_configurationmanagement_admin_getconfigurationmanagement LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.XTA,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:12:26&quot;,&quot;request-id&quot;:&quot;365d3b0a-b4ee-4ca0-9a82-8df4a2aa597b&quot;,&quot;client-request-id&quot;:&quot;365d3b0a-b4ee-4ca0-9a82-8df4a2aa597b&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/configurationManagement
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1288,7 +1291,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_edge_admin_edge_getinternetexplorermode LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.Edge.CloudSiteListManagement,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:12:34&quot;,&quot;request-id&quot;:&quot;e5407305-8dc1-4d6b-b242-c17922ad5849&quot;,&quot;client-request-id&quot;:&quot;e5407305-8dc1-4d6b-b242-c17922ad5849&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/edge/internetExplorerMode
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1316,7 +1319,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_edge_admin_getedge LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.Edge.CloudSiteListManagement,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:12:51&quot;,&quot;request-id&quot;:&quot;8f9b08ab-cdaf-44ec-959c-92eebf208945&quot;,&quot;client-request-id&quot;:&quot;8f9b08ab-cdaf-44ec-959c-92eebf208945&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/edge
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1344,7 +1347,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_exchangeadmin_admin_getexchange LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.Exchange,True).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:13:21&quot;,&quot;request-id&quot;:&quot;12303dcd-bbe0-4098-94a3-f9bb76ef83e5&quot;,&quot;client-request-id&quot;:&quot;12303dcd-bbe0-4098-94a3-f9bb76ef83e5&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/exchange
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1372,7 +1375,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_sharepoint_admin_getsharepoint LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.FileServices,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:14:56&quot;,&quot;request-id&quot;:&quot;9cd8c971-38e3-4ca9-a2f2-2e87a368c983&quot;,&quot;client-request-id&quot;:&quot;9cd8c971-38e3-4ca9-a2f2-2e87a368c983&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/sharepoint
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1400,7 +1403,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_teamsadminroot_admin_getteams LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.TeamsAdminGateway,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:15:11&quot;,&quot;request-id&quot;:&quot;b473c286-1e3f-4aab-9907-4a8b5505eccd&quot;,&quot;client-request-id&quot;:&quot;b473c286-1e3f-4aab-9907-4a8b5505eccd&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/teams
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1428,7 +1431,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_teamsadminroot_admin_teams_getpolicy LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.PolicyAdmin,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:15:18&quot;,&quot;request-id&quot;:&quot;636950c8-10f7-43de-a589-257cfb48560d&quot;,&quot;client-request-id&quot;:&quot;636950c8-10f7-43de-a589-257cfb48560d&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/teams/policy
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1456,7 +1459,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_teamsadminroot_admin_teams_gettelephonenumbermanagement LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.TelephoneNumberManagement,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:15:25&quot;,&quot;request-id&quot;:&quot;92537f61-e88f-4696-9311-11df165130fa&quot;,&quot;client-request-id&quot;:&quot;92537f61-e88f-4696-9311-11df165130fa&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/teams/telephoneNumberManagement
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1484,7 +1487,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.copilot_copilotadmin_copilot_admin_getcatalog LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.CopilotPackage,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:22:37&quot;,&quot;request-id&quot;:&quot;08c46a4f-53f2-4066-a911-345d09a212c9&quot;,&quot;client-request-id&quot;:&quot;08c46a4f-53f2-4066-a911-345d09a212c9&quot;}}} [GET] https://graph.microsoft.com/v1.0/copilot/admin/catalog
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1512,7 +1515,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.identity_identityverifiedidroot_identity_getverifiedid LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.VerifiedId.VerifiedIdProfile,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:03:06&quot;,&quot;request-id&quot;:&quot;ffb049f0-7b79-4b31-bad6-3fcd9216a2af&quot;,&quot;client-request-id&quot;:&quot;ffb049f0-7b79-4b31-bad6-3fcd9216a2af&quot;}}} [GET] https://graph.microsoft.com/v1.0/identity/verifiedId
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1540,7 +1543,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.storage_filestorage_storage_getfilestorage LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.FileServices,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T10:05:06&quot;,&quot;request-id&quot;:&quot;a8f4f57e-f51b-4dd2-8bba-4574c10b63fa&quot;,&quot;client-request-id&quot;:&quot;a8f4f57e-f51b-4dd2-8bba-4574c10b63fa&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1568,7 +1571,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.storage_storagesettings_storage_getsettings LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (wrong_audience)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (wrong_audience, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.UnifiedStorageQuota,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T10:05:18&quot;,&quot;request-id&quot;:&quot;37f718f4-021d-454f-ae68-31221bd5b7d7&quot;,&quot;client-request-id&quot;:&quot;37f718f4-021d-454f-ae68-31221bd5b7d7&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/settings
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1596,7 +1599,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_listcertificatebasedauthconfiguration LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (needs_entityId)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (needs_entityId, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;Request_UnsupportedQuery&quot;,&quot;message&quot;:&quot;Direct queries to this resource type are not supported.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:18:10&quot;,&quot;request-id&quot;:&quot;bed8e837-ba33-4860-ad9f-01bf0e8de5ee&quot;,&quot;client-request-id&quot;:&quot;bed8e837-ba33-4860-ad9f-01bf0e8de5ee&quot;}}} [GET] https://graph.microsoft.com/v1.0/certificateBasedAuthConfiguration
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1624,7 +1627,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_onlinemeeting_communications_listonlinemeetings LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (auth)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (auth, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source request was rejected (403)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Insufficient permissions&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:20:09&quot;,&quot;request-id&quot;:&quot;75d8efde-550e-4fc0-8bb5-569916cdc4f2&quot;,&quot;client-request-id&quot;:&quot;75d8efde-550e-4fc0-8bb5-569916cdc4f2&quot;}}} [GET] https://graph.microsoft.com/v1.0/communications/onlineMeetings
 Hint: Check the configured credentials and whether they have access to this resource.</span></pre>
@@ -1652,7 +1655,7 @@ Hint: Check the configured credentials and whether they have access to this reso
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.permissiongrants_resourcespecificpermissiongrant_permissiongrants_resourcespecificpermissiongrant_listresourcespecificpermissiongrant LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (needs_entityId)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (needs_entityId, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;Request_UnsupportedQuery&quot;,&quot;message&quot;:&quot;Direct queries to this resource type are not supported.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:38:38&quot;,&quot;request-id&quot;:&quot;5ec8175d-bbb2-462f-838f-40613bdfcf78&quot;,&quot;client-request-id&quot;:&quot;5ec8175d-bbb2-462f-838f-40613bdfcf78&quot;}}} [GET] https://graph.microsoft.com/v1.0/permissionGrants
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1680,7 +1683,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.scopedrolememberships_scopedrolemembership_scopedrolememberships_scopedrolemembership_listscopedrolemembership LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (needs_entityId)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (needs_entityId, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;Request_UnsupportedQuery&quot;,&quot;message&quot;:&quot;Direct queries to this resource type are not supported.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T09:49:45&quot;,&quot;request-id&quot;:&quot;c5d2ffc2-e645-4d8c-ad19-dff0a301b4b7&quot;,&quot;client-request-id&quot;:&quot;c5d2ffc2-e645-4d8c-ad19-dff0a301b4b7&quot;}}} [GET] https://graph.microsoft.com/v1.0/scopedRoleMemberships
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1708,7 +1711,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.directory_directoryobject_directory_listdeleteditems LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (unsupported_query)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (unsupported_query, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;Request_UnsupportedQuery&quot;,&quot;message&quot;:&quot;Searches against this resource are not supported. Only specific instances can be queried.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:46:57&quot;,&quot;request-id&quot;:&quot;c8222130-dcff-4470-8bb0-54a24faf36da&quot;,&quot;client-request-id&quot;:&quot;c8222130-dcff-4470-8bb0-54a24faf36da&quot;}}} [GET] https://graph.microsoft.com/v1.0/directory/deletedItems
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
@@ -1736,19 +1739,19 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (unsupported_query)</span></div>
+      <div class="cmd-head"><span class="cmd-label">output (unsupported_query, from v2 run)</span></div>
       <pre class="out"><span class="output">Error: Source rejected the request (400)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;Request_UnsupportedQuery&quot;,&quot;message&quot;:&quot;Searches against this resource are not supported. Only specific instances can be queried.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T08:49:51&quot;,&quot;request-id&quot;:&quot;edbeaf8b-2eec-4c18-8288-e17020bbaaba&quot;,&quot;client-request-id&quot;:&quot;edbeaf8b-2eec-4c18-8288-e17020bbaaba&quot;}}} [GET] https://graph.microsoft.com/v1.0/directoryObjects
 Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
     </div>
   </div>
 </article>
-<article class="bug-card" data-cat="unsupported_query" data-status="timeout" data-search="directoryobjects_directoryobject_functions_directoryobjects_delta directoryobjects_delta">
+<article class="bug-card" data-cat="unsupported_query" data-status="unsupported_query" data-search="directoryobjects_directoryobject_functions_directoryobjects_delta directoryobjects_delta">
   <div class="bug-card-head" onclick="toggleBug(this)">
     <div class="bug-card-title">
       <code class="bug-table">directoryobjects_directoryobject_functions_directoryobjects_delta</code>
       <div class="bug-tags">
-        <span class="tag tag-warn">timeout</span>
+        <span class="tag tag-info">unsupported_query</span>
         <span class="tag tag-info">Unsupported Query</span>
       </div>
     </div>
@@ -1764,11 +1767,14 @@ Hint: Adjust the query filters or shape to match the target table's supported in
       <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.directoryobjects_directoryobject_functions_directoryobjects_delta LIMIT 1"</pre>
     </div>
     <div class="cmd-block">
-      <div class="cmd-head"><span class="cmd-label">output (timeout)</span></div>
-      <pre class="out"><span class="output">Timeout after 30s</span></pre>
+      <div class="cmd-head"><span class="cmd-label">output (unsupported_query, from v2 run)</span></div>
+      <pre class="out"><span class="output">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;Request_UnsupportedQuery&quot;,&quot;message&quot;:&quot;Delta query is not supported for directoryObjects without a valid resource type or id filter.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-07-31T11:52:10&quot;,&quot;request-id&quot;:&quot;0242afe0-3250-4ac7-9bbf-a042e561f93d&quot;,&quot;client-request-id&quot;:&quot;0242afe0-3250-4ac7-9bbf-a042e561f93d&quot;}}} [GET] https://graph.microsoft.com/v1.0/directoryObjects/delta()
+Hint: Adjust the query filters or shape to match the target table's supported inputs.</span></pre>
     </div>
   </div>
-</article>      </div>
+</article>
+      </div>
 
       <h4>Priority for fixing</h4>
       <ol>
@@ -1786,11 +1792,12 @@ Hint: Adjust the query filters or shape to match the target table's supported in
   <div class="section">
     <div class="section-header open"><span>How v2 handled the token-expiry problem <span class="tag tag-pass">0 expired_token (final)</span></span><span class="arrow">&#9654;</span></div>
     <div class="section-body">
-      <p>The Jul 29 re-run had 63 mid-run <code>expired_token</code> failures (token died mid-battery, unfixable without restarting). The v2 run uses an az-minted admin token (~1h lifetime) which can be re-minted and re-installed without losing progress. The strategy has 3 layers:</p>
+      <p>v2 solves both the <strong>token-expiry problem</strong> (Jul 29 had 63 mid-run failures) and the <strong>timeout problem</strong> (v1 ended with 30 unresolved at 30s cutoff). The v2 run uses an az-minted admin token (~1h lifetime) which can be re-minted and re-installed without losing progress, plus a 4-layer retry strategy:</p>
       <ol>
         <li><strong>Short-lived az token</strong> instead of long-lived Coral keychain OAuth refresh token. Az tokens are explicit &amp; observable.</li>
-        <li><strong>Mid-run re-auth on first sign of expiry</strong>: 51 tables began returning <code>InvalidAuthenticationToken, Lifetime validation failed</code>. Killed the runner, minted a fresh token, re-installed the source, resumed from saved progress.</li>
-        <li><strong>Retry sweep after the main run</strong>: all 88 tables that finished in <code>expired_token</code> (51) or <code>timeout</code> (37) were re-queried with a fresh token. 13 became PASS, 26 became auth, 22 became wrong_audience, 14 stayed timeout, 6 became wrong_url, 5 became other, 1 became not_found, 1 became unsupported_query. Final <code>expired_token</code> count: <strong>0</strong>.</li>
+        <li><strong>Mid-run re-auth on first sign of expiry</strong>: 51 tables began returning <code>InvalidAuthenticationToken, Lifetime validation failed</code>. Killed the runner, minted a fresh token, re-installed the source, resumed from saved progress. Done twice (~22 min and ~58 min into the run).</li>
+        <li><strong>88-table retry sweep (30s timeout)</strong>: all 88 tables that finished in <code>expired_token</code> (51) or <code>timeout</code> (37) were re-queried with a fresh token. 13 became PASS, 26 became auth, 22 became wrong_audience, 14 stayed timeout, 6 became wrong_url, 5 became other, 1 became not_found, 1 became unsupported_query.</li>
+        <li><strong>28-table 120s timeout retry</strong>: the 14 that stayed timeout from layer 3 (plus 14 more from layer 3 retried) — final pass with <strong>120s timeout</strong> matching Jul 29. Result: all 28 resolved. 2 became PASS, 11 became wrong_audience, 10 became auth, 2 became other, 1 became unsupported_query, 1 became wrong_url, 1 became not_found. <strong>Final timeout count: 0.</strong></li>
       </ol>
     </div>
   </div>
@@ -1815,22 +1822,23 @@ Hint: Adjust the query filters or shape to match the target table's supported in
   <div class="section">
     <div class="section-header"><span>13 tables that PASSED only after retry</span><span class="arrow">&#9654;</span></div>
     <div class="section-body">
-      <p>These were <code>expired_token</code> or <code>timeout</code> on first call, then returned valid <code>1</code> on the retry sweep:</p>
-      <ul>
-        <li><code>directory_recovery_directory_getrecovery</code></li>
-        <li><code>employeeexperience_employeeexperience_employeeexperience_employeeexperience_getemployeeexperience</code></li>
-        <li><code>groups_group_functions_groups_delta</code></li>
-        <li><code>groups_group_groups_group_listgroup</code></li>
-        <li><code>groupsettings_groupsetting_groupsettings_groupsetting_listgroupsetting</code></li>
-        <li><code>groupsettingtemplates_groupsettingtemplate_groupsettingtemplates_groupsettingtemplate_listgroupsettingtemplate</code></li>
-        <li><code>identity_authenticationeventlistener_identity_listauthenticationeventlisteners</code></li>
-        <li><code>identity_conditionalaccessroot_identity_conditionalaccess_deleteditems_listnamedlocations</code></li>
-        <li><code>identity_conditionalaccessroot_identity_conditionalaccess_deleteditems_listpolicies</code></li>
-        <li><code>identity_conditionalaccessroot_identity_conditionalaccess_listnamedlocations</code></li>
-        <li><code>identity_conditionalaccessroot_identity_conditionalaccess_listpolicies</code></li>
-        <li><code>identity_conditionalaccessroot_identity_conditionalaccess_listtemplates</code></li>
-        <li><code>identity_customauthenticationextension_identity_listcustomauthenticationextensions</code></li>
-      </ul>
+      <p>15 tables recovered total: 13 from the 30s retry sweep (left) + 2 from the 120s retry sweep (right).</p>
+      <div class="table-scroll"><table>
+        <tr><th>30s retry sweep (13)</th><th>120s retry sweep (2)</th></tr>
+        <tr><td><code>directory_recovery_directory_getrecovery</code></td><td><code>directoryroles_directoryrole_directoryroles_directoryrole_listdirectoryrole</code></td></tr>
+        <tr><td><code>employeeexperience_employeeexperience_employeeexperience_employeeexperience_getemployeeexperience</code></td><td><code>identityprotection_identityprotectionroot_identityprotection_identityprotectionroot_getidentityprotectionroot</code></td></tr>
+        <tr><td><code>groups_group_functions_groups_delta</code></td><td></td></tr>
+        <tr><td><code>groups_group_groups_group_listgroup</code></td><td></td></tr>
+        <tr><td><code>groupsettings_groupsetting_groupsettings_groupsetting_listgroupsetting</code></td><td></td></tr>
+        <tr><td><code>groupsettingtemplates_groupsettingtemplate_groupsettingtemplates_groupsettingtemplate_listgroupsettingtemplate</code></td><td></td></tr>
+        <tr><td><code>identity_authenticationeventlistener_identity_listauthenticationeventlisteners</code></td><td></td></tr>
+        <tr><td><code>identity_conditionalaccessroot_identity_conditionalaccess_deleteditems_listnamedlocations</code></td><td></td></tr>
+        <tr><td><code>identity_conditionalaccessroot_identity_conditionalaccess_deleteditems_listpolicies</code></td><td></td></tr>
+        <tr><td><code>identity_conditionalaccessroot_identity_conditionalaccess_listnamedlocations</code></td><td></td></tr>
+        <tr><td><code>identity_conditionalaccessroot_identity_conditionalaccess_listpolicies</code></td><td></td><td></td></tr>
+        <tr><td><code>identity_conditionalaccessroot_identity_conditionalaccess_listtemplates</code></td><td></td></tr>
+        <tr><td><code>identity_customauthenticationextension_identity_listcustomauthenticationextensions</code></td><td></td></tr>
+      </table></div>
     </div>
   </div>
 
@@ -1861,13 +1869,13 @@ Hint: Adjust the query filters or shape to match the target table's supported in
   </div>
 
   <div class="section">
-    <div class="section-header"><span>Verdict on token-expiry mitigation</span><span class="arrow">&#9654;</span></div>
+    <div class="section-header"><span>Verdict on the 4-layer strategy</span><span class="arrow">&#9654;</span></div>
     <div class="section-body">
       <ul>
-        <li><strong>Cost</strong>: ~2h 28m total runtime vs v1's 47m &mdash; extra time from 2 mid-run re-auths (~30s each) + 88-table retry sweep (~7m).</li>
-        <li><strong>Benefit</strong>: 5 more passes (122 → 127) &mdash; 13 retries became PASS, but 8 of those flipped to other categories so net is +5.</li>
-        <li><strong>Data quality</strong>: final <code>expired_token</code> count is 0 (was 63 on Jul 29, 0 on v1 with no token expiry observed). The retry sweep converted the token-expiry noise into real classifications.</li>
-        <li><strong>Recommendation</strong>: for future full-battery runs, use az-minted short-lived tokens + retry sweep. The keychain OAuth refresh token approach is opaque and can't be mid-run rotated without losing progress.</li>
+        <li><strong>Cost</strong>: ~2h 30m total runtime vs v1's 47m &mdash; extra time from 2 mid-run re-auths (~30s each) + 88-table 30s-retry sweep (~7m) + 28-table 120s-retry (~80s).</li>
+        <li><strong>Benefit</strong>: 7 more passes (122 → 129) and <strong>0 final timeouts</strong> (was 30 in v1) and <strong>0 final expired_token</strong> (was 63 on Jul 29). Two spec-bug flips (timeout→wrong_url, timeout→unsupported_query) are now confirmed.</li>
+        <li><strong>Data quality</strong>: every table has a real classification. No expired_token, no timeout. The two retry sweeps converted timing artifacts (token expiry, cold-call timeouts) into real Graph error categories.</li>
+        <li><strong>Recommendation</strong>: for future full-battery runs, use az-minted short-lived tokens + 4-layer retry strategy. The keychain OAuth refresh token approach is opaque and can't be mid-run rotated without losing progress. The 30s timeout is too aggressive for cold calls; 120s is the safe baseline.</li>
       </ul>
     </div>
   </div>
@@ -1876,7 +1884,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 <footer>
   <div class="foot-title">Report meta &middot; v2</div>
   Generated 2026-07-31 &middot; Coral 0.8.1+3acb123 &middot; Tenant: <code>89de3b75-fef2-44f9-90a4-cf8c69700c83</code>
-  <br>Auth: az-minted admin token, re-authed twice mid-run, plus 88-table retry sweep
+  <br>Auth: az-minted admin token, re-authed twice mid-run, plus 88-table 30s-retry sweep + 28-table 120s-retry sweep
   <br>Author: Vicky Kumar &lt;algsoch@gmail.com&gt;
   <br>Report: <code>reports/2026-07-31-msgraph-reauth-test-report-v2.html</code>
   <br>Raw results: <code>/tmp/coral_sql_results_2026-07-31.json</code>
