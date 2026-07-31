@@ -25,11 +25,11 @@
   .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .hero-titles { min-width: 0; }
   header.hero h1 { font-size: clamp(1.25rem, 3vw, 1.9rem); font-weight: 800; color: #fff; line-height: 1.25; }
-  header.hero .subtitle { color: #94a3b8; font-size: 0.95rem; margin-top: 4px; }
+  header.hero .subtitle { color: #94a3b8; font-size: 0.95rem; margin-top: 4px; overflow-wrap: anywhere; word-break: break-word; }
   .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; font-size: 0.8rem; }
-  .meta .chip { background: rgba(15,23,42,0.55); border: 1px solid rgba(125,211,252,0.35); padding: 4px 12px; border-radius: 999px; white-space: normal; overflow-wrap: anywhere; display: inline-flex; align-items: center; gap: 6px; }
+  .meta .chip { background: rgba(15,23,42,0.55); border: 1px solid rgba(125,211,252,0.35); padding: 4px 12px; border-radius: 999px; white-space: normal; overflow-wrap: anywhere; word-break: break-word; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; }
   .meta .chip-label { color: #cbd5e1; font-weight: 700; flex-shrink: 0; }
-  .meta code { color: #7dd3fc; word-break: break-all; background: rgba(7,14,26,0.6); padding: 1px 7px; border-radius: 5px; font-weight: 600; }
+  .meta code { color: #7dd3fc; word-break: break-all; overflow-wrap: anywhere; background: rgba(7,14,26,0.6); padding: 1px 7px; border-radius: 5px; font-weight: 600; }
   .meta .chip-status { border-color: rgba(74,222,128,0.5); }
   .meta .chip-status code { color: #4ade80; background: rgba(22,101,52,0.25); }
   .meta .chip-warn { border-color: rgba(245,158,11,0.5); }
@@ -115,7 +115,8 @@
   .bug-card { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; background: #fff; }
   .bug-card-head { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .bug-card-head:hover { background: #f8fafc; }
-  .bug-card-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .bug-card-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; flex: 1 1 auto; }
+  .bug-card-title .bug-table { min-width: 0; max-width: 100%; }
   .bug-table { font-size: 0.74rem; word-break: break-all; max-width: 100%; }
   .bug-tags { display: flex; gap: 5px; }
   .bug-card-meta { display: flex; align-items: center; gap: 10px; color: var(--muted-text); font-size: 0.78rem; flex-wrap: wrap; }
@@ -123,27 +124,114 @@
   .bug-card.open .bug-card-meta .arrow { transform: rotate(90deg); }
   .bug-card-body { display: none; padding: 4px 14px 14px; background: #f8fafc; border-top: 1px solid var(--border); }
   .bug-card.open .bug-card-body { display: block; }
-  .bug-short { font-weight: 600; color: var(--text); }
+  .bug-short { font-weight: 600; color: var(--text); word-break: break-all; }
   .bug-detail { color: var(--muted-text); }
 
   footer { margin-top: 32px; padding: 16px 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); font-size: 0.78rem; color: var(--muted-text); line-height: 1.8; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
   footer .foot-title { font-weight: 800; color: var(--text); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
   footer code { background: var(--muted-bg); color: var(--text); padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; word-break: break-all; }
 
+  /* ---- Tablet (≤768px) ---- */
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    header.hero { padding: 18px; }
+    header.hero h1 { font-size: 1.4rem; }
+    header.hero .subtitle { font-size: 0.85rem; }
+    .meta .chip { font-size: 0.74rem; padding: 3px 10px; }
+    .cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+    .card { padding: 14px 10px; }
+    .card .num { font-size: 1.4rem; }
+    .card .label { font-size: 0.7rem; }
+    .bar { height: 36px; font-size: 0.65rem; }
+    .bar-seg { padding: 0 3px; }
+    nav.tabs button { font-size: 0.8rem; padding: 8px 10px; }
+    .legend { font-size: 0.74rem; gap: 8px; }
+    .section-header { font-size: 0.9rem; padding: 10px 14px; }
+    .section-body { padding: 0 14px 14px; }
+    .bug-card-head { padding: 9px 12px; gap: 8px; }
+    .bug-card-body { padding: 4px 12px 12px; }
+    .bug-toolbar { gap: 6px; }
+    .bug-search { font-size: 0.8rem; padding: 8px 10px; }
+    .chip { padding: 5px 10px; font-size: 0.74rem; }
+  }
+
+  /* ---- Phone (≤640px) ---- */
   @media (max-width: 640px) {
     .container { padding: 10px; }
-    header.hero { padding: 16px; }
+    header.hero { padding: 14px; border-radius: 10px; }
     .hero-top { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .hero-avatar { width: 48px; height: 48px; }
-    header.hero h1 { font-size: 1.2rem; }
-    header.hero .subtitle { font-size: 0.82rem; overflow-wrap: anywhere; }
+    .hero-avatar { width: 44px; height: 44px; }
+    header.hero h1 { font-size: 1.1rem; line-height: 1.2; }
+    header.hero .subtitle { font-size: 0.78rem; overflow-wrap: anywhere; line-height: 1.4; }
     .meta { gap: 6px; }
-    .meta .chip { font-size: 0.72rem; }
-    nav.tabs { position: static; }
-    nav.tabs button { min-width: 0; flex: 1 1 46%; font-size: 0.78rem; }
-    pre { font-size: 0.68rem; padding: 8px; }
-    .bug-card-meta { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .meta .chip { font-size: 0.7rem; padding: 3px 8px; }
+    .meta .chip-label { font-size: 0.66rem; }
+    .meta code { font-size: 0.7rem; padding: 0 5px; }
+
+    /* Cards: 1 column on phones so labels don't cramp */
+    .cards { grid-template-columns: 1fr; gap: 8px; }
+    .card { padding: 12px; display: flex; align-items: center; justify-content: space-between; text-align: left; gap: 12px; }
+    .card .num { font-size: 1.5rem; }
+    .card .label { font-size: 0.72rem; margin-top: 0; text-align: right; flex: 1; }
+
+    /* Bar chart: hide labels on tiny segments, show count only */
+    .bar { height: 28px; font-size: 0.6rem; }
+    .bar-seg { padding: 0 2px; }
+    .bar-seg.bar-tiny { display: none; }  /* segments < 5% get hidden */
+    .legend { font-size: 0.7rem; gap: 6px; }
+    .legend-item { font-size: 0.7rem; }
+
+    /* Tabs: 2-col grid on phones */
+    nav.tabs { position: static; padding: 4px; gap: 3px; }
+    nav.tabs button { min-width: 0; flex: 1 1 46%; font-size: 0.74rem; padding: 7px 6px; border-radius: 6px; }
+
+    /* Sections: tighter padding */
+    .section { border-radius: 10px; margin-bottom: 12px; }
+    .section-header { padding: 10px 12px; font-size: 0.85rem; }
+    .section-body { padding: 0 12px 12px; }
+
+    /* Tables: only the .table-scroll wrapper scrolls, headers stay readable */
+    table { font-size: 0.75rem; }
+    th, td { padding: 6px 6px 6px 0; }
+    .table-scroll { -webkit-overflow-scrolling: touch; }
+    .table-scroll table { min-width: 360px; }
+    table th { white-space: nowrap; }
+
+    /* Bug cards: stack code + tags vertically */
+    .bug-card-head { flex-direction: column; align-items: flex-start; padding: 10px; }
+    .bug-card-title { width: 100%; flex-direction: column; align-items: flex-start; }
+    .bug-table { font-size: 0.72rem; max-width: 100%; word-break: break-all; }
+    .bug-tags { flex-wrap: wrap; }
+    .bug-card-meta { flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; font-size: 0.74rem; }
+    .bug-short { font-size: 0.78rem; }
+    .bug-detail { font-size: 0.74rem; word-break: break-all; }
+
+    /* Pre/code blocks: smaller, scroll instead of wrap */
+    pre { font-size: 0.66rem; padding: 8px; line-height: 1.4; }
+    code { font-size: 0.72rem; }
+    .cmd-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .cmd-label { font-size: 0.66rem; }
+    .copy-btn { font-size: 0.68rem; padding: 1px 8px; }
+
+    /* Bug toolbar: search + chips stack */
+    .bug-toolbar { flex-direction: column; align-items: stretch; }
+    .bug-search { width: 100%; }
+    .bug-count { margin-left: 0; text-align: right; }
   }
+
+  /* ---- Tiny phones (≤380px) ---- */
+  @media (max-width: 380px) {
+    .container { padding: 6px; }
+    header.hero { padding: 10px; }
+    header.hero h1 { font-size: 0.95rem; }
+    .meta .chip { font-size: 0.65rem; padding: 2px 6px; }
+    .meta code { font-size: 0.65rem; }
+    nav.tabs button { flex: 1 1 100%; font-size: 0.72rem; padding: 6px 4px; }
+    .card { padding: 10px; }
+    .card .num { font-size: 1.3rem; }
+    .card .label { font-size: 0.68rem; }
+  }
+
   @media print {
     nav.tabs, .copy-btn { display: none; }
     .tab-panel { display: block !important; }
@@ -210,11 +298,11 @@
     <div class="bar-seg bar-info" style="flex:120">120 WRONG_AUDIENCE</div>
     <div class="bar-seg bar-muted" style="flex:57">57 NOT_FOUND</div>
     <div class="bar-seg bar-err" style="flex:57">57 OTHER</div>
-    <div class="bar-seg bar-warn" style="flex:32">32 LICENSE</div>
-    <div class="bar-seg bar-warn" style="flex:17">17 WRONG_URL</div>
-    <div class="bar-seg bar-muted" style="flex:15">15 DEPRECATED</div>
-    <div class="bar-seg bar-info" style="flex:6">6 UNSUP_Q</div>
-    <div class="bar-seg bar-warn" style="flex:3">3 ENTITYID</div>
+    <div class="bar-seg bar-warn bar-tiny" style="flex:32">32 LICENSE</div>
+    <div class="bar-seg bar-warn bar-tiny" style="flex:17">17 WRONG_URL</div>
+    <div class="bar-seg bar-muted bar-tiny" style="flex:15">15 DEPRECATED</div>
+    <div class="bar-seg bar-info bar-tiny" style="flex:6">6 UNSUP_Q</div>
+    <div class="bar-seg bar-warn bar-tiny" style="flex:3">3 ENTITYID</div>
   </div>
   <div class="legend">
     <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> PASS (129)</span>
@@ -229,7 +317,7 @@
   </div>
 
   <div class="section">
-    <div class="section-header open"><span>Verdict <span class="tag tag-pass">NO CONNECTOR REGRESSION &middot; 0 TIMEOUT &middot; 42/45 spec bugs unchanged</span></span><span class="arrow">&#9654;</span></div>
+    <div class="section-header open"><span>Verdict <span class="tag tag-pass">No regression &middot; 0 timeout &middot; 42/45 spec bugs</span></span><span class="arrow">&#9654;</span></div>
     <div class="section-body">
       <div class="table-scroll"><table>
         <tr><td>Tables tested</td><td><strong>733 / 733</strong> (100%)</td></tr>
