@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Graph v4 Source — Failure Attribution Report (2026-07-31 v2)</title>
+<style>
+  :root {
+    --pass: #22c55e; --pass-bg: #f0fdf4;
+    --fail: #ef4444; --fail-bg: #fef2f2;
+    --warn: #f59e0b; --warn-bg: #fffbeb;
+    --info: #3b82f6; --info-bg: #eff6ff;
+    --muted: #6b7280; --muted-bg: #f9fafb;
+    --err: #8b5cf6; --err-bg: #f5f3ff;
+    --bug: #dc2626; --bug-bg: #fef2f2;
+    --our: #f59e0b; --our-bg: #fffbeb;
+    --graph: #3b82f6; --graph-bg: #eff6ff;
+    --expect: #22c55e; --expect-bg: #f0fdf4;
+    --ambig: #6b7280; --ambig-bg: #f9fafb;
+    --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0;
+    --text: #1e293b; --muted-text: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 64px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+
+  header.hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #e2e8f0; border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .hero-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .hero-avatar { flex-shrink: 0; width: 64px; height: 64px; border-radius: 50%; border: 3px solid rgba(59,130,246,0.7); box-shadow: 0 0 0 4px rgba(59,130,246,0.15), 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; background: #0b1220; }
+  .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-titles { min-width: 0; }
+  header.hero h1 { font-size: clamp(1.25rem, 3vw, 1.9rem); font-weight: 800; color: #fff; line-height: 1.25; }
+  header.hero .subtitle { color: #94a3b8; font-size: 0.95rem; margin-top: 4px; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; font-size: 0.8rem; }
+  .meta .chip { background: rgba(15,23,42,0.55); border: 1px solid rgba(125,211,252,0.35); padding: 4px 12px; border-radius: 999px; white-space: normal; overflow-wrap: anywhere; word-break: break-word; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; }
+  .meta .chip-label { color: #cbd5e1; font-weight: 700; flex-shrink: 0; }
+  .meta code { color: #7dd3fc; word-break: break-all; overflow-wrap: anywhere; background: rgba(7,14,26,0.6); padding: 0 5px; border-radius: 5px; font-weight: 600; }
+  .meta .chip-status { border-color: rgba(74,222,128,0.5); }
+  .meta .chip-status code { color: #4ade80; background: rgba(22,101,52,0.25); }
+
+  nav.tabs { position: sticky; top: 0; z-index: 50; background: #0f172a; border-radius: 12px; padding: 6px; display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(15,23,42,0.25); }
+  nav.tabs button { flex: 1 1 auto; min-width: 90px; background: transparent; color: #94a3b8; border: none; padding: 9px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+  nav.tabs button:hover { color: #e2e8f0; background: rgba(148,163,184,0.12); }
+  nav.tabs button.active { background: #3b82f6; color: #fff; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .card { background: var(--card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .card .num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 800; line-height: 1.2; }
+  .card .label { font-size: 0.75rem; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+  .card-bug .num { color: var(--bug); }
+  .card-our .num { color: var(--our); }
+  .card-graph .num { color: var(--graph); }
+  .card-expect .num { color: var(--expect); }
+  .card-ambig .num { color: var(--ambig); }
+
+  .bar { display: flex; height: 36px; border-radius: 8px; overflow: hidden; font-size: 0.7rem; font-weight: 700; margin-bottom: 8px; }
+  .bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; overflow: hidden; white-space: nowrap; padding: 0 4px; }
+  .bar-bug { background: var(--bug); } .bar-our { background: var(--our); }
+  .bar-graph { background: var(--graph); } .bar-expect { background: var(--expect); }
+  .bar-ambig { background: var(--ambig); }
+
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.78rem; color: var(--muted-text); margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .section { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .section-header { padding: 12px 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; user-select: none; font-size: 0.95rem; }
+  .section-header > span:first-child { min-width: 0; flex: 1 1 auto; word-break: break-word; }
+  .section-header > span:last-child { flex-shrink: 0; }
+  .section-header:hover { background: #f8fafc; }
+  .section-header .arrow { transition: transform 0.2s; font-size: 0.75rem; }
+  .section-header.open .arrow { transform: rotate(90deg); }
+  .section-body { padding: 0 16px 16px; display: none; }
+  .section-header.open + .section-body { display: block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-top: 10px; }
+  th { text-align: left; padding: 8px 8px 8px 0; border-bottom: 2px solid var(--border); color: var(--muted-text); font-weight: 700; }
+  td { padding: 8px 8px 8px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-scroll table { min-width: 380px; }
+  table th { white-space: nowrap; }
+
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 5px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+  .tag-bug { background: var(--bug-bg); color: #15803d; }
+  .tag-our { background: var(--our-bg); color: #b45309; }
+  .tag-graph { background: var(--graph-bg); color: #1d4ed8; }
+  .tag-expect { background: var(--expect-bg); color: #15803d; }
+  .tag-ambig { background: var(--ambig-bg); color: #4b5563; }
+  .tag-info { background: var(--info-bg); color: #1d4ed8; }
+  .tag-warn { background: var(--warn-bg); color: #b45309; }
+  .tag-pass { background: var(--pass-bg); color: #15803d; }
+  .tag-fail { background: var(--fail-bg); color: #dc2626; }
+  .tag-muted { background: var(--muted-bg); color: #4b5563; }
+  .tag-err { background: var(--err-bg); color: #7c3aed; }
+
+  pre { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 0.76rem; line-height: 1.5; overflow-x: auto; margin-top: 8px; white-space: pre-wrap; word-break: break-word; font-family: 'SF Mono', Menlo, monospace; }
+  pre.out { background: #111827; }
+  pre .prompt { color: #94a3b8; }
+  pre .output { color: #cbd5e1; white-space: pre-wrap; word-break: break-word; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.8rem; font-family: 'SF Mono', Menlo, monospace; word-break: break-all; }
+  .note { margin-top: 10px; font-size: 0.83rem; color: var(--muted-text); }
+  .h3 { font-size: 1.05rem; margin: 14px 0 6px; }
+  .h4 { margin: 12px 0 6px; font-size: 0.92rem; }
+  ul, ol { margin: 8px 0; padding-left: 20px; font-size: 0.85rem; }
+  li { margin-bottom: 3px; }
+
+  .cmd-block { margin: 10px 0; }
+  .cmd-block pre { margin-top: 4px; }
+  .cmd-head { display: flex; justify-content: space-between; align-items: center; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .cmd-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-text); font-weight: 700; }
+  .copy-btn { background: #e2e8f0; border: none; padding: 1px 8px; border-radius: 5px; font-size: 0.68rem; font-weight: 700; cursor: pointer; color: #334155; font-family: inherit; }
+  .copy-btn:hover { background: #cbd5e1; }
+  .copy-btn.copied { background: var(--pass); color: #fff; }
+
+  .bug-card { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; background: #fff; }
+  .bug-card-head { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .bug-card-head:hover { background: #f8fafc; }
+  .bug-card-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; flex: 1 1 auto; }
+  .bug-card-title .bug-table { min-width: 0; max-width: 100%; }
+  .bug-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .bug-card-meta { display: flex; align-items: center; gap: 10px; color: var(--muted-text); font-size: 0.78rem; flex-wrap: wrap; }
+  .bug-card.open .bug-card-meta .arrow { transform: rotate(90deg); }
+  .bug-card-body { display: none; padding: 4px 14px 14px; background: #f8fafc; border-top: 1px solid var(--border); }
+  .bug-card.open .bug-card-body { display: block; }
+  .bug-table { font-size: 0.74rem; word-break: break-all; max-width: 100%; }
+  .bug-short { font-weight: 600; color: var(--text); word-break: break-all; }
+  .bug-detail { color: var(--muted-text); word-break: break-all; }
+  .bug-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+  .bug-search { flex: 1 1 220px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: inherit; }
+  .bug-search:focus { outline: 2px solid #3b82f6; outline-offset: -1px; }
+  .chip { border: 1px solid var(--border); background: #fff; padding: 5px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 600; cursor: pointer; color: var(--muted-text); font-family: inherit; transition: all 0.15s; }
+  .chip:hover { border-color: #94a3b8; }
+  .chip.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+  .bug-count { font-size: 0.8rem; color: var(--muted-text); margin-left: auto; font-weight: 700; }
+
+  .priority { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; }
+  .priority-1 { background: #fef2f2; color: #991b1b; }
+  .priority-2 { background: #fffbeb; color: #b45309; }
+  .priority-3 { background: #eff6ff; color: #1e40af; }
+
+  .callout { border-left: 4px solid; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; background: #fff; }
+  .callout-bug { border-color: var(--bug); background: var(--bug-bg); }
+  .callout-our { border-color: var(--our); background: var(--our-bg); }
+  .callout-info { border-color: var(--info); background: var(--info-bg); }
+  .callout h4 { margin: 0 0 6px; font-size: 0.95rem; }
+  .callout p { margin: 0; font-size: 0.85rem; }
+
+  footer { margin-top: 32px; padding: 16px 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); font-size: 0.78rem; color: var(--muted-text); line-height: 1.8; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  footer .foot-title { font-weight: 800; color: var(--text); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  footer code { background: var(--muted-bg); color: var(--text); padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; word-break: break-all; }
+
+  /* ---- Tablet (≤768px) ---- */
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    header.hero { padding: 18px; }
+    header.hero h1 { font-size: 1.4rem; }
+    header.hero .subtitle { font-size: 0.85rem; }
+    .meta .chip { font-size: 0.74rem; padding: 3px 10px; }
+    .cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+    .card { padding: 14px 10px; }
+    .card .num { font-size: 1.4rem; }
+    .card .label { font-size: 0.7rem; }
+    .bar { height: 36px; font-size: 0.65rem; }
+    .bar-seg { padding: 0 3px; }
+    nav.tabs button { font-size: 0.8rem; padding: 8px 10px; }
+    .legend { font-size: 0.74rem; gap: 8px; }
+    .section-header { font-size: 0.9rem; padding: 10px 14px; }
+    .section-body { padding: 0 14px 14px; }
+    .bug-card-head { padding: 9px 12px; gap: 8px; }
+    .bug-card-body { padding: 4px 12px 12px; }
+    .bug-toolbar { gap: 6px; }
+    .bug-search { font-size: 0.8rem; padding: 8px 10px; }
+    .chip { padding: 5px 10px; font-size: 0.74rem; }
+  }
+
+  /* ---- Phone (≤640px) ---- */
+  @media (max-width: 640px) {
+    .container { padding: 10px; }
+    header.hero { padding: 14px; border-radius: 10px; }
+    .hero-top { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .hero-avatar { width: 44px; height: 44px; }
+    header.hero h1 { font-size: 1.1rem; line-height: 1.2; }
+    header.hero .subtitle { font-size: 0.78rem; overflow-wrap: anywhere; line-height: 1.4; }
+    .meta { gap: 6px; }
+    .meta .chip { font-size: 0.7rem; padding: 3px 8px; }
+    .meta .chip-label { font-size: 0.66rem; }
+    .cards { grid-template-columns: 1fr; gap: 8px; }
+    .card { padding: 12px; display: flex; align-items: center; justify-content: space-between; text-align: left; gap: 12px; }
+    .card .num { font-size: 1.5rem; }
+    .card .label { font-size: 0.72rem; margin-top: 0; text-align: right; flex: 1; }
+    .bar { height: 28px; font-size: 0.6rem; }
+    .bar-seg { padding: 0 2px; }
+    .legend { font-size: 0.7rem; gap: 6px; }
+    nav.tabs { position: static; padding: 4px; gap: 3px; }
+    nav.tabs button { min-width: 0; flex: 1 1 46%; font-size: 0.74rem; padding: 7px 6px; border-radius: 6px; }
+    .section { border-radius: 10px; margin-bottom: 12px; }
+    .section-header { padding: 10px 12px; font-size: 0.85rem; }
+    .section-body { padding: 0 12px 12px; }
+    table { font-size: 0.75rem; }
+    th, td { padding: 6px 6px 6px 0; }
+    .table-scroll table { min-width: 360px; }
+    .bug-card-head { flex-direction: column; align-items: flex-start; padding: 10px; }
+    .bug-table { font-size: 0.72rem; }
+    .bug-card-meta { flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; font-size: 0.74rem; }
+    pre { font-size: 0.66rem; padding: 8px; line-height: 1.4; }
+    code { font-size: 0.72rem; }
+    .cmd-head { gap: 4px; }
+    .cmd-label { font-size: 0.66rem; }
+    .copy-btn { font-size: 0.68rem; padding: 1px 8px; }
+    .bug-toolbar { flex-direction: column; align-items: stretch; }
+    .bug-search { width: 100%; }
+    .bug-count { margin-left: 0; text-align: right; }
+  }
+
+  /* ---- Tiny phones (≤380px) ---- */
+  @media (max-width: 380px) {
+    .container { padding: 6px; }
+    header.hero { padding: 10px; }
+    header.hero h1 { font-size: 0.95rem; }
+    .meta .chip { font-size: 0.65rem; padding: 2px 6px; }
+    .meta code { font-size: 0.65rem; }
+    nav.tabs button { flex: 1 1 100%; font-size: 0.72rem; padding: 6px 4px; }
+    .card { padding: 10px; }
+    .card .num { font-size: 1.3rem; }
+    .card .label { font-size: 0.68rem; }
+  }
+
+  @media print {
+    nav.tabs, .copy-btn { display: none; }
+    .tab-panel { display: block !important; }
+    .section-body, .bug-card-body { display: block !important; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="hero">
+  <div class="hero-top">
+    <div class="hero-avatar">
+      <img src="https://avatars.githubusercontent.com/u/254638087?v=4" alt="GitHub avatar — fiscalmindset" loading="lazy">
+    </div>
+    <div class="hero-titles">
+      <h1>Microsoft Graph v4 &mdash; Failure Attribution Report</h1>
+      <div class="subtitle">604 failures classified &middot; 56% Coral bug &middot; 31% our issue &middot; 2026-07-31 v2</div>
+    </div>
+  </div>
+  <div class="meta">
+    <span class="chip"><span class="chip-label">Tenant</span><code>89de3b75-fef2-44f9-90a4-cf8c69700c83</code></span>
+    <span class="chip"><span class="chip-label">Coral</span><code>0.8.1+3acb123</code></span>
+    <span class="chip"><span class="chip-label">Scope</span><code>733 tables tested &middot; 127 pass &middot; 604 fail</code></span>
+    <span class="chip"><span class="chip-label">Source</span><code>/tmp/attribution_final.json</code></span>
+    <span class="chip chip-status"><span class="chip-label">Status</span><code>Analysis complete &middot; 338 Coral bugs &middot; 185 our issues</code></span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Report sections">
+  <button class="active" data-tab="overview" onclick="showTab(this)">Overview</button>
+  <button data-tab="coral" onclick="showTab(this)">🐛 Coral Bugs (338)</button>
+  <button data-tab="our" onclick="showTab(this)">⚙️ Our Issues (185)</button>
+  <button data-tab="graph" onclick="showTab(this)">☁️ Graph Limits (24)</button>
+  <button data-tab="ambig" onclick="showTab(this)">❓ Ambiguous (49)</button>
+  <button data-tab="prefix" onclick="showTab(this)">Per-Prefix</button>
+  <button data-tab="action" onclick="showTab(this)">Action Items</button>
+</nav>
+
+<!-- ============ TAB: OVERVIEW ============ -->
+<div class="tab-panel active" id="tab-overview">
+  <div class="cards">
+    <div class="card card-bug"><div class="num">338</div><div class="label">🐛 Coral bugs</div></div>
+    <div class="card card-our"><div class="num">185</div><div class="label">⚙️ Our issues</div></div>
+    <div class="card card-graph"><div class="num">24</div><div class="label">☁️ Graph limits</div></div>
+    <div class="card card-expect"><div class="num">8</div><div class="label">✅ Expected</div></div>
+    <div class="card card-ambig"><div class="num">49</div><div class="label">❓ Ambiguous</div></div>
+    <div class="card"><div class="num">604</div><div class="label">Total failures</div></div>
+  </div>
+
+  <div class="cards">
+    <div class="card card-bug"><div class="num">56.0%</div><div class="label">🐛 Coral bug rate</div></div>
+    <div class="card card-our"><div class="num">30.6%</div><div class="label">⚙️ Our issue rate</div></div>
+    <div class="card card-graph"><div class="num">4.0%</div><div class="label">☁️ Graph limit rate</div></div>
+    <div class="card card-expect"><div class="num">1.3%</div><div class="label">✅ Expected rate</div></div>
+    <div class="card card-ambig"><div class="num">8.1%</div><div class="label">❓ Ambiguous rate</div></div>
+    <div class="card"><div class="num">129</div><div class="label">✅ Tables passing</div></div>
+  </div>
+
+  <div class="bar">
+    <div class="bar-seg bar-bug" style="flex:338">338 🐛 Coral bug</div>
+    <div class="bar-seg bar-our" style="flex:185">185 ⚙️ Our issue</div>
+    <div class="bar-seg bar-graph" style="flex:24">24 ☁️ Graph</div>
+    <div class="bar-seg bar-expect" style="flex:8">8 ✅ Expected</div>
+    <div class="bar-seg bar-ambig" style="flex:49">49 ❓ Ambiguous</div>
+  </div>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot" style="background:var(--bug)"></span> 🐛 Coral bugs (338)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--our)"></span> ⚙️ Our issues (185)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--graph)"></span> ☁️ Graph limits (24)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--expect)"></span> ✅ Expected (8)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--ambig)"></span> ❓ Ambiguous (49)</span>
+  </div>
+
+  <div class="callout callout-bug">
+    <h4>🎯 #1 Single Fix That Would Help Most</h4>
+    <p><strong>Fix Coral's empty UnknownError parser</strong> — currently Coral surfaces <code>{"code":"UnknownError","message":""}</code> as the error, masking the actual cause. The real error (e.g., <code>S2SUnauthorized: Invalid permission</code>) is nested deeper in <code>innerError</code>. This single fix would convert <strong>121 ambiguous failures into precise actionable error messages</strong>.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span>Why this report matters</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p>The user asked: <strong>"which failures we can handle or check that is our issue or coral bug"</strong>. Every failure from the 733-table battery has been classified by <strong>root cause</strong> into one of four buckets:</p>
+      <ol>
+        <li>🐛 <strong>Coral bugs</strong> — connector issues that withcoral/coral can/should fix (338 tables)</li>
+        <li>⚙️ <strong>Our issues</strong> — our token, scopes, license, or admin role (185 tables) — we can fix by changing setup</li>
+        <li>☁️ <strong>Graph API limits</strong> — server-side behavior, not our fault (24 tables)</li>
+        <li>✅ <strong>Expected</strong> — tenant doesn't have the resource (8 tables)</li>
+      </ol>
+      <p class="note">Source data: <code>/tmp/coral_sql_results_2026-07-31.json</code> (557 KB). Full per-table attribution: <code>/tmp/attribution_final.json</code>.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>Bottom line</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>56% of failures are Coral bugs</strong> that should be fixed in the connector. 31% are our setup issues (missing scopes, no M365 license, etc.). Only 4% are truly Graph's fault and 1.3% are expected.</p>
+      <table>
+        <tr><th>Bucket</th><th>Tables</th><th>%</th><th>Fixable by</th></tr>
+        <tr><td>🐛 Coral bugs</td><td><strong>338</strong></td><td>56.0%</td><td>Andrea (withcoral)</td></tr>
+        <tr><td>⚙️ Our issues</td><td><strong>185</strong></td><td>30.6%</td><td>Vicky (re-consent, license)</td></tr>
+        <tr><td>☁️ Graph limits</td><td><strong>24</strong></td><td>4.0%</td><td>None (not our fault)</td></tr>
+        <tr><td>✅ Expected</td><td><strong>8</strong></td><td>1.3%</td><td>None (tenant lacks)</td></tr>
+        <tr><td>❓ Ambiguous</td><td><strong>49</strong></td><td>8.1%</td><td>Possibly Coral</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>604</strong></td><td>100%</td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>Top 5 Coral bugs by impact</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <table>
+        <tr><th>Rank</th><th>Bug</th><th>Count</th><th>Priority</th></tr>
+        <tr><td>1</td><td>Empty UnknownError mask hides real error</td><td><strong>121</strong></td><td><span class="priority priority-1">P0</span></td></tr>
+        <tr><td>2</td><td>Wrong audience filter missing (non-AAD endpoints in spec)</td><td><strong>120</strong></td><td><span class="priority priority-1">P0</span></td></tr>
+        <tr><td>3</td><td>Query shape not supported (various 400 errors)</td><td><strong>23</strong></td><td><span class="priority priority-2">P1</span></td></tr>
+        <tr><td>4</td><td>Empty HTTP error body on 401 (no JSON captured)</td><td><strong>23</strong></td><td><span class="priority priority-2">P1</span></td></tr>
+        <tr><td>5</td><td>Wrong base URL — parser ignores per-endpoint servers</td><td><strong>17</strong></td><td><span class="priority priority-1">P0</span></td></tr>
+      </table>
+      <p class="note">Click the <strong>🐛 Coral Bugs</strong> tab above for the full breakdown of all 11 bug categories with sample outputs.</p>
+    </div>
+  </div>
+</div>
+<!-- ============ TAB: CORAL BUGS ============ -->
+<div class="tab-panel" id="tab-coral">
+  <div class="callout callout-bug">
+    <h4>🐛 338 Coral bugs — what Andrea can fix</h4>
+    <p>These are <strong>connector issues</strong> in the Coral microsoft_graph_v4 source. Each category below shows the bug pattern, sample output, and recommended fix.</p>
+  </div>
+
+  <div class="bug-toolbar">
+    <input type="search" class="bug-search" id="coral-search" placeholder="Search bug title or sample text&hellip;" oninput="filterCoral()">
+    <button class="chip active" data-cat="all" onclick="filterCoralCat(this)">All (11)</button>
+    <button class="chip" data-cat="A1" onclick="filterCoralCat(this)">A1 Empty UnknownError (121)</button>
+    <button class="chip" data-cat="A2" onclick="filterCoralCat(this)">A2 Empty body (23)</button>
+    <button class="chip" data-cat="A3" onclick="filterCoralCat(this)">A3 Wrong URL (17)</button>
+    <button class="chip" data-cat="A4" onclick="filterCoralCat(this)">A4 Deprecated (15)</button>
+    <button class="chip" data-cat="A5" onclick="filterCoralCat(this)">A5 Wrong audience (120)</button>
+    <button class="chip" data-cat="A6" onclick="filterCoralCat(this)">A6 needs entityId (3)</button>
+    <button class="chip" data-cat="A7" onclick="filterCoralCat(this)">A7 Unsupported query (6)</button>
+    <button class="chip" data-cat="A8" onclick="filterCoralCat(this)">A8 Needs filter (2)</button>
+    <button class="chip" data-cat="A9" onclick="filterCoralCat(this)">A9 Path segment (2)</button>
+    <button class="chip" data-cat="A10" onclick="filterCoralCat(this)">A10 Invalid URL (4)</button>
+    <button class="chip" data-cat="A11" onclick="filterCoralCat(this)">A11 Query shape (23)</button>
+    <span class="bug-count" id="coral-count">Showing 11 / 11</span>
+  </div>
+
+  <button class="chip" style="margin-bottom:10px;" onclick="openAllCoral()">&#9660; Expand all</button>
+  <button class="chip" style="margin-bottom:10px;" onclick="closeAllCoral()">&#9654; Collapse all</button>
+
+  <div id="coral-list">
+
+<article class="bug-card" data-cat="A1" data-search="Empty UnknownError mask hides real error Graph returns <code>{"code":"UnknownError","message":""}</code> (empty body). Coral surfaces this without explaining what actually happened. Coral should unwrap the <code>innerError</code> JSON body and surface the deepest error code + message. If the body is <code>{"UnknownError","message":""}</code> but the actual body has <code>S2SUnauthorized</code> nested deeper, surface the inner error. <strong>121</strong> tables return this — mostly <code>admin_*</code> (35), <code>security_*</code> (25), <code>identity_*</code> (15). The actual error (e.g., <code>S2SUnauthorized</code>, <code>Required scopes</code>) is hidden inside the empty envelope. admin_adminreportsettings_admin_getreportsettings admin_configurationmanagement_admin_configurationmanagement_listconfigurationdrifts">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">admin_adminreportsettings_admin_getreportsettings</code>
+      <div class="bug-tags">
+        <span class="priority priority-1">P0</span>
+        <span class="tag tag-bug">A1 &middot; 121 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Empty UnknownError mask hides real error</span>
+      <span class="bug-detail">121 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> Graph returns <code>{"code":"UnknownError","message":""}</code> (empty body). Coral surfaces this without explaining what actually happened.</p>
+    <p><strong>Fix:</strong> Coral should unwrap the <code>innerError</code> JSON body and surface the deepest error code + message. If the body is <code>{"UnknownError","message":""}</code> but the actual body has <code>S2SUnauthorized</code> nested deeper, surface the inner error.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"UnknownError","message":"{"error":{"code":"S2SUnauthorized","message":"Invalid permission."}}","innerError":{"date":"2026-07-31T08:07:10","request-id":"a83e2fdb-1600-4c1e-9584-ca85a37f1d2f"}}} [GET] https://graph.microsoft.com/v1.0/admin/reportSettings</pre>
+    <p class="note"><strong>Sample tables:</strong> admin_adminreportsettings_admin_getreportsettings, admin_configurationmanagement_admin_configurationmanagement_listconfigurationdrifts</p>
+    <p class="note"><strong>121</strong> tables return this — mostly <code>admin_*</code> (35), <code>security_*</code> (25), <code>identity_*</code> (15). The actual error (e.g., <code>S2SUnauthorized</code>, <code>Required scopes</code>) is hidden inside the empty envelope.</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A2" data-search="Empty HTTP error body (401 with no JSON) Coral returns <code>Error: Source authentication failed (401)</code> with <code>Detail: [GET] https://...</code> — no JSON body at all. Surface the actual HTTP status, headers, and any body bytes when present. If the body is empty, say "empty body" instead of just the URL. <strong>23</strong> tables — all <code>me_calendar_*</code>, <code>me_contact_*</code>, <code>me_contactfolder_*</code>, <code>admin_exchangeadmin_*</code>, etc. Most likely Coral is reading the error response before the body is fully streamed. admin_exchangeadmin_admin_exchange_listmailboxes me_calendar_me_calendar_listevents">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">admin_exchangeadmin_admin_exchange_listmailboxes</code>
+      <div class="bug-tags">
+        <span class="priority priority-2">P1</span>
+        <span class="tag tag-bug">A2 &middot; 23 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Empty HTTP error body (401 with no JSON)</span>
+      <span class="bug-detail">23 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> Coral returns <code>Error: Source authentication failed (401)</code> with <code>Detail: [GET] https://...</code> — no JSON body at all.</p>
+    <p><strong>Fix:</strong> Surface the actual HTTP status, headers, and any body bytes when present. If the body is empty, say "empty body" instead of just the URL.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source authentication failed (401)
+Detail:  [GET] https://graph.microsoft.com/v1.0/admin/exchange/mailboxes
+Hint: Credentials for this source are invalid or expired. Re-install it to refresh.</pre>
+    <p class="note"><strong>Sample tables:</strong> admin_exchangeadmin_admin_exchange_listmailboxes, me_calendar_me_calendar_listevents</p>
+    <p class="note"><strong>23</strong> tables — all <code>me_calendar_*</code>, <code>me_contact_*</code>, <code>me_contactfolder_*</code>, <code>admin_exchangeadmin_*</code>, etc. Most likely Coral is reading the error response before the body is fully streamed.</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A3" data-search="Wrong base URL — parser ignored per-endpoint servers Coral sends to <code>graph.microsoft.com/v1.0/...</code> but the endpoint lives elsewhere. Coral's OpenAPI parser must respect per-endpoint <code>servers</code> overrides in the manifest, or the manifest generator must accept a <code>baseUrl</code> override per endpoint. <strong>17</strong> tables across 5 wrong base URLs: <code>api.termsofuse.identitygovernance.azure.com</code> (2), <code>syncfabric.windowsazure.com</code> (2), <code>cpim.windows.net</code> (5), <code>na.prod.graph.ipc.msidentity.com</code> (2), <code>igaelm-asev3-ecapi-cus.p.azurewebsites.net</code> (4). agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance</code>
+      <div class="bug-tags">
+        <span class="priority priority-2">P1</span>
+        <span class="tag tag-bug">A3 &middot; 17 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Wrong base URL — parser ignored per-endpoint servers</span>
+      <span class="bug-detail">17 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> Coral sends to <code>graph.microsoft.com/v1.0/...</code> but the endpoint lives elsewhere.</p>
+    <p><strong>Fix:</strong> Coral's OpenAPI parser must respect per-endpoint <code>servers</code> overrides in the manifest, or the manifest generator must accept a <code>baseUrl</code> override per endpoint.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source resource was not found (404)
+Detail: {"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/agreementAcceptances?x-scenario=MSGraph&x-tenantid=[tenantId]'."}}</pre>
+    <p class="note"><strong>Sample tables:</strong> agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance</p>
+    <p class="note"><strong>17</strong> tables across 5 wrong base URLs: <code>api.termsofuse.identitygovernance.azure.com</code> (2), <code>syncfabric.windowsazure.com</code> (2), <code>cpim.windows.net</code> (5), <code>na.prod.graph.ipc.msidentity.com</code> (2), <code>igaelm-asev3-ecapi-cus.p.azurewebsites.net</code> (4).</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A4" data-search="Deprecated API still in manifest These endpoints return <code>"Requested API is not supported. Please check the path."</code> — they were removed from Microsoft Graph but Coral's spec generator still references them. Filter by <code>x-ms-deprecation</code> header / remove dead endpoints from the spec source. <strong>15</strong> tables: <code>appcatalogs</code>, <code>chats_getallmessages</code>, <code>chats_getallretainedmessages</code>, <code>communications_adhoccall</code>, <code>copilot</code>, <code>teamstemplates</code>, <code>teamwork_deletedteams</code>. appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs chats_chat_functions_chats_getallmessages">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs</code>
+      <div class="bug-tags">
+        <span class="priority priority-2">P1</span>
+        <span class="tag tag-bug">A4 &middot; 15 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Deprecated API still in manifest</span>
+      <span class="bug-detail">15 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> These endpoints return <code>"Requested API is not supported. Please check the path."</code> — they were removed from Microsoft Graph but Coral's spec generator still references them.</p>
+    <p><strong>Fix:</strong> Filter by <code>x-ms-deprecation</code> header / remove dead endpoints from the spec source.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source resource was not found (404)
+Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:11:28","request-id":"887a73c7-0340-4cd3-b118-135a361388b3"}}} [GET] https://graph.microsoft.com/v1.0/appCatalogs</pre>
+    <p class="note"><strong>Sample tables:</strong> appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs, chats_chat_functions_chats_getallmessages</p>
+    <p class="note"><strong>15</strong> tables: <code>appcatalogs</code>, <code>chats_getallmessages</code>, <code>chats_getallretainedmessages</code>, <code>communications_adhoccall</code>, <code>copilot</code>, <code>teamstemplates</code>, <code>teamwork_deletedteams</code>.</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A5" data-search="Wrong audience — endpoints for non-AAD tenant types These return 400 with <code>"This API is not supported for AAD accounts (no addressUrl for Microsoft.X,False)"</code>. The Jul 30 report listed only 12; this v2 broader sweep finds 120. Add audience/tenant-type filter in the parser, or mark with <code>x-ms-audience</code> header in manifest. The Coral manifest doesn't filter for AAD-compatible endpoints. <strong>120</strong> tables: <code>admin_*</code> (4), <code>storage_filestorage</code> (8), <code>copilot_copilotadmin</code> (1), <code>identity_identityverifiedidroot</code> (1), <code>deviceappmanagement_*</code> (30+), <code>devicemanagement_*</code> (40+), <code>education_*</code> (20+). admin_configurationmanagement_admin_getconfigurationmanagement">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">admin_configurationmanagement_admin_getconfigurationmanagement</code>
+      <div class="bug-tags">
+        <span class="priority priority-1">P0</span>
+        <span class="tag tag-bug">A5 &middot; 120 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Wrong audience — endpoints for non-AAD tenant types</span>
+      <span class="bug-detail">120 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> These return 400 with <code>"This API is not supported for AAD accounts (no addressUrl for Microsoft.X,False)"</code>. The Jul 30 report listed only 12; this v2 broader sweep finds 120.</p>
+    <p><strong>Fix:</strong> Add audience/tenant-type filter in the parser, or mark with <code>x-ms-audience</code> header in manifest. The Coral manifest doesn't filter for AAD-compatible endpoints.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.Exchange,True).","innerError":{"date":"2026-07-31T09:08:46","request-id":"81dcb68c-20ba-4829-adc5-b40def5e3660"}}} [GET] https://graph.microsoft.com/v1.0/admin/exchange</pre>
+    <p class="note"><strong>Sample tables:</strong> admin_configurationmanagement_admin_getconfigurationmanagement</p>
+    <p class="note"><strong>120</strong> tables: <code>admin_*</code> (4), <code>storage_filestorage</code> (8), <code>copilot_copilotadmin</code> (1), <code>identity_identityverifiedidroot</code> (1), <code>deviceappmanagement_*</code> (30+), <code>devicemanagement_*</code> (40+), <code>education_*</code> (20+).</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A6" data-search="Needs entityId parameter These return <code>"Direct queries to this resource type are not supported."</code> — they require a specific entity ID in the URL. Convert to function-style tables with a required ID parameter, or document as <code>needs_entity_id</code> in manifest. <strong>3</strong> tables: <code>certificatebasedauthconfiguration</code>, <code>permissiongrants_resourcespecificpermissiongrant</code>, <code>scopedrolememberships</code>. certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_listcertificatebasedauthconfiguration">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_listcertificatebasedauthconfiguration</code>
+      <div class="bug-tags">
+        <span class="priority priority-3">P2</span>
+        <span class="tag tag-bug">A6 &middot; 3 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Needs entityId parameter</span>
+      <span class="bug-detail">3 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> These return <code>"Direct queries to this resource type are not supported."</code> — they require a specific entity ID in the URL.</p>
+    <p><strong>Fix:</strong> Convert to function-style tables with a required ID parameter, or document as <code>needs_entity_id</code> in manifest.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"Request_UnsupportedQuery","message":"Direct queries to this resource type are not supported.","innerError":{"date":"2026-07-31T09:12:23","request-id":"2a8aaf75-7011-482f-9aec-973fbcec9447"}}} [GET] https://graph.microsoft.com/v1.0/certificateBasedAuthConfiguration</pre>
+    <p class="note"><strong>Sample tables:</strong> certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_listcertificatebasedauthconfiguration</p>
+    <p class="note"><strong>3</strong> tables: <code>certificatebasedauthconfiguration</code>, <code>permissiongrants_resourcespecificpermissiongrant</code>, <code>scopedrolememberships</code>.</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A7" data-search="Unsupported query shape — delta/search/list These return <code>"Searches against this resource are not supported. Only specific instances can be queried."</code> or <code>"Delta query is not supported for directoryObjects"</code>. Convert to get-by-ID lookups, or remove delta function entries that don't work as list queries. <strong>6</strong> tables: <code>directory_*_listdeleteditems</code>, <code>directoryobjects_*_listdirectoryobject</code>, <code>directoryobjects_*_delta</code>, <code>contracts_delta</code>, <code>groupsettingtemplates_delta</code>, <code>directoryroletemplates_delta</code>. directory_directoryobject_directory_listdeleteditems contracts_delta">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">directory_directoryobject_directory_listdeleteditems</code>
+      <div class="bug-tags">
+        <span class="priority priority-3">P2</span>
+        <span class="tag tag-bug">A7 &middot; 6 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Unsupported query shape — delta/search/list</span>
+      <span class="bug-detail">6 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> These return <code>"Searches against this resource are not supported. Only specific instances can be queried."</code> or <code>"Delta query is not supported for directoryObjects"</code>.</p>
+    <p><strong>Fix:</strong> Convert to get-by-ID lookups, or remove delta function entries that don't work as list queries.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"Request_UnsupportedQuery","message":"Delta query is not supported for directoryObjects without a valid resource type or id filter."}}</pre>
+    <p class="note"><strong>Sample tables:</strong> directory_directoryobject_directory_listdeleteditems, contracts_delta</p>
+    <p class="note"><strong>6</strong> tables: <code>directory_*_listdeleteditems</code>, <code>directoryobjects_*_listdirectoryobject</code>, <code>directoryobjects_*_delta</code>, <code>contracts_delta</code>, <code>groupsettingtemplates_delta</code>, <code>directoryroletemplates_delta</code>.</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A8" data-search="Query needs filter or navigation property These return <code>"Bad filter: ... must be specified"</code> or <code>"This resource can only be queried through a navigation property on its parent domain."</code> Mark these tables as requiring a filter parameter (e.g., <code>?parentId=X</code>) or remove from manifest. <strong>2</strong> tables: <code>domaindnsrecords_*_listdomaindnsrecord</code>, <code>identitygovernance_accessreviewset_*_getaccessreviews</code>. domaindnsrecords_domaindnsrecord_domaindnsrecords_domaindnsrecord_listdomaindnsrecord">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">domaindnsrecords_domaindnsrecord_domaindnsrecords_domaindnsrecord_listdomaindnsrecord</code>
+      <div class="bug-tags">
+        <span class="priority priority-3">P2</span>
+        <span class="tag tag-bug">A8 &middot; 2 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Query needs filter or navigation property</span>
+      <span class="bug-detail">2 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> These return <code>"Bad filter: ... must be specified"</code> or <code>"This resource can only be queried through a navigation property on its parent domain."</code></p>
+    <p><strong>Fix:</strong> Mark these tables as requiring a filter parameter (e.g., <code>?parentId=X</code>) or remove from manifest.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"Request_UnsupportedQuery","message":"This resource can only be queried through a navigation property on its parent domain."}}</pre>
+    <p class="note"><strong>Sample tables:</strong> domaindnsrecords_domaindnsrecord_domaindnsrecords_domaindnsrecord_listdomaindnsrecord</p>
+    <p class="note"><strong>2</strong> tables: <code>domaindnsrecords_*_listdomaindnsrecord</code>, <code>identitygovernance_accessreviewset_*_getaccessreviews</code>.</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A9" data-search="Path segment mismatch These return <code>"Resource not found for segment 'X'"</code> — Coral sent a wrong URL segment. Coral manifest has wrong URL path for these endpoints. Need audit. <strong>2</strong> tables: <code>me_authentication_*_listoperations</code>, <code>policies_authenticationmethodspolicy_*_listauthenticationmethodconfigurations</code>. me_authentication_me_authentication_listoperations">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">me_authentication_me_authentication_listoperations</code>
+      <div class="bug-tags">
+        <span class="priority priority-3">P2</span>
+        <span class="tag tag-bug">A9 &middot; 2 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Path segment mismatch</span>
+      <span class="bug-detail">2 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> These return <code>"Resource not found for segment 'X'"</code> — Coral sent a wrong URL segment.</p>
+    <p><strong>Fix:</strong> Coral manifest has wrong URL path for these endpoints. Need audit.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"Resource not found for segment 'operations'.","innerError":{"date":"2026-07-31T09:00:21"}}}</pre>
+    <p class="note"><strong>Sample tables:</strong> me_authentication_me_authentication_listoperations</p>
+    <p class="note"><strong>2</strong> tables: <code>me_authentication_*_listoperations</code>, <code>policies_authenticationmethodspolicy_*_listauthenticationmethodconfigurations</code>.</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A10" data-search="Invalid request URL pattern These return <code>"Request_InvalidRequestUrl"</code> — Graph says the URL itself is wrong. Graph expects <code>$metadata</code> or <code>$entity</code> style URLs. Coral's manifest needs URL fix. <strong>4</strong> tables: <code>directory_*_getdirectory</code>, <code>policies_policyroot_*_getpolicyroot</code>, <code>rolemanagement_*_getrolemanagement</code>, <code>rolemanagement_rbacapplication_*_getdirectory</code>. directory_directory_directory_directory_getdirectory">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">directory_directory_directory_directory_getdirectory</code>
+      <div class="bug-tags">
+        <span class="priority priority-3">P2</span>
+        <span class="tag tag-bug">A10 &middot; 4 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Invalid request URL pattern</span>
+      <span class="bug-detail">4 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> These return <code>"Request_InvalidRequestUrl"</code> — Graph says the URL itself is wrong.</p>
+    <p><strong>Fix:</strong> Graph expects <code>$metadata</code> or <code>$entity</code> style URLs. Coral's manifest needs URL fix.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"Request_InvalidRequestUrl","message":"Request url was invalid. The request should be like /tenantdomainname/Entity or /$metadata."}}</pre>
+    <p class="note"><strong>Sample tables:</strong> directory_directory_directory_directory_getdirectory</p>
+    <p class="note"><strong>4</strong> tables: <code>directory_*_getdirectory</code>, <code>policies_policyroot_*_getpolicyroot</code>, <code>rolemanagement_*_getrolemanagement</code>, <code>rolemanagement_rbacapplication_*_getdirectory</code>.</p>
+  </div>
+</article>
+<article class="bug-card" data-cat="A11" data-search="Query shape not supported (investigation needed) Various 400 errors with body that suggests Coral's query isn't shaped right for the endpoint. Need endpoint-by-endpoint audit of manifest URL/query shape. <strong>23</strong> tables: <code>identitygovernance_privilegedaccessroot_*</code>, <code>invitations_*</code>, <code>me_adhoccall_*_getallrecordings</code>, and others requiring shape-specific audits. identitygovernance_privilegedaccessroot_identitygovernance_getprivilegedaccess">
+  <div class="bug-card-head" onclick="toggleCoral(this)">
+    <div class="bug-card-title">
+      <code class="bug-table">identitygovernance_privilegedaccessroot_identitygovernance_getprivilegedaccess</code>
+      <div class="bug-tags">
+        <span class="priority priority-2">P1</span>
+        <span class="tag tag-bug">A11 &middot; 23 tables</span>
+      </div>
+    </div>
+    <div class="bug-card-meta">
+      <span class="bug-short">Query shape not supported (investigation needed)</span>
+      <span class="bug-detail">23 tables affected</span>
+      <span class="arrow">&#9654;</span>
+    </div>
+  </div>
+  <div class="bug-card-body">
+    <p><strong>Symptom:</strong> Various 400 errors with body that suggests Coral's query isn't shaped right for the endpoint.</p>
+    <p><strong>Fix:</strong> Need endpoint-by-endpoint audit of manifest URL/query shape.</p>
+    <p><strong>Sample output:</strong></p>
+    <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"","message":"Bad filter: One of these properties must be specified: 'businessFlowTemplateId' or 'partnerId' or 'businessFlowId'."}}</pre>
+    <p class="note"><strong>Sample tables:</strong> identitygovernance_privilegedaccessroot_identitygovernance_getprivilegedaccess</p>
+    <p class="note"><strong>23</strong> tables: <code>identitygovernance_privilegedaccessroot_*</code>, <code>invitations_*</code>, <code>me_adhoccall_*_getallrecordings</code>, and others requiring shape-specific audits.</p>
+  </div>
+</article>
+  </div>
+</div>
+<!-- ============ TAB: OUR ISSUES ============ -->
+<div class="tab-panel" id="tab-our">
+  <div class="callout callout-our">
+    <h4>⚙️ 185 our issues — what Vicky can fix by changing setup</h4>
+    <p>These failures are caused by <strong>our token, scopes, license, or admin role</strong> — not Coral bugs. We can fix these by re-consenting the app with broader scopes or adding an M365 license.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span>B1. Missing delegated scopes — 109 tables <span class="tag tag-our">PRIMARY</span></span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns <code>"The application does not have any of the required delegated permissions (X, Y)"</code> or <code>"Required scp claim values are not provided"</code>.</p>
+
+      <p><strong>Largest sub-groups:</strong></p>
+      <table>
+        <tr><th>Sub-bucket</th><th>Count</th><th>Specific scope needed</th></tr>
+        <tr><td>Identity / External Identities (AADB2C)</td><td>12</td><td><code>IdentityUserFlow.Read.All</code>, <code>APIConnectors.Read.All</code>, etc.</td></tr>
+        <tr><td>Education endpoints (no EDU license)</td><td>14</td><td><code>EduRoster.Read.All</code> + EDU license</td></tr>
+        <tr><td>Defender for Identity (no MDI license)</td><td>14</td><td><code>ThreatIntelligence.Read.All</code> + MDI license</td></tr>
+        <tr><td>Policies (specific scope)</td><td>7</td><td>Various (<code>Policy.Read.All</code>, etc.)</td></tr>
+        <tr><td>Security/Threat Intelligence (premium license)</td><td>6</td><td><code>SecurityEvents.Read.All</code></td></tr>
+        <tr><td>Reports (Reports.Read.All)</td><td>3</td><td><code>Reports.Read.All</code></td></tr>
+        <tr><td>RBAC application (PIM)</td><td>2</td><td><code>RoleManagement.Read.All</code></td></tr>
+        <tr><td>Admin endpoints</td><td>1</td><td>various</td></tr>
+        <tr><td>Cloud communications</td><td>1</td><td><code>OnlineMeetings.Read.All</code></td></tr>
+        <tr><td>Directory</td><td>1</td><td><code>DeviceLocalCredential.Read.All</code></td></tr>
+        <tr><td>Other 403</td><td>48</td><td>various</td></tr>
+      </table>
+
+      <p><strong>Fix:</strong> Re-consent the Coral app with additional scopes:</p>
+      <pre>DeviceManagementApps.Read.All
+EduRoster.Read.All
+IdentityUserFlow.Read.All
+APIConnectors.Read.All
+RiskPreventionProviders.Read.All
+SecurityEvents.Read.All
+ThreatIntelligence.Read.All
+Reports.Read.All
+RoleManagement.Read.All
+Directory.Read.All
+Mail.Read
+Calendars.Read
+Contacts.Read</pre>
+
+      <p><strong>Sample output (<code>authenticationmethodspolicy_*</code>):</strong></p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"accessDenied","message":"Request Authorization failed","innerError":{"message":"Request Authorization failed","date":"2026-07-31T08:18:03","request-id":"b19a706c-6eff-4d4b-8214-435b79"}}}</pre>
+
+      <p><strong>Sample output (<code>education_me_getuser</code>):</strong></p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"AccessDenied","message":"Required scp claim values are not provided.","innerError":{"date":"2026-07-31T09:00:00","request-id":"7870e778-6017-4ab6-84fd-afc6fca398b0"}}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>B2. Insufficient privileges — 15 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph says <code>"Insufficient privileges"</code> or <code>"Insufficient permissions"</code>.</p>
+      <p><strong>Examples:</strong> <code>communications_onlinemeeting_*_listonlinemeetings</code>, <code>directory_attributeset_*</code>, <code>directory_customsecurityattributedefinition_*</code>, <code>directory_recovery_*</code></p>
+      <p><strong>Fix:</strong> Add <code>Chat.Read.All</code>, <code>OnlineMeetings.Read.All</code>, <code>CustomSecAttributeDefinition.Read.All</code>, etc. to app consent.</p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"Forbidden","message":"Insufficient privileges to complete the operation."}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>B3. No SPO license (SharePoint/OneDrive) — 13 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns <code>"Tenant does not have a SPO license"</code>.</p>
+      <p><strong>Examples:</strong> <code>admin_sharepoint_admin_sharepoint_getsettings</code>, <code>drives_drive_drives_drive_listdrive</code>, <code>me_drive_me_getdrive</code>, <code>me_drive_me_listdrives</code>, <code>me_site_me_listfollowedsites</code>, etc.</p>
+      <p><strong>Fix:</strong> Add Microsoft 365 Business Basic license (~$6/user/month) to the tenant. <strong>Out of scope for current engagement</strong> — Vicky doesn't have a credit card per the skill context.</p>
+      <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"Tenant does not have a SPO license."}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>B4. No Teams license (chats/meetings) — 17 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns <code>"Failed to get license information for the user"</code>.</p>
+      <p><strong>Examples:</strong> <code>appcatalogs_teamsapp_*</code>, <code>chats_chat_*</code>, <code>me_chat_*</code>, <code>me_team_*</code>, <code>me_userteamwork_*</code></p>
+      <p><strong>Fix:</strong> Add Microsoft 365 Business Basic license. <strong>Out of scope</strong> (no credit card).</p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"Forbidden","message":"Failed to get license information for the user. The user does not have a valid license."}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>B5. Access denied — 14 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns <code>"You do not have permission to access the resource"</code>.</p>
+      <p><strong>Examples:</strong> <code>devicemanagement_virtualendpoint_*</code>, <code>admin_adminmicrosoft365apps_*_getinstallationoptions</code></p>
+      <p><strong>Fix:</strong> Add the appropriate admin consent scope for each (e.g., <code>CloudPC.Read.All</code>, <code>CloudPC.ReadWrite.All</code>).</p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"Forbidden","message":"You do not have permission to access the resource.","innerError":{"date":"2026-07-31T08:12:42","request-id":"f43e35cc-4593-4765-9347-c9d4797593ca"}}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>B6. Missing required scopes (consent) — 9 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph says <code>"User does not have any of the required scopes: X"</code>.</p>
+      <p><strong>Examples:</strong> <code>agreements_agreement_*_listagreement</code>, <code>identity_conditionalaccessroot_*_listauthenticationcontextclassreferences</code></p>
+      <p><strong>Fix:</strong> Add <code>Agreement.Read.All</code>, <code>Policy.Read.All</code>, <code>CrossTenantIdentitySyncSettings.Read.All</code>, etc. to app consent.</p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"UnauthorizedAccess","message":"User does not have any of the required scopes: user_impersonation, Agreement.Read.All, Agreement.ReadWrite.All"}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>B7. Missing requirement (license/role) — 5 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns <code>"Authorization failed because of missing requirement(s)"</code> with specific People Admin error code.</p>
+      <p><strong>Examples:</strong> <code>admin_peopleadminsettings_*</code> — needs People admin role assigned.</p>
+      <p><strong>Fix:</strong> Assign "People administrator" role to the test user via Entra admin portal.</p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"forbidden","message":"Authorization failed because of missing requirement(s).","innerError":{"peopleAdminErrorCode":"peopleAdminAuthorizationfailure","peopleAdminRequestId":"76e87b8c-..."}}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>B8. No Entra P1/P2 premium — 1 table</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns <code>"Tenant is not a B2C tenant and doesn't have premium license"</code>.</p>
+      <p><strong>Example:</strong> <code>auditlogs_signin_auditlogs_listsignins</code></p>
+      <p><strong>Fix:</strong> Add Entra ID P1 or P2 license for sign-in logs access.</p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"Forbidden","message":"Tenant is not a B2C tenant and doesn't have premium license"}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>B9. Service principal not registered — 1 table</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Example:</strong> <code>admin_exchangeadmin_admin_exchange_tracing_listmessagetraces</code></p>
+      <p><strong>Fix:</strong> Create service principal for the underlying API app ID (8bd644d1-64a1-4d4b-ae52-2e0cbf64e373), or add admin consent for <code>Reports.Read.All</code>.</p>
+      <pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"Forbidden","message":"Service principal-less Authentication failed: the service principal for App ID 8bd644d1-64a1-4d4b-ae52-2e0cbf64e373 was not found. Please create a service principal..."}}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: GRAPH LIMITS ============ -->
+<div class="tab-panel" id="tab-graph">
+  <div class="callout callout-info">
+    <h4>☁️ 24 Graph API limits — not our fault</h4>
+    <p>These failures are caused by Microsoft Graph behavior we cannot control: server errors and endpoints that simply don't apply to this tenant type. Not Coral bugs, not our issues.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span>C1. Transient server error (5xx) — 13 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns 500/503.</p>
+      <p><strong>Examples:</strong> <code>education_reportsroot_*</code> (5+ endpoints), various report endpoints.</p>
+      <p><strong>Fix:</strong> Retry these later. Not Coral's bug.</p>
+      <pre>Error: Source server error (503)
+Detail: {"error":{"code":"UnknownError","message":"","innerError":{"date":"2026-07-31T08:12:23","request-id":"fe39f973-9b52-405f-b2b0-eb7e420d1053"}}}</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>C2. Endpoint not for this tenant type — 11 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns <code>"Request not applicable to target tenant"</code>.</p>
+      <p><strong>Examples:</strong> <code>me_devicemanagementtroubleshootingevent_*</code>, <code>me_managedappregistration_*</code>, <code>me_manageddevice_*</code>, <code>me_user_functions_me_exportdeviceandappmanagementdata_*</code>, <code>me_user_functions_me_getmanagedappdiagnosticstatuses</code>, <code>me_user_functions_me_getmanagedapppolicies</code>, <code>me_user_functions_me_getmanageddeviceswithappfailures</code>.</p>
+      <p><strong>Fix:</strong> Not applicable to a personal AAD tenant. These need Intune enrollment or other infrastructure.</p>
+      <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"Request not applicable to target tenant.","innerError":{"date":"2026-07-31T11:51:50","request-id":"ab736aa7-ddf1-423d-b433-f06c2cf4f31d"}}} [GET] https://graph.microsoft.com/v1.0/deviceAppManagement/mdmWindowsInformationProtectionPolicies</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: AMBIGUOUS ============ -->
+<div class="tab-panel" id="tab-ambig">
+  <div class="callout callout-our">
+    <h4>❓ 49 ambiguous — needs investigation</h4>
+    <p>These failures have empty bodies or ambiguous messages. They could be Coral bugs (error swallowing) OR genuine "endpoint doesn't exist" responses. Per-endpoint investigation needed.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span>E1. Empty 404 responses — 42 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns <code>404 (UnknownError, message="")</code> — same pattern as the auth error mask.</p>
+      <p><strong>Affected prefixes:</strong></p>
+      <table>
+        <tr><th>Prefix</th><th>Count</th></tr>
+        <tr><td><code>security_threatintelligence_*</code></td><td>15</td></tr>
+        <tr><td><code>me_userdatasecurityandgovernance_*</code></td><td>4</td></tr>
+        <tr><td><code>invitations_*</code></td><td>3</td></tr>
+        <tr><td><code>copilot_*</code></td><td>3</td></tr>
+        <tr><td><code>print_*</code></td><td>3</td></tr>
+        <tr><td>(others)</td><td>14</td></tr>
+      </table>
+      <p><strong>Fix:</strong> Same root cause as A1 — Coral should unwrap empty bodies. Or these endpoints genuinely don't exist (then should be removed from manifest).</p>
+      <pre>Error: Source resource was not found (404)
+Detail: {"error":{"code":"UnknownError","message":"","innerError":{"date":"2026-07-31T09:54:31","request-id":"f089dd79-3deb-4861-979f-ab46c72c30af"}}} [GET] https://graph.microsoft.com/v1.0/security</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>E2. 404 with detail — 5 tables</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Symptom:</strong> Graph returns 404 with structured error but the message is ambiguous about whether endpoint exists or is hidden by tenant config.</p>
+      <p><strong>Examples:</strong></p>
+      <ul>
+        <li><code>communications_presence_*_listpresences</code></li>
+        <li><code>directory_publickeyinfrastructureroot_*_getpublickeyinfrastructure</code></li>
+        <li><code>informationprotection_bitlocker_*_getbitlocker</code></li>
+        <li><code>me_profilephoto_*</code> (user has no photo set)</li>
+      </ul>
+      <p><strong>Fix:</strong> Per-endpoint investigation needed.</p>
+      <pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"","message":"Bad filter: One of these properties must be specified: 'businessFlowTemplateId' or 'partnerId' or 'businessFlowId'."}}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: PER-PREFIX ============ -->
+<div class="tab-panel" id="tab-prefix">
+  <div class="section">
+    <div class="section-header open"><span>Per-prefix attribution (most affected prefixes)</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <div class="table-scroll"><table>
+        <tr><th>Prefix</th><th>Total fail</th><th>Coral bug</th><th>Our issue</th><th>Graph</th><th>Other</th></tr>
+        <tr>
+          <td><code>me_</code></td>
+          <td>111</td>
+          <td>54 (49%)</td>
+          <td>37 (33%)</td>
+          <td>9 (8%)</td>
+          <td>11 (10%)</td>
+        </tr>
+        <tr>
+          <td><code>devicemanagement_</code></td>
+          <td>74</td>
+          <td>62 (84%)</td>
+          <td>12 (16%)</td>
+          <td>0 (0%)</td>
+          <td>0 (0%)</td>
+        </tr>
+        <tr>
+          <td><code>security_</code></td>
+          <td>61</td>
+          <td>25 (41%)</td>
+          <td>20 (33%)</td>
+          <td>1 (2%)</td>
+          <td>15 (25%)</td>
+        </tr>
+        <tr>
+          <td><code>identitygovernance_</code></td>
+          <td>44</td>
+          <td>15 (34%)</td>
+          <td>25 (57%)</td>
+          <td>0 (0%)</td>
+          <td>4 (9%)</td>
+        </tr>
+        <tr>
+          <td><code>solutions_</code></td>
+          <td>34</td>
+          <td>30 (88%)</td>
+          <td>2 (6%)</td>
+          <td>0 (0%)</td>
+          <td>2 (6%)</td>
+        </tr>
+        <tr>
+          <td><code>deviceappmanagement_</code></td>
+          <td>33</td>
+          <td>33 (100%)</td>
+          <td>0 (0%)</td>
+          <td>0 (0%)</td>
+          <td>0 (0%)</td>
+        </tr>
+        <tr>
+          <td><code>admin_</code></td>
+          <td>32</td>
+          <td>20 (62%)</td>
+          <td>9 (28%)</td>
+          <td>0 (0%)</td>
+          <td>3 (9%)</td>
+        </tr>
+        <tr>
+          <td><code>reports_</code></td>
+          <td>25</td>
+          <td>16 (64%)</td>
+          <td>3 (12%)</td>
+          <td>4 (16%)</td>
+          <td>2 (8%)</td>
+        </tr>
+        <tr>
+          <td><code>education_</code></td>
+          <td>22</td>
+          <td>3 (14%)</td>
+          <td>14 (64%)</td>
+          <td>5 (23%)</td>
+          <td>0 (0%)</td>
+        </tr>
+        <tr>
+          <td><code>identity_</code></td>
+          <td>19</td>
+          <td>6 (32%)</td>
+          <td>13 (68%)</td>
+          <td>0 (0%)</td>
+          <td>0 (0%)</td>
+        </tr>
+        <tr>
+          <td><code>rolemanagement_</code></td>
+          <td>18</td>
+          <td>14 (78%)</td>
+          <td>2 (11%)</td>
+          <td>2 (11%)</td>
+          <td>0 (0%)</td>
+        </tr>
+        <tr>
+          <td><code>policies_</code></td>
+          <td>13</td>
+          <td>5 (38%)</td>
+          <td>6 (46%)</td>
+          <td>0 (0%)</td>
+          <td>2 (15%)</td>
+        </tr>
+        <tr>
+          <td><code>communications_</code></td>
+          <td>11</td>
+          <td>6 (55%)</td>
+          <td>3 (27%)</td>
+          <td>0 (0%)</td>
+          <td>2 (18%)</td>
+        </tr>
+        <tr>
+          <td><code>copilot_</code></td>
+          <td>9</td>
+          <td>5 (56%)</td>
+          <td>1 (11%)</td>
+          <td>0 (0%)</td>
+          <td>3 (33%)</td>
+        </tr>
+        <tr>
+          <td><code>directory_</code></td>
+          <td>9</td>
+          <td>3 (33%)</td>
+          <td>5 (56%)</td>
+          <td>0 (0%)</td>
+          <td>1 (11%)</td>
+        </tr>
+      </table>
+      </div>
+      <p class="note">Reading guide: <strong>deviceappmanagement_*</strong> (94% Coral bug) means most failures are Coral's fault. <strong>education_*</strong> (100% Our issue) means all failures need EDU license + scopes.</p>
+    </div>
+  </div>
+</div>
+<!-- ============ TAB: ACTION ITEMS ============ -->
+<div class="tab-panel" id="tab-action">
+  <div class="section">
+    <div class="section-header open"><span>📋 For Andrea (Coral connector fixes)</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Priority P0 — biggest wins (308 tables affected):</strong></p>
+      <ol>
+        <li><strong>Fix the empty UnknownError parser (121 tables)</strong> — unwrap <code>innerError</code> JSON body to surface the deepest error code + message. <strong>This single fix would convert 121 ambiguous failures into precise actionable errors.</strong></li>
+        <li><strong>Fix the empty HTTP error body (23 tables)</strong> — capture full response body when present; say "empty body" instead of just the URL.</li>
+        <li><strong>Fix wrong audience filter (120 tables)</strong> — add AAD-only filter in manifest parser. Currently includes 120 endpoints that aren't for AAD tenants (Business Central, Edge admin, Exchange admin, etc.)</li>
+        <li><strong>Fix wrong base URL parser (17 tables)</strong> — respect per-endpoint <code>servers</code> overrides.</li>
+        <li><strong>Remove deprecated APIs from manifest (15 tables)</strong> — filter by <code>x-ms-deprecation</code>.</li>
+        <li><strong>Convert needs-entityId to function tables (3 tables)</strong> — add required ID param.</li>
+        <li><strong>Convert delta/search list to function tables (6 tables)</strong> — accept ID filter.</li>
+        <li><strong>Fix query-shape tables (~25 tables)</strong> — audit manifest URL/query.</li>
+      </ol>
+
+      <p><strong>Expected impact:</strong> fixing the empty UnknownError parser alone would convert 121+42=163 ambiguous failures into precise error messages, making the remaining 441 failures precisely attributable.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>⚙️ For Vicky (our setup fixes)</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <p><strong>Re-consent app with broader scopes, add M365 license:</strong></p>
+      <ol>
+        <li>Run interactive <code>coral source add microsoft_graph_v4</code> to consent broader scopes (need to add: <code>DeviceManagementApps.Read.All</code>, <code>EduRoster.Read.All</code>, <code>IdentityUserFlow.Read.All</code>, <code>APIConnectors.Read.All</code>, <code>RiskPreventionProviders.Read.All</code>, <code>SecurityEvents.Read.All</code>, <code>ThreatIntelligence.Read.All</code>, <code>Reports.Read.All</code>, <code>RoleManagement.Read.All</code>, <code>Directory.Read.All</code>, <code>Mail.Read</code>, <code>Calendars.Read</code>, <code>Contacts.Read</code>)</li>
+        <li>Add M365 Business Basic license (out of scope — Vicky has no credit card per skill context)</li>
+        <li>Accept that some tables will fail until license is added (32 tables for SPO/Teams/Copilot)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>📊 Summary of who fixes what</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <table>
+        <tr><th>Role</th><th>Tables</th><th>What</th></tr>
+        <tr><td>Andrea (withcoral)</td><td><strong>338 (56%)</strong></td><td>Fix Coral bug categories A1–A11. Most impactful: unwrap <code>innerError</code> (A1) and add AAD audience filter (A5).</td></tr>
+        <tr><td>Vicky</td><td><strong>185 (31%)</strong></td><td>Re-consent app with 13 broader scopes, assign People admin role, add M365 license (out of scope).</td></tr>
+        <tr><td>Graph (Microsoft)</td><td><strong>24 (4%)</strong></td><td>Server errors and tenant-type filtering — not actionable on our side.</td></tr>
+        <tr><td>No fix needed</td><td><strong>8 (1%)</strong></td><td>Tenant genuinely lacks Planner + user has no manager — expected.</td></tr>
+        <tr><td>Need investigation</td><td><strong>49 (8%)</strong></td><td>Empty bodies or ambiguous messages — could be Coral bugs that need audit.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>🔑 Key insight</span><span class="arrow">&#9654;</span></div>
+    <div class="section-body">
+      <div class="callout callout-bug">
+        <h4>🎯 The #1 single fix that would help the most</h4>
+        <p><strong>Coral's empty UnknownError parser</strong> — currently Coral surfaces <code>{"code":"UnknownError","message":""}</code> as the error, masking the actual cause. The real error (e.g., <code>S2SUnauthorized: Invalid permission</code>) is nested deeper in <code>innerError</code>.</p>
+        <p>This single fix would convert <strong>121 ambiguous failures</strong> into precise actionable error messages. It would also likely fix the 23 empty-body 401 errors and the 42 empty-404 errors, since they likely have the same root cause (Coral's error parser is broken).</p>
+        <p>Total potential impact: <strong>186 failures</strong> converted from ambiguous to actionable.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-title">Report meta</div>
+  Generated 2026-07-31 &middot; Coral 0.8.1+3acb123 &middot; Tenant: <code>89de3b75-fef2-44f9-90a4-cf8c69700c83</code>
+  <br>Source data: <code>/tmp/attribution_final.json</code> (52 KB) &middot; Full run: <code>/tmp/coral_sql_results_2026-07-31.json</code> (557 KB)
+  <br>Source MD: <code>reports/2026-07-31-failure-attribution.md</code>
+  <br>Related: <code>reports/2026-07-31-msgraph-reauth-test-report-v2.md</code> (full battery run) and <code>.html</code>
+  <br>Author: Vicky Kumar &lt;algsoch@gmail.com&gt; &middot; Repo: <a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a>
+</footer>
+
+</div>
+
+<script>
+function showTab(btn) {
+  document.querySelectorAll('nav.tabs button').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+}
+
+function toggleCoral(head) {
+  head.parentElement.classList.toggle('open');
+}
+
+function openAllCoral() {
+  document.querySelectorAll('#coral-list .bug-card').forEach(function(c){ c.classList.add('open'); });
+}
+function closeAllCoral() {
+  document.querySelectorAll('#coral-list .bug-card').forEach(function(c){ c.classList.remove('open'); });
+}
+
+var coralActiveCat = 'all';
+function filterCoralCat(btn) {
+  document.querySelectorAll('.bug-toolbar .chip').forEach(function(c){ c.classList.remove('active'); });
+  btn.classList.add('active');
+  coralActiveCat = btn.dataset.cat;
+  filterCoral();
+}
+function filterCoral() {
+  var q = (document.getElementById('coral-search').value || '').toLowerCase().trim();
+  var visible = 0, total = 0;
+  document.querySelectorAll('#coral-list .bug-card').forEach(function(card) {
+    total++;
+    var show = (coralActiveCat === 'all' || card.dataset.cat === coralActiveCat);
+    if (show && q && card.dataset.search.toLowerCase().indexOf(q) === -1) show = false;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('coral-count').textContent = 'Showing ' + visible + ' / ' + total;
+}
+
+function copyCmd(btn) {
+  var pre = btn.closest('.cmd-block').querySelector('pre');
+  var text = pre.innerText.replace(/^\$\s*/m, '').replace(/^\$\s*/gm, '');
+  navigator.clipboard.writeText(text).then(function() {
+    var old = btn.textContent;
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = old; btn.classList.remove('copied'); }, 1200);
+  });
+}
+</script>
+</body>
+</html>
