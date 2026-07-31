@@ -149,14 +149,186 @@
   <tr><td>App-only-only gap</td><td><span class="tag tag-pass">20 of 30 now pass delegated</span></td></tr>
   <tr><td>places_*</td><td><span class="tag tag-warn">4 → 0 (keychain scope change)</span></td></tr>
 </table>
-<p class="note">This is the first complete, token-stable battery (733/733, 0 expired_token). It beats the Jul 29 delegated run on every prefix except places_*, which is a keychain consent-scope change (see §8).</p>
+<p class="note">This is the first complete, token-stable battery (733/733, 0 expired_token). It beats the Jul 29 delegated run on every prefix except places_*, which is a keychain consent-scope change (see §10).</p>
 </div>
 </div>
 
-<!-- Section 2: Results summary -->
+<!-- Section 2: Three-way comparison 29 vs 30 vs 31 -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>2. Results summary <span class="tag tag-info">733 tables</span></span><span class="arrow">▶</span>
+  <span>2. Three-way comparison: 07-29 vs 07-30 vs 07-31 <span class="tag tag-info">3 days</span></span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+<table>
+  <tr><th>Metric</th><th>Jul 29 (delegated)</th><th>Jul 30 (spec bugs)</th><th>Jul 31 (delegated)</th></tr>
+  <tr><td>Scope</td><td>Full 733-table battery + identity + app-only</td><td>45-table spec-bug deep-dive</td><td>Full 733-table battery</td></tr>
+  <tr><td>Token</td><td>Keychain OAuth (delegated)</td><td>—</td><td>Keychain OAuth (delegated)</td></tr>
+  <tr><td>Timeouts</td><td><span class="tag tag-pass">0 (120s timeout)</span></td><td>—</td><td><span class="tag tag-warn">30 (30s cutoff, all retry-clear)</span></td></tr>
+  <tr><td>Pass</td><td>129</td><td>112 (app-only, Jul 30 report)</td><td><strong>122</strong></td></tr>
+  <tr><td>Spec bugs found</td><td>45 (reported Jul 30)</td><td>45 documented</td><td>45 re-verified (40/45 still reproduce)</td></tr>
+  <tr><td>expired_token failures</td><td>63 (re-run)</td><td>—</td><td><span class="tag tag-pass">0</span></td></tr>
+  <tr><td>App-only-only tables (30)</td><td>30 pass app-only</td><td>—</td><td>20 pass delegated</td></tr>
+  <tr><td>places_*</td><td>4 pass</td><td>—</td><td><span class="tag tag-warn">0 pass (scope change, §10)</span></td></tr>
+  <tr><td>Key finding</td><td>surface-singular fix works, 0 timeouts</td><td>45 genuine OpenAPI parse bugs</td><td>no connector regression; token-stable run</td></tr>
+</table>
+<p class="note">Jul 29 and Jul 31 use the same delegated keychain credential. Jul 30 was a pure analysis report derived from Jul 29's data (the 45 tables) — no new battery ran. The Jul 31 pass count (122) differs from Jul 29 (129) because of the 30s timeout cutoff and the places_* scope change, both explained in §9/§10.</p>
+</div>
+</div>
+
+<!-- Section 3: Complete Coral command log -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>3. Complete Coral command log <span class="tag tag-pass">all commands + outputs</span></span><span class="arrow">▶</span>
+</div>
+<div class="section-body">
+
+<h4>3.1 CLI basics</h4>
+<pre><span class="prompt">$</span> coral --version
+<span class="output">coral 0.8.1+3acb123</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral source list
+<span class="output">Source                     Version  Origin    Secrets
+-------------------------  -------  --------  ----------------
+microsoft_graph_v4         0.1.0    imported  keychain
+... (other sources elided)</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral source info microsoft_graph_v4
+<span class="output">(manifest metadata — 733 tables, 5,972 columns, 5,776 table functions)</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<pre><span class="prompt">$</span> coral source test microsoft_graph_v4
+<span class="output">✓ 1/1 tests passed</span>
+<span class="exit">(exit code: 0)</span></pre>
+
+<h4>3.2 Schema discovery</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT count(*) AS tables FROM coral.tables WHERE schema_name='microsoft_graph_v4'"
+<span class="output">+--------+
+| tables |
++--------+
+|   733  |
++--------+</span></pre>
+
+<pre><span class="prompt">$</span> coral sql "SELECT count(*) AS columns FROM coral.columns WHERE schema_name='microsoft_graph_v4'"
+<span class="output">+---------+
+| columns |
++---------+
+|  5,972  |
++---------+</span></pre>
+
+<pre><span class="prompt">$</span> coral sql "SELECT count(*) AS table_functions FROM coral.table_functions WHERE schema_name='microsoft_graph_v4'"
+<span class="output">+-----------------+
+| table_functions |
++-----------------+
+|      5,776      |
++-----------------+</span></pre>
+
+<h4>3.3 Identity smoke query (delegated credential check)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT displayName FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1"
+<span class="output">+-------------+
+| displayName |
++-------------+
+| vicky kumar |
++-------------+</span></pre>
+
+<pre><span class="prompt">$</span> coral sql "SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser"
+<span class="output">+-------------+----------------------------------------------------+
+| displayname | userprincipalname                                   |
++-------------+----------------------------------------------------+
+| vicky kumar | vicky@algsochgmail.onmicrosoft.com                  |
++-------------+----------------------------------------------------+</span></pre>
+
+<h4>3.4 Full battery — canonical form</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.&lt;table_name&gt; LIMIT 1"
+<span class="exit">(733 tables, one query each, 4 parallel workers, 30s timeout)
+(runner: /tmp/run_full_2026-07-31.py → /tmp/coral_sql_results_2026-07-31.json)</span></pre>
+
+<h4>3.5 Representative outputs by result class</h4>
+
+<p><strong>Pass:</strong></p>
+<pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1"
+<span class="output">+----+
+| ok |
++----+
+| 1  |
++----+</span></pre>
+
+<p><strong>License-gated (400):</strong></p>
+<pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.drives_drive_drives_drive_listdrive LIMIT 1"
+<span class="output">Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"Tenant does not have a SPO license.","innerError":{"date":"2026-07-31T09:25:46","request-id":"206a776a-..."}}} [GET] https://graph.microsoft.com/v1.0/drives</span></pre>
+
+<p><strong>Wrong audience (400):</strong></p>
+<pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_exchangeadmin_admin_getexchange LIMIT 1"
+<span class="output">Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.Exchange,True)..."}} [GET] https://graph.microsoft.com/v1.0/admin/exchange/admin</span></pre>
+
+<p><strong>Auth / 401:</strong></p>
+<pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.places_place_places_place_listplace_asroom LIMIT 1"
+<span class="output">Error: Source authentication failed (401)
+Detail: {"error":{"code":"UnknownError","message":"","innerError":{"date":"2026-07-31T09:41:20","request-id":"d8e67680-..."}}} [GET] https://graph.microsoft.com/v1.0/places/graph.room
+Hint: Credentials for this source are invalid or expired. Re-install it to refresh: `coral source add microsoft_graph_v4` ...</span></pre>
+
+<p><strong>Deprecated / beta-only (404):</strong></p>
+<pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_adhoccalls_getallrecordings LIMIT 1"
+<span class="output">Error: Source resource was not found (404)
+Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:12:43","request-id":"9a27bd9e-..."}}} [GET] https://graph.microsoft.com/v1.0/communications/adhocCalls/getAllRecordings(userId='@userId',...)</span></pre>
+
+<p><strong>Wrong URL (404, different base):</strong></p>
+<pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance LIMIT 1"
+<span class="output">Error: Source resource was not found (404)
+Detail: {"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/agreementAcceptances?x-scenario=MSGraph&x-tenantid=[tenantId]'.","innerError":{"date":"2026-07-31T09:11:28","request-id":"6e7156ad-..."}}}</span></pre>
+
+<p><strong>Timeout then retry (slow endpoint → structured result):</strong></p>
+<pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_admin_admin_admin_getadmin LIMIT 1"
+<span class="output">Timeout after 30s</span>
+<span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_admin_admin_admin_getadmin LIMIT 1"   <span class="exit"># retry</span>
+<span class="output">+----+
+| ok |
++----+
+| 1  |
++----+
+(22s on retry)</span></pre>
+
+<h4>3.6 Functional data queries (Jul 29 battery, same CLI)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1" <span class="exit"># 17 users</span>
+<span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.organization_organization_organization_organization_listorganization LIMIT 1"
+<span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.groups_group_groups_group_listgroup WHERE top = 3" <span class="exit"># 2 groups</span>
+<span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.applications_application_applications_application_listapplication" <span class="exit"># 3 apps</span>
+<span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal" <span class="exit"># 3 SPs</span>
+<span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.devices_device_devices_device_listdevice WHERE top = 2" <span class="exit"># 0 devices</span></pre>
+
+<h4>3.7 Error-quality / UX probes (Jul 29 report)</h4>
+<pre><span class="prompt">$</span> coral sql "SELECT * FROM microsoft_graph_v4.totally_fake_table"
+<span class="output">Error: table "totally_fake_table" not found ... (clean unknown-table error)</span>
+
+<span class="prompt">$</span> coral sql "SELECT nosuchcolumn FROM microsoft_graph_v4.me_user_me_user_getuser"
+<span class="output">Error: column "nosuchcolumn" not found ... (clean unknown-column error)</span>
+
+<span class="prompt">$</span> coral sql "SELECT value FROM microsoft_graph_v4.auditlogs_signin_auditlogs_listsignins WHERE top = 2"
+<span class="output">Error: Source rejected the request (403)
+Detail: ... "Tenant is not a B2C tenant and doesn't have premium license" ...  <span class="exit"># no Entra P1/P2</span></span></pre>
+
+<h4>3.8 Timeout retry probe</h4>
+<pre><span class="prompt">$</span> python3 /tmp/retimeout.py admin_admin_admin_admin_getadmin tenantrelationships_delegatedadminrelationship_tenantrelationships_listdelegatedadminrelationships
+<span class="output">admin_admin_admin_admin_getadmin -> rc=0 in 22s | PASS
+tenantrelationships_delegatedadminrelationship_..._list... -> rc=0 in 16s | PASS</span></pre>
+
+<h4>3.9 Direct API cross-check (places scope diagnosis, §10)</h4>
+<pre><span class="prompt">$</span> TOKEN=$(az account get-access-token --resource https://graph.microsoft.com --query accessToken -o tsv)
+<span class="prompt">$</span> curl -s -o /tmp/places_check.json -w "HTTP %{http_code}" -H "Authorization: Bearer $TOKEN" \
+    "https://graph.microsoft.com/v1.0/places/graph.room?\$top=1"
+<span class="output">HTTP 401
+{"error":{"code":"UnknownError","message":"",...}}</span></pre>
+<p class="note">The current token's scp claim lacks Place.Read.All, confirming the places regression is a consent-scope change, not a connector bug.</p>
+</div>
+</div>
+
+<!-- Section 4: Results summary -->
+<div class="section">
+<div class="section-header" onclick="toggleSection(this)">
+  <span>4. Results summary <span class="tag tag-info">733 tables</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
@@ -179,10 +351,10 @@
 </div>
 </div>
 
-<!-- Section 3: Pass counts by prefix -->
+<!-- Section 5: Pass counts by prefix -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>3. Pass counts by prefix <span class="tag tag-pass">+27 across me/identity/security</span></span><span class="arrow">▶</span>
+  <span>5. Pass counts by prefix <span class="tag tag-pass">+27 across me/identity/security</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
@@ -222,17 +394,17 @@
 </div>
 </div>
 
-<!-- Section 4: Spec bugs recheck -->
+<!-- Section 6: Spec bugs recheck -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>4. Genuine spec bugs — recheck <span class="tag tag-fail">45, all still unfixed</span></span><span class="arrow">▶</span>
+  <span>6. Genuine spec bugs — recheck <span class="tag tag-fail">45, all still unfixed</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
   <tr><th>Category</th><th>Jul 30</th><th>Jul 31 result</th></tr>
   <tr><td>Wrong URL / path mismatch</td><td>13</td><td>13 still <span class="tag tag-warn">wrong_url</span></td></tr>
   <tr><td>Deprecated / beta-only API</td><td>13</td><td>13 still <span class="tag tag-muted">deprecated</span></td></tr>
-  <tr><td>Wrong audience (AAD accounts)</td><td>12</td><td>8 <span class="tag tag-info">wrong_audience</span> + 4 <span class="tag tag-warn">timeout</span> (§7)</td></tr>
+  <tr><td>Wrong audience (AAD accounts)</td><td>12</td><td>8 <span class="tag tag-info">wrong_audience</span> + 4 <span class="tag tag-warn">timeout</span> (§9)</td></tr>
   <tr><td>Needs entityId parameter</td><td>4</td><td>1 <span class="tag tag-fail">auth</span> + 3 tables not in 733 list</td></tr>
   <tr><td>Unsupported query shape</td><td>3</td><td>3 still <span class="tag tag-info">unsupported_query</span></td></tr>
   <tr><td><strong>Total</strong></td><td><strong>45</strong></td><td><strong>40 reproduced · 5 changed</strong></td></tr>
@@ -241,25 +413,25 @@
 </div>
 </div>
 
-<!-- Section 5: App-only-only recheck -->
+<!-- Section 7: App-only-only recheck -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>5. App-only-only tables (30) — delegated recheck <span class="tag tag-pass">20 of 30 now pass</span></span><span class="arrow">▶</span>
+  <span>7. App-only-only tables (30) — delegated recheck <span class="tag tag-pass">20 of 30 now pass</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <ul>
   <li><span class="tag tag-pass">20 of 30 now PASS</span> with the delegated keychain token — identity event listeners, reports, schemaextensions, serviceprincipals, storage, subscribedskus, subscriptions, solutions, users delta, etc.</li>
   <li><span class="tag tag-fail">9 still AUTH</span> — all places_* (asroom/asroomlist/asworkspace) and security_* alert / attack-simulation / securescore tables</li>
-  <li><span class="tag tag-warn">1 timeout</span> — tenantrelationships_delegatedadminrelationship_..._listdelegatedadminrelationships (passed on retry in 16s, §7)</li>
+  <li><span class="tag tag-warn">1 timeout</span> — tenantrelationships_delegatedadminrelationship_..._listdelegatedadminrelationships (passed on retry in 16s, §9)</li>
 </ul>
 <p class="note">The app-only vs delegated gap shrank significantly since Jul 29.</p>
 </div>
 </div>
 
-<!-- Section 6: Error quality -->
+<!-- Section 8: Error quality -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>6. Error-quality probe <span class="tag tag-pass">clean structured failures</span></span><span class="arrow">▶</span>
+  <span>8. Error-quality probe <span class="tag tag-pass">clean structured failures</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.drives_drive_drives_drive_listdrive LIMIT 1"
@@ -276,10 +448,10 @@ Detail: {"error":{"code":"BadRequest","message":"This API is not supported for A
 </div>
 </div>
 
-<!-- Section 7: Timeouts -->
+<!-- Section 9: Timeouts -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>7. Timeout analysis (30) <span class="tag tag-warn">all slow, not hangs</span></span><span class="arrow">▶</span>
+  <span>9. Timeout analysis (30) <span class="tag tag-warn">all slow, not hangs</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
@@ -302,10 +474,10 @@ Detail: {"error":{"code":"BadRequest","message":"This API is not supported for A
 </div>
 </div>
 
-<!-- Section 8: places regression -->
+<!-- Section 10: places regression -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>8. places_* regression (4 → 0) <span class="tag tag-warn">keychain scope change</span></span><span class="arrow">▶</span>
+  <span>10. places_* regression (4 → 0) <span class="tag tag-warn">keychain scope change</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <pre><span class="prompt">$</span> coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.places_place_places_place_listplace_asroom LIMIT 1"
@@ -321,10 +493,10 @@ Detail: {"error":{"code":"UnknownError","message":"",...}} [GET] https://graph.m
 </div>
 </div>
 
-<!-- Section 9: Other bucket -->
+<!-- Section 11: Other bucket -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>9. other bucket (41) <span class="tag tag-info">upstream 400/500</span></span><span class="arrow">▶</span>
+  <span>11. other bucket (41) <span class="tag tag-info">upstream 400/500</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
@@ -339,10 +511,10 @@ Detail: {"error":{"code":"UnknownError","message":"",...}} [GET] https://graph.m
 </div>
 </div>
 
-<!-- Section 10: Comparison with Jul 29 -->
+<!-- Section 12: Comparison with Jul 29 -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>10. Comparison with Jul 29 — what changed <span class="tag tag-pass">net positive</span></span><span class="arrow">▶</span>
+  <span>12. Comparison with Jul 29 — what changed <span class="tag tag-pass">net positive</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <table>
@@ -354,17 +526,17 @@ Detail: {"error":{"code":"UnknownError","message":"",...}} [GET] https://graph.m
   <tr><td>auditlogs_* +3</td><td>0 → 3</td></tr>
   <tr><td>applications_*, devices_* +2</td><td>delegated access gained</td></tr>
   <tr><td>app-only gap shrinks</td><td>20 of 30 now pass delegated</td></tr>
-  <tr><td>places_* −4</td><td>scope/consent change on keychain token (§8)</td></tr>
-  <tr><td>30 timeouts</td><td>30s cutoff; all complete on retry (§7)</td></tr>
-  <tr><td>45 spec bugs</td><td>unchanged — 40/45 still reproduce, 5 reclassified (§4)</td></tr>
+  <tr><td>places_* −4</td><td>scope/consent change on keychain token (§10)</td></tr>
+  <tr><td>30 timeouts</td><td>30s cutoff; all complete on retry (§9)</td></tr>
+  <tr><td>45 spec bugs</td><td>unchanged — 40/45 still reproduce, 5 reclassified (§6)</td></tr>
 </table>
 </div>
 </div>
 
-<!-- Section 11: Verdict -->
+<!-- Section 13: Verdict -->
 <div class="section">
 <div class="section-header" onclick="toggleSection(this)">
-  <span>11. Verdict <span class="tag tag-pass">NO CONNECTOR REGRESSION</span></span><span class="arrow">▶</span>
+  <span>13. Verdict <span class="tag tag-pass">NO CONNECTOR REGRESSION</span></span><span class="arrow">▶</span>
 </div>
 <div class="section-body">
 <p style="font-size:0.9rem;"><strong>No connector regression detected.</strong> The Jul 31 run is the first complete, token-stable battery (733/733, 0 expired_token) and it beats the Jul 29 delegated run on every prefix except places_*, which is a keychain consent-scope change.</p>

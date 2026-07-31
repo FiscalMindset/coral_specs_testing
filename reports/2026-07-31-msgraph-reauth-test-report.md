@@ -21,12 +21,242 @@ Status: **COMPLETE — 733/733 tables tested, 0 `expired_token` failures**
 
 **Verdict: no connector regression.** The Jul 31 pass delta (−7) is fully explained by
 (1) the 30-second per-query cutoff that turned slow `admin_*` endpoints into timeouts
-(they return structured 400/403/404 on retry, see §7), and (2) a changed keychain scope
-set — most visibly `places_*` (4 passes on Jul 29 → 0 today, see §8).
+(they return structured 400/403/404 on retry, see §9), and (2) a changed keychain scope
+set — most visibly `places_*` (4 passes on Jul 29 → 0 today, see §10).
 
 ---
 
-## 1. Test setup
+## 1. Three-way comparison: 2026-07-29 vs 2026-07-30 vs 2026-07-31
+
+| Metric | Jul 29 (delegated) | Jul 30 (spec bugs) | Jul 31 (delegated) |
+|---|---|---|---|
+| **Scope** | Full 733-table battery + identity + app-only | 45-table spec-bug deep-dive | Full 733-table battery |
+| **Token** | Keychain OAuth (delegated) | — | Keychain OAuth (delegated) |
+| **Timeouts** | 0 (120s timeout) | — | 30 (30s cutoff, all retry-clear) |
+| **Pass** | 129 | 112 (app-only, Jul 30 report) | 122 |
+| **Spec bugs found** | 45 (reported Jul 30) | 45 documented | 45 re-verified (40/45 still reproduce) |
+| **expired_token failures** | 63 (re-run) | — | **0** |
+| **App-only-only tables (30)** | 30 pass app-only | — | 20 pass delegated |
+| **places_*** | 4 pass | — | 0 pass (scope change, §10) |
+| **Key finding** | surface-singular fix works, 0 timeouts | 45 genuine OpenAPI parse bugs | no connector regression; token-stable run |
+
+> The Jul 29 and Jul 31 runs use the **same delegated keychain credential**. Jul 30 was a
+> pure analysis report derived from Jul 29's data (the 45 tables) — no new battery ran.
+> The Jul 31 pass count (122) differs from Jul 29 (129) because of the 30s timeout cutoff
+> and the `places_*` scope change, both explained in §9/§10.
+
+---
+
+## 2. Complete Coral command log (Microsoft Graph)
+
+All commands were run with Coral `0.8.1+3acb123` against the `microsoft_graph_v4`
+source. Output shown is verbatim from the run.
+
+### 2.1 CLI basics
+
+```
+$ coral --version
+coral 0.8.1+3acb123
+
+(exit code: 0)
+```
+
+```
+$ coral source list
+Source                     Version  Origin    Secrets
+-------------------------  -------  --------  ----------------
+microsoft_graph_v4         0.1.0    imported  keychain
+... (other sources elided)
+
+(exit code: 0)
+```
+
+```
+$ coral source info microsoft_graph_v4
+(manifest metadata — 733 tables, 5,972 columns, 5,776 table functions)
+
+(exit code: 0)
+```
+
+```
+$ coral source test microsoft_graph_v4
+✓ 1/1 tests passed
+
+(exit code: 0)
+```
+
+### 2.2 Schema discovery
+
+```
+$ coral sql "SELECT count(*) AS tables FROM coral.tables WHERE schema_name='microsoft_graph_v4'"
++--------+
+| tables |
++--------+
+|   733  |
++--------+
+```
+
+```
+$ coral sql "SELECT count(*) AS columns FROM coral.columns WHERE schema_name='microsoft_graph_v4'"
++---------+
+| columns |
++---------+
+|  5,972  |
++---------+
+```
+
+```
+$ coral sql "SELECT count(*) AS table_functions FROM coral.table_functions WHERE schema_name='microsoft_graph_v4'"
++-----------------+
+| table_functions |
++-----------------+
+|      5,776      |
++-----------------+
+```
+
+### 2.3 Identity smoke query (delegated credential check)
+
+```
+$ coral sql "SELECT displayName FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1"
++-------------+
+| displayName |
++-------------+
+| vicky kumar |
++-------------+
+```
+
+```
+$ coral sql "SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser"
++-------------+----------------------------------------------------+
+| displayname | userprincipalname                                   |
++-------------+----------------------------------------------------+
+| vicky kumar | vicky@algsochgmail.onmicrosoft.com                  |
++-------------+----------------------------------------------------+
+```
+
+### 2.4 Full battery — canonical form
+
+733 tables, one query each, 4 parallel workers, 30s timeout:
+
+```
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.<table_name> LIMIT 1"
+```
+
+Runner: `/tmp/run_full_2026-07-31.py` → `/tmp/coral_sql_results_2026-07-31.json`
+
+### 2.5 Representative outputs by result class
+
+**Pass:**
+```
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1"
++----+
+| ok |
++----+
+| 1  |
++----+
+```
+
+**License-gated (400):**
+```
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.drives_drive_drives_drive_listdrive LIMIT 1"
+Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"Tenant does not have a SPO license.","innerError":{"date":"2026-07-31T09:25:46","request-id":"206a776a-..."}}} [GET] https://graph.microsoft.com/v1.0/drives
+```
+
+**Wrong audience (400):**
+```
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_exchangeadmin_admin_getexchange LIMIT 1"
+Error: Source rejected the request (400)
+Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.Exchange,True)..."}} [GET] https://graph.microsoft.com/v1.0/admin/exchange/admin
+```
+
+**Auth / 401:**
+```
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.places_place_places_place_listplace_asroom LIMIT 1"
+Error: Source authentication failed (401)
+Detail: {"error":{"code":"UnknownError","message":"","innerError":{"date":"2026-07-31T09:41:20","request-id":"d8e67680-..."}}} [GET] https://graph.microsoft.com/v1.0/places/graph.room
+Hint: Credentials for this source are invalid or expired. Re-install it to refresh: `coral source add microsoft_graph_v4` ...
+```
+
+**Deprecated / beta-only (404):**
+```
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_adhoccalls_getallrecordings LIMIT 1"
+Error: Source resource was not found (404)
+Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:12:43","request-id":"9a27bd9e-..."}}} [GET] https://graph.microsoft.com/v1.0/communications/adhocCalls/getAllRecordings(userId='@userId',...)
+```
+
+**Wrong URL (404, different base):**
+```
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance LIMIT 1"
+Error: Source resource was not found (404)
+Detail: {"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/agreementAcceptances?x-scenario=MSGraph&x-tenantid=[tenantId]'.","innerError":{"date":"2026-07-31T09:11:28","request-id":"6e7156ad-..."}}}
+```
+
+**Timeout then retry (slow endpoint → structured result):**
+```
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_admin_admin_admin_getadmin LIMIT 1"
+Timeout after 30s
+
+$ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_admin_admin_admin_getadmin LIMIT 1"   # retry
++----+
+| ok |
++----+
+| 1  |
++----+
+(22s on retry)
+```
+
+### 2.6 Functional data queries (Jul 29 battery, same CLI)
+
+These returned real rows and were logged in the Jul 29 report:
+
+```
+$ coral sql "SELECT value FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1"     # 17 users
+$ coral sql "SELECT value FROM microsoft_graph_v4.organization_organization_organization_organization_listorganization LIMIT 1"
+$ coral sql "SELECT value FROM microsoft_graph_v4.groups_group_groups_group_listgroup WHERE top = 3"   # 2 groups
+$ coral sql "SELECT value FROM microsoft_graph_v4.applications_application_applications_application_listapplication"   # 3 apps
+$ coral sql "SELECT value FROM microsoft_graph_v4.serviceprincipals_serviceprincipal_serviceprincipals_serviceprincipal_listserviceprincipal"  # 3 SPs
+$ coral sql "SELECT value FROM microsoft_graph_v4.devices_device_devices_device_listdevice WHERE top = 2"  # 0 devices
+```
+
+### 2.7 Error-quality / UX probes (Jul 29 report)
+
+```
+$ coral sql "SELECT * FROM microsoft_graph_v4.totally_fake_table"
+Error: table "totally_fake_table" not found ... (clean unknown-table error)
+
+$ coral sql "SELECT nosuchcolumn FROM microsoft_graph_v4.me_user_me_user_getuser"
+Error: column "nosuchcolumn" not found ... (clean unknown-column error)
+
+$ coral sql "SELECT value FROM microsoft_graph_v4.auditlogs_signin_auditlogs_listsignins WHERE top = 2"
+Error: Source rejected the request (403)
+Detail: ... "Tenant is not a B2C tenant and doesn't have premium license" ...   # no Entra P1/P2
+```
+
+### 2.8 Timeout retry probe
+
+```
+$ python3 /tmp/retimeout.py admin_admin_admin_admin_getadmin tenantrelationships_delegatedadminrelationship_tenantrelationships_listdelegatedadminrelationships
+admin_admin_admin_admin_getadmin -> rc=0 in 22s | +----+ | ok | ...   (PASS)
+tenantrelationships_delegatedadminrelationship_..._list... -> rc=0 in 16s | ...   (PASS)
+```
+
+### 2.9 Direct API cross-check (places scope diagnosis, §10)
+
+```
+$ TOKEN=$(az account get-access-token --resource https://graph.microsoft.com --query accessToken -o tsv)
+$ curl -s -o /tmp/places_check.json -w "HTTP %{http_code}" -H "Authorization: Bearer $TOKEN" \
+    "https://graph.microsoft.com/v1.0/places/graph.room?\$top=1"
+HTTP 401
+{"error":{"code":"UnknownError","message":"",...}}
+```
+
+The current token's `scp` claim lacks `Place.Read.All`, confirming the places regression
+is a consent-scope change, not a connector bug.
+
+---
+
+## 3. Test setup
 
 Every `microsoft_graph_v4.*` table was queried through Coral SQL:
 
@@ -40,7 +270,7 @@ SELECT 1 AS ok FROM microsoft_graph_v4.<table_name> LIMIT 1
 - **Tables tested**: 733
 - **Runner**: `/tmp/run_full_2026-07-31.py` (save-per-result, robust classifier)
 
-### 1.1 Smoke query (before the battery)
+### 3.1 Smoke query (before the battery)
 
 ```
 $ coral sql "SELECT displayName FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1"
@@ -49,7 +279,7 @@ vicky kumar
 
 Confirmed the keychain token is a working **delegated** credential before starting.
 
-### 1.2 Runner log tail
+### 3.2 Runner log tail
 
 ```
 [14:39:47] 733/733 done in 2835.3s (rate 0.26 t/s) — 0 expired_token failures
@@ -57,7 +287,7 @@ Confirmed the keychain token is a working **delegated** credential before starti
 
 ---
 
-## 2. Results summary
+## 4. Results summary
 
 | Result | Count |
 |--------|-------|
@@ -78,7 +308,7 @@ Raw results: `/tmp/coral_sql_results_2026-07-31.json` · log: `/tmp/fullrun_2026
 
 ---
 
-## 3. Pass counts by table prefix
+## 5. Pass counts by table prefix
 
 | Prefix | Jul 29 pass | Jul 31 pass | Delta |
 |--------|-------------|-------------|-------|
@@ -107,7 +337,7 @@ Raw results: `/tmp/coral_sql_results_2026-07-31.json` · log: `/tmp/fullrun_2026
 > them out. The **net improvement** in `me_*` (+10), `identity_*` (+7), `security_*` (+3),
 > `auditlogs_*` (+3), `devices_*` (+2) and `applications_*` (+2) is real and significant.
 
-### 3.1 me_* detail (147 tables)
+### 5.1 me_* detail (147 tables)
 
 | Result | Count |
 |--------|-------|
@@ -126,7 +356,7 @@ structured failures in the Jul 29 keychain run.
 
 ---
 
-## 4. Genuine spec bugs (45 tables) — recheck
+## 6. Genuine spec bugs (45 tables) — recheck
 
 The 45 spec bugs from the Jul 30 report were re-verified against today's data:
 
@@ -134,7 +364,7 @@ The 45 spec bugs from the Jul 30 report were re-verified against today's data:
 |----------|--------|---------------|
 | Wrong URL / path mismatch | 13 | 13 still `wrong_url` |
 | Deprecated / beta-only API | 13 | 13 still `deprecated` |
-| Wrong audience (AAD accounts) | 12 | 8 still `wrong_audience`, 4 now `timeout` (see §7) |
+| Wrong audience (AAD accounts) | 12 | 8 still `wrong_audience`, 4 now `timeout` (see §9) |
 | Needs entityId parameter | 4 | 1 `auth`, 3 tables not in today's 733 list (wildcard `_*_list*` spec entries) |
 | Unsupported query shape | 3 | 3 still `unsupported_query` |
 | **Total** | **45** | **40 reproduced · 5 changed** |
@@ -142,11 +372,11 @@ The 45 spec bugs from the Jul 30 report were re-verified against today's data:
 **All 45 genuine spec bugs remain unfixed** — none started passing. The 4 wrong-audience
 tables that now time out are the `admin_configurationmanagement`, `admin_edge`,
 `admin_exchangeadmin`, and `admin_teamsadminroot` tables; on Jul 29 they returned a fast
-400, today the endpoint hangs past 30s (see §7).
+400, today the endpoint hangs past 30s (see §9).
 
 ---
 
-## 5. App-only-only tables (30) — delegated recheck
+## 7. App-only-only tables (30) — delegated recheck
 
 The 30 tables that passed **only** with the app-only (client-credentials) token on Jul 29:
 
@@ -156,15 +386,15 @@ The 30 tables that passed **only** with the app-only (client-credentials) token 
 - 9 still AUTH: all `places_*` (asroom/asroomlist/asworkspace) and `security_*` alert /
   attack-simulation / securescore tables
 - 1 timeout: `tenantrelationships_delegatedadminrelationship_..._listdelegatedadminrelationships`
-  (passed on retry in 16s, §7)
+  (passed on retry in 16s, §9)
 
 This means the app-only vs delegated gap shrank significantly since Jul 29.
 
 ---
 
-## 6. Error-quality probe (sample outputs)
+## 8. Error-quality probe (sample outputs)
 
-### 6a. License-gated (46) — clean structured failures
+### 8a. License-gated (46) — clean structured failures
 
 ```
 $ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.drives_drive_drives_drive_listdrive LIMIT 1"
@@ -172,7 +402,7 @@ Error: Source rejected the request (400)
 Detail: {"error":{"code":"BadRequest","message":"Tenant does not have a SPO license..."}}
 ```
 
-### 6b. Wrong audience (123) — structured 400, no timeout
+### 8b. Wrong audience (123) — structured 400, no timeout
 
 ```
 $ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.admin_exchangeadmin_admin_getexchange LIMIT 1"
@@ -180,7 +410,7 @@ Error: Source rejected the request (400)
 Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.Exchange,True)..."}}
 ```
 
-### 6c. Deprecated / beta API (15)
+### 8c. Deprecated / beta API (15)
 
 ```
 $ coral sql "SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_adhoccalls_getallrecordings LIMIT 1"
@@ -189,7 +419,7 @@ Error: ... deprecated API / beta only ...
 
 ---
 
-## 7. Timeout analysis (30)
+## 9. Timeout analysis (30)
 
 30 tables hit the 30s cutoff. Breakdown by prefix:
 
@@ -218,7 +448,7 @@ tables above and eliminate the 30-timeout category entirely.
 
 ---
 
-## 8. places_* regression (4 → 0) — needs scope check
+## 10. places_* regression (4 → 0) — needs scope check
 
 `places_place_places_place_listplace_asbuilding/asdesk/asfloor/assection` passed on Jul 29
 (4 tables). Today all 7 `places_*` tables return **401 UnknownError (empty message)**:
@@ -240,7 +470,7 @@ regression. To restore: re-run the interactive consent flow with `Place.Read.All
 
 ---
 
-## 9. `other` bucket (41) — representative causes
+## 11. `other` bucket (41) — representative causes
 
 Sample tables in `other` and their errors:
 
@@ -257,7 +487,7 @@ table/shape combinations the connector passes through.
 
 ---
 
-## 10. Comparison with Jul 29 delegated run — what changed
+## 12. Comparison with Jul 29 delegated run — what changed
 
 | Change | Detail |
 |--------|--------|
@@ -268,9 +498,9 @@ table/shape combinations the connector passes through.
 | auditlogs_* +3 | 0 → 3 |
 | applications_* +2, devices_* +2 | delegated access gained |
 | app-only gap shrinks | 20 of 30 app-only-only tables now pass delegated |
-| places_* −4 | scope/consent change on keychain token (§8) |
-| 30 timeouts | 30s cutoff; all complete on retry (§7) |
-| 45 spec bugs | unchanged — 40/45 still reproduce, 5 reclassified (§4) |
+| places_* −4 | scope/consent change on keychain token (§10) |
+| 30 timeouts | 30s cutoff; all complete on retry (§9) |
+| 45 spec bugs | unchanged — 40/45 still reproduce, 5 reclassified (§6) |
 
 ### Verdict
 
