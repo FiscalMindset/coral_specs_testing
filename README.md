@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/tables-733-22c55e" alt="733 tables">
   <img src="https://img.shields.io/badge/table_funcs-5,776-3b82f6" alt="5776 table funcs">
   <img src="https://img.shields.io/badge/identity_tests-6/6_PASS-22c55e" alt="6/6 PASS">
-  <img src="https://img.shields.io/badge/timeouts-30_retry--clear-f59e0b" alt="30 timeouts (retry-clear)">
+  <img src="https://img.shields.io/badge/timeouts-28_(13_recovered)-f59e0b" alt="28 timeouts (13 recovered)">
   <img src="https://img.shields.io/badge/reports_frozen-✓-8b5cf6" alt="reports frozen">
   <img src="https://img.shields.io/badge/last_updated-2026--07--31-6b7280" alt="last updated 2026-07-31">
 </p>
@@ -48,7 +48,38 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Every report has a matching `.md` (raw) and `.html` (responsive) version.
 
-### 🆕 2026-07-31 — Full 733-table re-run: delegated, 0 expired_token
+### 🆕 2026-07-31 v2 — Full 733-table re-run: az-minted admin token + 88-table retry sweep
+
+| | |
+|---|---|
+| **Date** | 2026-07-31 |
+| **Coral** | `0.8.1+3acb123` (homebrew) |
+| **Tables tested** | **733 / 733** (100%) |
+| **Auth** | az-minted admin token, **re-authed 2x mid-run** |
+| **Retry sweep** | 88 tables (51 expired-token + 37 timeout from main run) |
+| **Pass** | **127** (v1 same date: 122, Jul 29: 129) |
+| **`expired_token` (final)** | **0** — solved via short-lived tokens + retry sweep |
+| **Timeouts (30s cutoff)** | 28 (13 recovered via retry sweep) |
+| **Spec bugs** | 42/45 unchanged, 3 reclassified (no fixes, all still broken) |
+| **Status** | 🟢 COMPLETE — no connector regression |
+
+**Key wins vs v1 (same date, earlier run):**
+- **+5 more passes** — 13 tables recovered via retry sweep (slow endpoints that completed in 16–22s on retry)
+- **0 final `expired_token`** — token-expiry problem solved via az short-lived tokens + mid-run re-auth + retry sweep
+- **3 spec-bug flips, all still broken** — timing artifacts (none became PASS, no auto-fixes)
+
+**3 spec-bug flips (none became PASS):**
+| Table | v1 status | v2 status | Why |
+|---|---|---|---|
+| `communications_onlinemeeting_communications_listonlinemeetings` | `needs_entityId` | `auth` | Graph's error is non-deterministic between entityId gate and 403 |
+| `identity_riskpreventioncontainer_identity_getriskprevention` | `wrong_url` | `timeout` | Slow endpoint, 30s cutoff fires before 404 |
+| `directoryobjects_directoryobject_functions_directoryobjects_delta` | `unsupported_query` | `timeout` | Slow error response, 30s cutoff fires |
+
+> v1 (`reports/2026-07-31-msgraph-reauth-test-report.md`) is **frozen** — different methodology (keychain OAuth, 47m, no retry sweep). v2 is the canonical "complete coverage" run. Same scope, same Coral version, same tenant, same delegated identity.
+
+- **[Markdown](reports/2026-07-31-msgraph-reauth-test-report-v2.md)** · **[HTML](reports/2026-07-31-msgraph-reauth-test-report-v2.html)** — full 733-table az-token re-run: token-expire mitigation strategy (3 layers), 3-day compare (Jul 29 + Jul 30 + Jul 31 v1 + v2), per-prefix pass table, command log, all 45 spec bugs with verbatim outputs, 88-table retry sweep outcome (13 became PASS, 26 became auth, etc.).
+
+### 2026-07-31 v1 (frozen) — Full 733-table re-run: delegated keychain OAuth, 47m
 
 | | |
 |---|---|
