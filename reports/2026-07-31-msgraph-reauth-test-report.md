@@ -358,7 +358,7 @@ structured failures in the Jul 29 keychain run.
 
 ## 6. Genuine spec bugs (45 tables) — recheck
 
-The 45 spec bugs from the Jul 30 report were re-verified against today's data:
+The 45 spec bugs from the Jul 30 report were re-verified against today's data.
 
 | Category | Jul 30 | Jul 31 result |
 |----------|--------|---------------|
@@ -369,10 +369,639 @@ The 45 spec bugs from the Jul 30 report were re-verified against today's data:
 | Unsupported query shape | 3 | 3 still `unsupported_query` |
 | **Total** | **45** | **40 reproduced · 5 changed** |
 
-**All 45 genuine spec bugs remain unfixed** — none started passing. The 4 wrong-audience
-tables that now time out are the `admin_configurationmanagement`, `admin_edge`,
-`admin_exchangeadmin`, and `admin_teamsadminroot` tables; on Jul 29 they returned a fast
-400, today the endpoint hangs past 30s (see §9).
+**All 45 genuine spec bugs remain unfixed** — none started passing. Full per-table detail below: each entry lists the exact `coral sql` command as run and the complete raw output from the Jul 31 battery. The 4 wrong-audience tables that now time out are `admin_configurationmanagement`, `admin_edge`, `admin_exchangeadmin`, and `admin_teamsadminroot`; on Jul 29 they returned a fast 400, today the endpoint hangs past 30s (see §9).
+
+### 6.1 Wrong URL / path mismatch (13)
+
+- **agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/agreementAcceptances?x-scenario=MSGraph&x-tenantid=[tenantId]'.","innerError":{"date":"2026-07-31T09:11:28","request-id":"6e7156ad-2d75-4904-8cce-5b36c887304d","client-request-id":"6e7156ad-2d75-4904-8cce-5b36c887304d"}}} [GET] https://graph.microsoft.com/v1.0/agreementAcceptances
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **filteroperators_filteroperatorschema_filteroperators_filteroperatorschema_listfilteroperatorschema**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.filteroperators_filteroperatorschema_filteroperators_filteroperatorschema_listfilteroperatorschema LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"Message\":\"No HTTP resource was found that matches the request URI 'https://syncfabric.windowsazure.com/api/filterOperators?api-version=2.0'.\"}","innerError":{"date":"2026-07-31T09:27:39","request-id":"45337a94-419c-40c0-8165-a2d3d8ad4dd1","client-request-id":"45337a94-419c-40c0-8165-a2d3d8ad4dd1"}}} [GET] https://graph.microsoft.com/v1.0/filterOperators
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **functions_attributemappingfunctionschema_functions_attributemappingfunctionschema_listattributemappingfunctionschema**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.functions_attributemappingfunctionschema_functions_attributemappingfunctionschema_listattributemappingfunctionschema LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"Message\":\"No HTTP resource was found that matches the request URI 'https://syncfabric.windowsazure.com/api/functions?api-version=2.0'.\"}","innerError":{"date":"2026-07-31T09:27:39","request-id":"721d3fad-46cb-4a1d-8446-d5657ce6c006","client-request-id":"721d3fad-46cb-4a1d-8446-d5657ce6c006"}}} [GET] https://graph.microsoft.com/v1.0/functions
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackagesuggestions**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackagesuggestions LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://igaelm-asev3-ecapi-cus.igaelm-asev3-environment-cus.p.azurewebsites.net/api/v1/accessPackageSuggestions'.","innerError":{"date":"2026-07-31T09:30:11","request-id":"b9b8bafc-210f-440f-b231-d9077f08e0ae","client-request-id":"b9b8bafc-210f-440f-b231-d9077f08e0ae"}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/accessPackageSuggestions
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listavailableaccesspackages**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listavailableaccesspackages LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://igaelm-asev3-ecapi-cus.igaelm-asev3-environment-cus.p.azurewebsites.net/api/v1/availableAccessPackages'.","innerError":{"date":"2026-07-31T09:30:24","request-id":"b6e104e3-61d3-4fdc-b416-7ea37abc6873","client-request-id":"b6e104e3-61d3-4fdc-b416-7ea37abc6873"}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/availableAccessPackages
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcontrolconfigurations**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcontrolconfigurations LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://igaelm-asev3-ecapi-cus.igaelm-asev3-environment-cus.p.azurewebsites.net/api/v1/controlConfigurations'.","innerError":{"date":"2026-07-31T09:30:39","request-id":"03fe44a3-fbd0-41cb-9089-3cf954b71cf6","client-request-id":"03fe44a3-fbd0-41cb-9089-3cf954b71cf6"}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/controlConfigurations
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerolescopes**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerolescopes LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"message\":\"No HTTP resource was found that matches the request URI 'https://igaelm-asev3-ecapi-cus.igaelm-asev3-environment-cus.p.azurewebsites.net/api/v1/resourceRoleScopes'.\"}","innerError":{"date":"2026-07-31T09:30:45","request-id":"8ca7edc7-33cb-4096-ac45-d73117878776","client-request-id":"8ca7edc7-33cb-4096-ac45-d73117878776"}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/resourceRoleScopes
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identitygovernance_termsofusecontainer_identitygovernance_gettermsofuse**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_termsofusecontainer_identitygovernance_gettermsofuse LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"Message\":\"No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/identityGovernance/termsOfUse?x-scenario=MSGraph&x-tenantid=[tenantId]'.\"}","innerError":{"date":"2026-07-31T09:32:06","request-id":"b18ccb1c-c6ec-4979-8fdf-4133c5c7d727","client-request-id":"b18ccb1c-c6ec-4979-8fdf-4133c5c7d727"}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/termsOfUse
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreementacceptances**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreementacceptances LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"Message\":\"No HTTP resource was found that matches the request URI 'https://api.termsofuse.identitygovernance.azure.com/v2.0/identityGovernance/termsOfUse/agreementAcceptances?x-scenario=MSGraph&x-tenantid=[tenantId]'.\"}","innerError":{"date":"2026-07-31T09:32:07","request-id":"d4df61f4-0ebe-416b-9a05-2920a160e5de","client-request-id":"d4df61f4-0ebe-416b-9a05-2920a160e5de"}}} [GET] https://graph.microsoft.com/v1.0/identityGovernance/termsOfUse/agreementAcceptances
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identity_authenticationeventsflow_identity_listauthenticationeventsflows_asexternalusersselfservicesignupeventsflow**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identity_authenticationeventsflow_identity_listauthenticationeventsflows_asexternalusersselfservicesignupeventsflow LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"message\":\"No HTTP resource was found that matches the request URI 'https://cpim.windows.net/graph/identity/authenticationEventsFlows/Microsoft.Cpim.Api.DataModels.ExternalUsersSelfServiceSignUpEventsFlow'.\",\"messageDetail\":\"No type was found that matches the controller named 'identity'.\",\"stackTrace\":null}","innerError":{"date":"2026-07-31T09:28:11","request-id":"dfed84b8-25b3-4df8-bc50-e0ff8c470f90","client-request-id":"dfed84b8-25b3-4df8-bc50-e0ff8c470f90"}}} [GET] https://graph.microsoft.com/v1.0/identity/authenticationEventsFlows/graph.externalUsersSelfServiceSignUpEventsFlow
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identity_conditionalaccessroot_identity_conditionalaccess_getdeleteditems**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identity_conditionalaccessroot_identity_conditionalaccess_getdeleteditems LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"Message\":\"No HTTP resource was found that matches the request URI 'https://na.prod.graph.ipc.msidentity.com/conditionalAccess/deletedItems'.\",\"MessageDetail\":\"No type was found that matches the controller named 'deletedItems'.\"}","innerError":{"date":"2026-07-31T09:28:32","request-id":"6eff162d-b4d6-43fc-ae93-827e8d5b0edf","client-request-id":"6eff162d-b4d6-43fc-ae93-827e8d5b0edf"}}} [GET] https://graph.microsoft.com/v1.0/identity/conditionalAccess/deletedItems
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identity_identitycontainer_identity_identitycontainer_getidentitycontainer**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identity_identitycontainer_identity_identitycontainer_getidentitycontainer LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"message\":\"No HTTP resource was found that matches the request URI 'https://cpim.windows.net/graph/identity'.\",\"messageDetail\":\"No type was found that matches the controller named 'identity'.\",\"stackTrace\":null}","innerError":{"date":"2026-07-31T09:29:03","request-id":"13839dcd-5fe3-4355-89ee-5279e0ec762c","client-request-id":"13839dcd-5fe3-4355-89ee-5279e0ec762c"}}} [GET] https://graph.microsoft.com/v1.0/identity
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **identity_riskpreventioncontainer_identity_getriskprevention**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identity_riskpreventioncontainer_identity_getriskprevention LIMIT 1
+  ```
+
+  `wrong_url` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"UnknownError","message":"{\"message\":\"No HTTP resource was found that matches the request URI 'https://cpim.windows.net/graph/identity/riskPrevention'.\",\"messageDetail\":\"No type was found that matches the controller named 'identity'.\",\"stackTrace\":null}","innerError":{"date":"2026-07-31T09:29:28","request-id":"63f402c3-c8bb-422c-a32c-ac91a69e530b","client-request-id":"63f402c3-c8bb-422c-a32c-ac91a69e530b"}}} [GET] https://graph.microsoft.com/v1.0/identity/riskPrevention
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:11:28","request-id":"887a73c7-0340-4cd3-b118-135a361388b3","client-request-id":"887a73c7-0340-4cd3-b118-135a361388b3"}}} [GET] https://graph.microsoft.com/v1.0/appCatalogs
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **chats_chat_functions_chats_getallmessages**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.chats_chat_functions_chats_getallmessages LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:12:43","request-id":"961d83b5-b996-44cd-8e27-6e580c9128ca","client-request-id":"961d83b5-b996-44cd-8e27-6e580c9128ca"}}} [GET] https://graph.microsoft.com/v1.0/chats/getAllMessages()
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **chats_chat_functions_chats_getallretainedmessages**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.chats_chat_functions_chats_getallretainedmessages LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:12:43","request-id":"b9c5ee08-5a77-4f78-80c4-d6400db13167","client-request-id":"b9c5ee08-5a77-4f78-80c4-d6400db13167"}}} [GET] https://graph.microsoft.com/v1.0/chats/getAllRetainedMessages()
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+### 6.2 Deprecated / beta-only API (13)
+
+- **communications_adhoccall_communications_adhoccalls_getallrecordings**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_adhoccalls_getallrecordings LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:12:43","request-id":"9a27bd9e-2460-4def-8b3d-c844867e5e6b","client-request-id":"9a27bd9e-2460-4def-8b3d-c844867e5e6b"}}} [GET] https://graph.microsoft.com/v1.0/communications/adhocCalls/getAllRecordings(userId='@userId',startDateTime=@startDateTime,endDateTime=@endDateTime)
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **communications_adhoccall_communications_adhoccalls_getalltranscripts**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_adhoccalls_getalltranscripts LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:12:54","request-id":"12244b67-a38a-46bb-b14c-c6a5bcab5d9c","client-request-id":"12244b67-a38a-46bb-b14c-c6a5bcab5d9c"}}} [GET] https://graph.microsoft.com/v1.0/communications/adhocCalls/getAllTranscripts(userId='@userId',startDateTime=@startDateTime,endDateTime=@endDateTime)
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **communications_adhoccall_communications_listadhoccalls**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.communications_adhoccall_communications_listadhoccalls LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:13:05","request-id":"c298022b-d2ca-4fec-9718-000b5e9040a8","client-request-id":"c298022b-d2ca-4fec-9718-000b5e9040a8"}}} [GET] https://graph.microsoft.com/v1.0/communications/adhocCalls
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **communications_onlinemeeting_communications_onlinemeetings_getallrecordings**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.communications_onlinemeeting_communications_onlinemeetings_getallrecordings LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:13:22","request-id":"a6c251fd-2817-4f03-9cbf-ecc30eec871d","client-request-id":"a6c251fd-2817-4f03-9cbf-ecc30eec871d"}}} [GET] https://graph.microsoft.com/v1.0/communications/onlineMeetings/getAllRecordings(meetingOrganizerUserId='@meetingOrganizerUserId',startDateTime=@startDateTime,endDateTime=@endDateTime)
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **communications_onlinemeeting_communications_onlinemeetings_getalltranscripts**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.communications_onlinemeeting_communications_onlinemeetings_getalltranscripts LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:13:30","request-id":"c98e320a-d33b-4680-95c0-4b7639bf8f58","client-request-id":"c98e320a-d33b-4680-95c0-4b7639bf8f58"}}} [GET] https://graph.microsoft.com/v1.0/communications/onlineMeetings/getAllTranscripts(meetingOrganizerUserId='@meetingOrganizerUserId',startDateTime=@startDateTime,endDateTime=@endDateTime)
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **copilot_aiinteractionhistory_copilot_getinteractionhistory**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.copilot_aiinteractionhistory_copilot_getinteractionhistory LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:14:18","request-id":"af4b6847-89e1-498e-9c1e-3cf7010f56ce","client-request-id":"af4b6847-89e1-498e-9c1e-3cf7010f56ce"}}} [GET] https://graph.microsoft.com/v1.0/copilot/interactionHistory
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **copilot_aiinteractionhistory_copilot_interactionhistory_getallenterpriseinteractions**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.copilot_aiinteractionhistory_copilot_interactionhistory_getallenterpriseinteractions LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:14:18","request-id":"84641e61-a44b-49cb-8723-68b1ed0d5aac","client-request-id":"84641e61-a44b-49cb-8723-68b1ed0d5aac"}}} [GET] https://graph.microsoft.com/v1.0/copilot/interactionHistory/getAllEnterpriseInteractions()
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **copilot_aiuser_copilot_listusers**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.copilot_aiuser_copilot_listusers LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:14:18","request-id":"bf5bf8a2-7fb6-43bb-8c68-2fb6216facfc","client-request-id":"bf5bf8a2-7fb6-43bb-8c68-2fb6216facfc"}}} [GET] https://graph.microsoft.com/v1.0/copilot/users
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:52:41","request-id":"44c8d938-063d-45ea-b7ad-2b628d461d2d","client-request-id":"44c8d938-063d-45ea-b7ad-2b628d461d2d"}}} [GET] https://graph.microsoft.com/v1.0/teamsTemplates
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+- **teamwork_deletedteam_teamwork_deletedteams_getallmessages**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.teamwork_deletedteam_teamwork_deletedteams_getallmessages LIMIT 1
+  ```
+
+  `deprecated` — output:
+
+  ```
+  Error: Source resource was not found (404)
+  Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.","innerError":{"date":"2026-07-31T09:52:53","request-id":"69d43999-dab2-49ec-9bc9-736f0d64f70b","client-request-id":"69d43999-dab2-49ec-9bc9-736f0d64f70b"}}} [GET] https://graph.microsoft.com/v1.0/teamwork/deletedTeams/getAllMessages()
+  Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+  ```
+
+### 6.3 Wrong audience (AAD accounts) (12)
+
+- **admin_configurationmanagement_admin_getconfigurationmanagement**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.admin_configurationmanagement_admin_getconfigurationmanagement LIMIT 1
+  ```
+
+  `timeout` — output:
+
+  ```
+  Timeout after 30s
+  ```
+
+- **admin_edge_admin_edge_getinternetexplorermode**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.admin_edge_admin_edge_getinternetexplorermode LIMIT 1
+  ```
+
+  `timeout` — output:
+
+  ```
+  Timeout after 30s
+  ```
+
+- **admin_edge_admin_getedge**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.admin_edge_admin_getedge LIMIT 1
+  ```
+
+  `wrong_audience` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.Edge.CloudSiteListManagement,False).","innerError":{"date":"2026-07-31T09:08:46","request-id":"81dcb68c-20ba-4829-adc5-b40def5e3660","client-request-id":"81dcb68c-20ba-4829-adc5-b40def5e3660"}}} [GET] https://graph.microsoft.com/v1.0/admin/edge
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **admin_exchangeadmin_admin_getexchange**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.admin_exchangeadmin_admin_getexchange LIMIT 1
+  ```
+
+  `timeout` — output:
+
+  ```
+  Timeout after 30s
+  ```
+
+- **admin_sharepoint_admin_getsharepoint**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.admin_sharepoint_admin_getsharepoint LIMIT 1
+  ```
+
+  `wrong_audience` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.FileServices,False).","innerError":{"date":"2026-07-31T09:10:17","request-id":"96835ad5-5031-46df-b2f2-95e2b4ed1737","client-request-id":"96835ad5-5031-46df-b2f2-95e2b4ed1737"}}} [GET] https://graph.microsoft.com/v1.0/admin/sharepoint
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **admin_teamsadminroot_admin_getteams**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.admin_teamsadminroot_admin_getteams LIMIT 1
+  ```
+
+  `wrong_audience` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.TeamsAdminGateway,False).","innerError":{"date":"2026-07-31T09:10:37","request-id":"3ce56ecf-3a03-4995-8176-53a80f1118d4","client-request-id":"3ce56ecf-3a03-4995-8176-53a80f1118d4"}}} [GET] https://graph.microsoft.com/v1.0/admin/teams
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **admin_teamsadminroot_admin_teams_getpolicy**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.admin_teamsadminroot_admin_teams_getpolicy LIMIT 1
+  ```
+
+  `wrong_audience` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.PolicyAdmin,False).","innerError":{"date":"2026-07-31T09:10:36","request-id":"d2355486-5f35-4d01-9f28-a15f2a68c9e0","client-request-id":"d2355486-5f35-4d01-9f28-a15f2a68c9e0"}}} [GET] https://graph.microsoft.com/v1.0/admin/teams/policy
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **admin_teamsadminroot_admin_teams_gettelephonenumbermanagement**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.admin_teamsadminroot_admin_teams_gettelephonenumbermanagement LIMIT 1
+  ```
+
+  `timeout` — output:
+
+  ```
+  Timeout after 30s
+  ```
+
+- **copilot_copilotadmin_copilot_admin_getcatalog**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.copilot_copilotadmin_copilot_admin_getcatalog LIMIT 1
+  ```
+
+  `wrong_audience` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.CopilotPackage,False).","innerError":{"date":"2026-07-31T09:14:38","request-id":"7ba75ada-3186-443c-973b-c80234f6b42a","client-request-id":"7ba75ada-3186-443c-973b-c80234f6b42a"}}} [GET] https://graph.microsoft.com/v1.0/copilot/admin/catalog
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **identity_identityverifiedidroot_identity_getverifiedid**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.identity_identityverifiedidroot_identity_getverifiedid LIMIT 1
+  ```
+
+  `wrong_audience` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.VerifiedId.VerifiedIdProfile,False).","innerError":{"date":"2026-07-31T09:29:19","request-id":"08516ffa-7499-4d9e-b2d2-aae46e105ace","client-request-id":"08516ffa-7499-4d9e-b2d2-aae46e105ace"}}} [GET] https://graph.microsoft.com/v1.0/identity/verifiedId
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **storage_filestorage_storage_getfilestorage**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.storage_filestorage_storage_getfilestorage LIMIT 1
+  ```
+
+  `wrong_audience` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.FileServices,False).","innerError":{"date":"2026-07-31T09:52:06","request-id":"5b0bae4d-ecdb-4986-a768-84c50ff0b726","client-request-id":"5b0bae4d-ecdb-4986-a768-84c50ff0b726"}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **storage_storagesettings_storage_getsettings**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.storage_storagesettings_storage_getsettings LIMIT 1
+  ```
+
+  `wrong_audience` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"BadRequest","message":"This API is not supported for AAD accounts (no addressUrl for Microsoft.UnifiedStorageQuota,False).","innerError":{"date":"2026-07-31T09:52:19","request-id":"6cdd3d47-0a07-4427-8bfc-9125ba966829","client-request-id":"6cdd3d47-0a07-4427-8bfc-9125ba966829"}}} [GET] https://graph.microsoft.com/v1.0/storage/settings
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+### 6.4 Needs entityId parameter (4)
+
+- **certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_listcertificatebasedauthconfiguration**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_listcertificatebasedauthconfiguration LIMIT 1
+  ```
+
+  `needs_entityId` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"Request_UnsupportedQuery","message":"Direct queries to this resource type are not supported.","innerError":{"date":"2026-07-31T09:12:23","request-id":"2a8aaf75-7011-482f-9aec-973fbcec9447","client-request-id":"2a8aaf75-7011-482f-9aec-973fbcec9447"}}} [GET] https://graph.microsoft.com/v1.0/certificateBasedAuthConfiguration
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **communications_onlinemeeting_communications_listonlinemeetings**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.communications_onlinemeeting_communications_listonlinemeetings LIMIT 1
+  ```
+
+  `auth` — output:
+
+  ```
+  Error: Source request was rejected (403)
+  Detail: {"error":{"code":"Forbidden","message":"Insufficient permissions","innerError":{"date":"2026-07-31T09:13:22","request-id":"7e2b2123-5c2e-471b-a45e-8213eb7dad42","client-request-id":"7e2b2123-5c2e-471b-a45e-8213eb7dad42"}}} [GET] https://graph.microsoft.com/v1.0/communications/onlineMeetings
+  Hint: Check the configured credentials and whether they have access to this resource.
+  ```
+
+- **permissiongrants_resourcespecificpermissiongrant_permissiongrants_resourcespecificpermissiongrant_listresourcespecificpermissiongrant**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.permissiongrants_resourcespecificpermissiongrant_permissiongrants_resourcespecificpermissiongrant_listresourcespecificpermissiongrant LIMIT 1
+  ```
+
+  `needs_entityId` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"Request_UnsupportedQuery","message":"Direct queries to this resource type are not supported.","innerError":{"date":"2026-07-31T09:41:05","request-id":"7e1cfc5b-1eb7-43f3-af41-1ffd662ec43a","client-request-id":"7e1cfc5b-1eb7-43f3-af41-1ffd662ec43a"}}} [GET] https://graph.microsoft.com/v1.0/permissionGrants
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **scopedrolememberships_scopedrolemembership_scopedrolememberships_scopedrolemembership_listscopedrolemembership**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.scopedrolememberships_scopedrolemembership_scopedrolememberships_scopedrolemembership_listscopedrolemembership LIMIT 1
+  ```
+
+  `needs_entityId` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"Request_UnsupportedQuery","message":"Direct queries to this resource type are not supported.","innerError":{"date":"2026-07-31T09:46:27","request-id":"32c19978-b205-4b47-a2fd-800af83e83cb","client-request-id":"32c19978-b205-4b47-a2fd-800af83e83cb"}}} [GET] https://graph.microsoft.com/v1.0/scopedRoleMemberships
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+### 6.5 Unsupported query shape (3)
+
+- **directory_directoryobject_directory_listdeleteditems**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.directory_directoryobject_directory_listdeleteditems LIMIT 1
+  ```
+
+  `unsupported_query` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"Request_UnsupportedQuery","message":"Searches against this resource are not supported. Only specific instances can be queried.","innerError":{"date":"2026-07-31T09:24:06","request-id":"939770f1-9078-408e-b13d-7617348450b6","client-request-id":"939770f1-9078-408e-b13d-7617348450b6"}}} [GET] https://graph.microsoft.com/v1.0/directory/deletedItems
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject LIMIT 1
+  ```
+
+  `unsupported_query` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"Request_UnsupportedQuery","message":"Searches against this resource are not supported. Only specific instances can be queried.","innerError":{"date":"2026-07-31T09:25:09","request-id":"4dc3df81-f54b-43d8-8c22-e7f578463c8a","client-request-id":"4dc3df81-f54b-43d8-8c22-e7f578463c8a"}}} [GET] https://graph.microsoft.com/v1.0/directoryObjects
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
+
+- **directoryobjects_directoryobject_functions_directoryobjects_delta**
+
+  ```sql
+  coral sql SELECT 1 AS ok FROM microsoft_graph_v4.directoryobjects_directoryobject_functions_directoryobjects_delta LIMIT 1
+  ```
+
+  `unsupported_query` — output:
+
+  ```
+  Error: Source rejected the request (400)
+  Detail: {"error":{"code":"Request_UnsupportedQuery","message":"Delta query is not supported for directoryObjects without a valid resource type or id filter.","innerError":{"date":"2026-07-31T09:25:09","request-id":"54c21d69-f03f-4b02-8c9e-f7e33a7ebfa2","client-request-id":"54c21d69-f03f-4b02-8c9e-f7e33a7ebfa2"}}} [GET] https://graph.microsoft.com/v1.0/directoryObjects/delta()
+  Hint: Adjust the query filters or shape to match the target table's supported inputs.
+  ```
 
 ---
 
