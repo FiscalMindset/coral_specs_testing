@@ -1,8 +1,24 @@
 # Microsoft Graph v4 — Genuine Spec Bugs (45 tables)
 
-**Date:** 2026-07-30 | **Source:** `microsoft_graph_v4` | **Scope:** 45 tables with OpenAPI-to-DSL parsing errors
+**Date:** 2026-07-30 | **Source:** `microsoft_graph_v4` | **Scope:** 45 tables with OpenAPI-to-DSL parsing errors | **Last updated:** 2026-08-01 (root-cause verification against live spec)
 
 These are **not** auth, license, or tenant configuration issues. They are bugs in how Coral's spec generator parsed the Microsoft Graph OpenAPI v2 spec. Each table listed here would fail for **any** AAD tenant with **any** credentials.
+
+> **Update 2026-08-01 — root-cause verification.** The live Graph v1.0
+> `openapi.yaml` (36 MB, fetched 2026-08-01) was inspected to verify the
+> claimed root causes. The spec contains **one top-level server
+> (`https://graph.microsoft.com/v1.0`) and no per-operation `servers`
+> overrides**, and **no `x-ms-audience` fields**. The "deprecated" tables
+> (e.g. `appCatalogs.appCatalogs.GetAppCatalogs`) are still present in the
+> v1.0 spec and are **not flagged `deprecated: true`** (only 79 operations in
+> the whole spec are). Coral 0.8.1 therefore imported the document
+> faithfully — these 45 failures are **Graph-service realities that the
+> OpenAPI metadata does not encode** (host routing, retired endpoints,
+> tenant-type restrictions, entity-scoped resources, query restrictions),
+> not parser bugs the generator could avoid automatically. Fixes require
+> curated per-operation overrides or a trimmed document, not a parser change
+> alone. See the corrected root-cause notes per section and the Solution
+> section at the end.
 
 ---
 
@@ -29,13 +45,13 @@ coral sql \
 
 ## Summary
 
-| Category | Count | Root Cause |
+| Category | Count | Root Cause (corrected 2026-08-01) |
 |---|---|---|
-| Wrong URL | **13** | Base URL mismatch — Coral ignores per-endpoint `servers` override in OpenAPI |
-| Deprecated API | **13** | Endpoint removed from Microsoft Graph v1.0 but still in generated spec |
-| Wrong Audience | **12** | Endpoint for non-AAD tenant types (BP, Edge, Exchange admin, etc.) |
-| Needs entityId | **4** | Direct list not supported — requires entity ID parameter |
-| Unsupported Query | **3** | Search/delta query not allowed on this resource |
+| Wrong URL | **13** | Spec has a single server and **no per-op `servers` override** — real hosts are external knowledge |
+| Deprecated API | **13** | Spec still ships ops Graph has retired; **not flagged `deprecated`** |
+| Wrong Audience | **12** | Spec has **no audience metadata**; AAD-only source can't reach them |
+| Needs entityId | **4** | Spec models as plain lists; entity-ID requirement is Graph-side |
+| Unsupported Query | **3** | Runtime query restrictions, not spec data |
 
 ---
 
@@ -64,7 +80,7 @@ Coral sends the request to `graph.microsoft.com/v1.0/...` but the actual endpoin
 {"error":{"code":"","message":"No HTTP resource was found that matches the request URI 'https://...'"}}
 ```
 
-**Fix:** The Coral OpenAPI parser must respect per-endpoint `servers` overrides in the OpenAPI spec, or the manifest generator should accept a `baseUrl` override for these endpoints.
+**Fix (corrected 2026-08-01):** The spec contains **no** per-operation `servers` overrides — the only server is `https://graph.microsoft.com/v1.0`, so a parser change cannot recover the real hosts. These endpoints live on separate services (`api.termsofuse.identitygovernance.azure.com`, `syncfabric.windowsazure.com`, `cpim.windows.net`, `igaelm-…`) — knowledge that exists only in Microsoft's docs. Reaching them requires a **curated per-operation `base_url` override map** (a coral feature built from Microsoft docs) or removing the 13 tables. Not expressible in the current DSL v4 manifest (single `base_url` per surface).
 
 **Actual Coral SQL output:**
 
@@ -107,7 +123,7 @@ These endpoints return `"Requested API is not supported"` — they were fully re
 {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path."}}
 ```
 
-**Fix:** Audit each against current Graph API docs and remove dead endpoints from the spec source.
+**Fix (corrected 2026-08-01):** These operations are **still present and unmarked** (`deprecated: true` absent) in the v1.0 spec, so a "filter deprecated" parser change would not remove them. The Graph metadata repo is stale relative to the live service. Fix = curated operation **denylist** (coral feature) or a trimmed local document.
 
 **Actual Coral SQL output:**
 
@@ -149,7 +165,7 @@ These endpoints exist but target non-AAD tenant types (Business Central, Edge, E
 {"error":{"code":"Forbidden","message":"This API is not supported for AAD accounts."}}
 ```
 
-**Fix:** Add audience/tenant-type filtering in the parser, or mark with `x-ms-audience` header in manifest.
+**Fix (corrected 2026-08-01):** The spec has **no `x-ms-audience` metadata**, so audience cannot be detected or filtered automatically. Fix = curated denylist/tag for these 12, or removal — they are unusable against a standard work/school AAD account anyway.
 
 **Actual Coral SQL output:**
 
@@ -178,7 +194,7 @@ These return `"Direct queries to this resource type are not supported"` — they
 | `permissiongrants_resourcespecificpermissiongrant_*_list*` | Requires `{resourceSpecificPermissionGrantId}` |
 | `scopedrolememberships_scopedrolemembership_*_list*` | Requires `{scopedRoleMembershipId}` |
 
-**Fix:** Make these function-style tables with a required entity ID parameter, or document as `needs_entity_id` in manifest.
+**Fix (corrected 2026-08-01):** The spec models these as plain collection GETs; the entity-ID requirement is Graph-side behavior not present in the metadata. Fix = a per-operation required-input override (coral feature) or removal.
 
 **Actual Coral SQL output:**
 
@@ -204,7 +220,7 @@ SELECT 1 AS ok FROM microsoft_graph_v4.scopedrolememberships_scopedrolemembershi
 | `directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject` | `"Searches against this resource are not supported. Only specific instances can be queried."` |
 | `directoryobjects_directoryobject_functions_directoryobjects_delta` | `"Delta query is not supported for this resource."` |
 
-**Fix:** Convert to get-by-ID lookups or remove list endpoints. The delta function may need a different manifest approach entirely.
+**Fix (corrected 2026-08-01):** Search/delta restrictions are Graph runtime behavior, not spec data. Fix = remove the 3 tables, or add runtime delta/search support (coral feature).
 
 **Actual Coral SQL output:**
 
@@ -222,9 +238,18 @@ SELECT 1 AS ok FROM microsoft_graph_v4.directory_directoryobject_directory_listd
 
 ---
 
+## Solution (2026-08-01)
+
+The 45 tables **cannot be fixed by editing the `microsoft_graph_v4` manifest** (DSL v4 exposes a single `base_url` per surface, surface-wide headers, and no operation filtering), and the OpenAPI spec provides no per-operation metadata to fix them automatically. Two workable options:
+
+1. **Trim the document (no Rust, fastest).** Vendor a corrected copy of the Graph v1.0 `openapi.yaml` into the source as `file:` with the 45 buggy operations deleted. The remaining ~700 tables all become genuine. Cost: the source diverges from upstream Graph metadata until coral supports filtering.
+2. **Per-operation override feature (Rust in `coral-spec`/`coral-engine`).** Add an optional per-operation map to the DSL v4 openapi surface, e.g. `operations: <id>: { base_url, headers, enabled, required_inputs }`, seeded with curated data for these 45 (hosts from Microsoft docs, retired ops disabled, audience-specific ops tagged). Requires a coral CLI release to take effect in this test environment.
+
+**Recommended:** keep the P0–P3 priority, but reframe from "parser must respect servers/x-ms-audience" (not implementable as written) to "coral needs a curated per-operation override capability".
+
 ## Priority for Fixing
 
-1. **P0: Wrong URL (13)** — These directly affect the test pass rate for the msgraph source. Fixing base URL handling would fix all 13 at once.
-2. **P1: Deprecated API (13)** — These are noise that lower the effective coverage. Should be filtered out.
-3. **P2: Wrong Audience (12)** — Important for correctness but lower urgency since they require tenant-type detection.
-4. **P3: Needs entityId + Unsupported Query (7)** — Less common but create confusing error messages for users.
+1. **P0: Wrong URL (13)** — These directly affect the test pass rate for the msgraph source. Requires curated per-op `base_url` data (or removing the 13).
+2. **P1: Deprecated API (13)** — Noise that lowers effective coverage. Remove via denylist or trimmed doc.
+3. **P2: Wrong Audience (12)** — Correctness concern; unusable against a work/school AAD account, so removal is safe.
+4. **P3: Needs entityId + Unsupported Query (7)** — Remove or convert; confusing errors for users.
