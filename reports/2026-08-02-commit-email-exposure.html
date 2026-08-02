@@ -107,6 +107,30 @@
   .copy-btn:hover { background: #cbd5e1; }
   .copy-btn.copied { background: var(--pass); color: #fff; }
 
+  .bar-warn { background: var(--warn); }
+  .card { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+
+  .email-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+  .email-search { flex: 1 1 200px; background: #0f172a; border: 1px solid var(--border); color: #e2e8f0; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-family: inherit; min-width: 180px; }
+  .email-search::placeholder { color: #64748b; }
+  .email-search:focus { outline: none; border-color: #8b5cf6; }
+  .email-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip-filter { background: transparent; border: 1px solid var(--border); color: var(--muted-text); padding: 6px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .chip-filter:hover { color: #e2e8f0; border-color: #64748b; }
+  .chip-filter.active { background: #8b5cf6; border-color: #8b5cf6; color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted-text); padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .btn-outline:hover { color: #e2e8f0; border-color: #64748b; }
+  .btn-outline.copied { background: var(--pass); border-color: var(--pass); color: #fff; }
+  .stat-line { font-size: 0.78rem; color: var(--muted-text); margin-top: 8px; font-weight: 600; }
+
+  .back-top { position: fixed; right: 18px; bottom: 18px; background: #8b5cf6; color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 12px rgba(139,92,246,0.4); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 60; }
+  .back-top.show { opacity: 1; pointer-events: auto; }
+  .back-top:hover { background: #7c3aed; }
+
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: #e2e8f0; }
+
   .callout { border-radius: 10px; padding: 12px 14px; margin: 10px 0; font-size: 0.85rem; border: 1px solid; }
   .callout-exposed { background: var(--exposed-bg); border-color: #fca5a5; color: #7f1d1d; }
   .callout-safe { background: var(--safe-bg); border-color: #86efac; color: #14532d; }
@@ -424,9 +448,30 @@ WHERE owner = 'withcoral' AND repo = 'coral'
 GROUP BY commit__author__email
 ORDER BY commits DESC;</span></pre>
         <div class="note">Full output — all 70 distinct author emails on the origin (verbatim, ordered by count):</div>
+        <div class="bar" title="Commit share by author email type (origin)">
+          <div class="bar-seg bar-exposed" style="width:47.6%">Maintainer 455</div>
+          <div class="bar-seg bar-warn" style="width:24.7%">External 236</div>
+          <div class="bar-seg bar-safe" style="width:27.7%">Privacy-safe 265</div>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--exposed)"></span> Maintainer emails (exposed)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> External personal emails (exposed)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--safe)"></span> Privacy-safe noreply / bot aliases</span>
+        </div>
+        <div class="email-toolbar">
+          <input type="search" id="email-search" class="email-search" placeholder="Search by email…">
+          <div class="email-chips">
+            <button class="chip-filter active" data-type="all">All</button>
+            <button class="chip-filter" data-type="maintainer">Maintainers</button>
+            <button class="chip-filter" data-type="external">External</button>
+            <button class="chip-filter" data-type="private">Privacy-safe</button>
+          </div>
+          <button class="btn-outline" id="email-csv">Copy CSV</button>
+        </div>
+        <div class="stat-line" id="email-readout"></div>
         <div class="table-scroll">
-          <table>
-            <thead><tr><th><code>commit__author__email</code></th><th>commits</th></tr></thead>
+          <table id="email-table">
+            <thead><tr><th><code>commit__author__email</code></th><th class="sortable">commits</th><th>Type</th></tr></thead>
             <tbody>
               <tr><td><code>james@withcoral.com</code></td><td><strong>184</strong></td></tr>
               <tr><td><code>simonw@withcoral.com</code></td><td><strong>115</strong></td></tr>
@@ -667,14 +712,28 @@ ilia@phoebe.ai 24 · james.audretsch@phoebe.ai 17 · andrea@withcoral.com 13
   // Tabs
   var buttons = document.querySelectorAll('nav.tabs button');
   var panels = document.querySelectorAll('.tab-panel');
+  function activateTab(id) {
+    buttons.forEach(function(b){ b.classList.toggle('active', b.dataset.tab === id); });
+    panels.forEach(function(p){ p.classList.toggle('active', p.id === id); });
+  }
   buttons.forEach(function(btn) {
     btn.addEventListener('click', function() {
-      buttons.forEach(function(b){ b.classList.remove('active'); });
-      panels.forEach(function(p){ p.classList.remove('active'); });
-      btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.add('active');
+      activateTab(btn.dataset.tab);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+  });
+
+  // Summary cards jump to the relevant tab
+  var cardTabs = { 0: 'tab-emails', 1: 'tab-emails', 2: 'tab-scan', 4: 'tab-topology' };
+  document.querySelectorAll('.cards .card').forEach(function(card, idx) {
+    var target = cardTabs[idx];
+    if (target) {
+      card.title = 'Open the ' + target.replace('tab-', '') + ' tab';
+      card.addEventListener('click', function() {
+        activateTab(target);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   });
 
   // Collapsible sections
@@ -699,6 +758,114 @@ ilia@phoebe.ai 24 · james.audretsch@phoebe.ai 17 · andrea@withcoral.com 13
     });
     pre.appendChild(btn);
   });
+
+  // Email table: classify, tag, filter, search, sort, CSV
+  (function() {
+    var table = document.getElementById('email-table');
+    if (!table) return;
+    var MAINTAINERS = ['james@withcoral.com', 'simonw@withcoral.com', 'saul@withcoral.com', 'ilia@phoebe.ai', 'james.audretsch@phoebe.ai', 'andrea@withcoral.com', 'james@phoebe.ai'];
+    var TYPE_LABEL = { maintainer: 'MAINTAINER', external: 'EXTERNAL', private: 'PRIVACY-SAFE' };
+    var TYPE_CLASS = { maintainer: 'tag-exposed', external: 'tag-warn', private: 'tag-safe' };
+
+    var headRow = table.querySelector('thead tr');
+    var th = document.createElement('th');
+    th.textContent = 'Type';
+    headRow.appendChild(th);
+
+    var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
+    rows.forEach(function(row) {
+      var email = row.cells[0].textContent.trim();
+      var type = /users\.noreply\.github\.com|\[bot\]/.test(email) ? 'private'
+               : (MAINTAINERS.indexOf(email) !== -1 ? 'maintainer' : 'external');
+      row.setAttribute('data-type', type);
+      row.setAttribute('data-commits', row.cells[1].textContent.trim());
+      var td = document.createElement('td');
+      var tag = document.createElement('span');
+      tag.className = 'tag ' + TYPE_CLASS[type];
+      tag.textContent = TYPE_LABEL[type];
+      td.appendChild(tag);
+      row.appendChild(td);
+    });
+
+    var search = document.getElementById('email-search');
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.chip-filter'));
+    var csvBtn = document.getElementById('email-csv');
+    var readout = document.getElementById('email-readout');
+    var commitsTh = table.querySelector('th.sortable');
+    var activeType = 'all';
+    var sortDir = -1;
+
+    var totalCounts = { maintainer: 0, external: 0, private: 0, all: rows.length };
+    rows.forEach(function(r) { totalCounts[r.getAttribute('data-type')]++; });
+    chips.forEach(function(chip) {
+      var t = chip.getAttribute('data-type');
+      var label = chip.textContent.split(' (')[0];
+      chip.textContent = t === 'all' ? label + ' (' + totalCounts.all + ')' : label + ' (' + totalCounts[t] + ')';
+    });
+
+    function applyFilter() {
+      var q = (search ? search.value : '').toLowerCase().trim();
+      var shown = 0, commits = 0;
+      rows.forEach(function(row) {
+        var visible = (activeType === 'all' || row.getAttribute('data-type') === activeType)
+                   && (!q || row.textContent.toLowerCase().indexOf(q) !== -1);
+        row.style.display = visible ? '' : 'none';
+        if (visible) { shown++; commits += parseInt(row.getAttribute('data-commits'), 10); }
+      });
+      if (readout) readout.textContent = 'Showing ' + shown + ' of ' + rows.length + ' emails — ' + commits.toLocaleString() + ' commits';
+    }
+
+    function updateArrow() { commitsTh.textContent = 'commits ' + (sortDir === -1 ? '▾' : '▴'); }
+    updateArrow();
+
+    chips.forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        chips.forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        activeType = chip.getAttribute('data-type');
+        applyFilter();
+      });
+    });
+    if (search) search.addEventListener('input', applyFilter);
+
+    if (commitsTh) {
+      commitsTh.addEventListener('click', function() {
+        sortDir = -sortDir;
+        rows.sort(function(a, b) {
+          return (parseInt(a.getAttribute('data-commits'), 10) - parseInt(b.getAttribute('data-commits'), 10)) * sortDir;
+        });
+        rows.forEach(function(r) { table.querySelector('tbody').appendChild(r); });
+        updateArrow();
+        applyFilter();
+      });
+    }
+
+    if (csvBtn) {
+      csvBtn.addEventListener('click', function() {
+        var lines = rows.filter(function(r) { return r.style.display !== 'none'; }).map(function(r) {
+          return '"' + r.cells[0].textContent.trim() + '",' + r.cells[1].textContent.trim() + ',' + r.getAttribute('data-type');
+        });
+        navigator.clipboard.writeText('email,commits,type\n' + lines.join('\n')).then(function() {
+          csvBtn.textContent = 'copied';
+          csvBtn.classList.add('copied');
+          setTimeout(function() { csvBtn.textContent = 'Copy CSV'; csvBtn.classList.remove('copied'); }, 1500);
+        });
+      });
+    }
+
+    applyFilter();
+  })();
+
+  // Back to top
+  var backTop = document.createElement('button');
+  backTop.className = 'back-top';
+  backTop.textContent = '↑';
+  backTop.title = 'Back to top';
+  backTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  document.body.appendChild(backTop);
+  window.addEventListener('scroll', function() {
+    backTop.classList.toggle('show', window.scrollY > 400);
+  }, { passive: true });
 </script>
 </body>
 </html>
