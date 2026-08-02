@@ -175,7 +175,7 @@ URL: `https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf4bb5
 
 ### 4.6 Scope of exposure — not just these 12 commits
 
-These are **samples**. The aggregate counts (Section 3) show **455 commits on the origin** carry exposed personal emails. Every one of them is retrievable the same way; the 12 above were each individually curl-verified to eliminate any doubt about methodology.
+These are **samples**. The aggregate counts (Section 3) show **455 commits on the origin** carry the 7 maintainer emails highlighted in this report. The complete one-command Coral scan (Section 4.9) surfaces **34 distinct personal addresses on 691 commits** once external contributors are included — i.e. the exposure is broader than the maintainer set alone. Every one of them is retrievable the same way; the 12 above were each individually curl-verified to eliminate any doubt about methodology.
 
 ### 4.7 Gotcha
 
@@ -192,6 +192,195 @@ Saúl Hernández <saul@withcoral.com>
 Simon Whitaker <simonw@withcoral.com>
 Ilia Aphtsiauri <ilia@phoebe.ai>
 ...
+```
+
+### 4.9 Reproduce everything with Coral — exact commands and real outputs
+
+Every finding in this report was discovered through **Coral MCP** against the
+connected **GitHub source** (`github.commits` table) — no `git` and no `curl`
+are needed to rediscover it. Run the same SQL through the Coral MCP `coral_sql`
+tool, or drop it into the CLI as `coral sql "<query>"`, and you get the exact
+outputs below.
+
+**Gotcha first.** `github.commits` requires a constant-equality filter on both
+`owner` and `repo`; without them Coral refuses the query:
+
+```
+SELECT COUNT(*) FROM github.commits;
+-- ERROR: github.commits requires WHERE owner = <constant>
+--        Add a constant equality filter on `owner` / `repo`
+```
+
+**Step 1 — total commits on the origin.**
+
+```sql
+SELECT COUNT(*) AS total_commits
+FROM github.commits
+WHERE owner = 'withcoral' AND repo = 'coral';
+```
+
+Output (rows returned by `coral_sql`):
+
+```
+total_commits
+956
+```
+
+**Step 2 — how we found every email: one GROUP BY.** This is the key query. It
+lists every distinct git-author email on the origin with its commit count:
+
+```sql
+SELECT commit__author__email, COUNT(*) AS commits
+FROM github.commits
+WHERE owner = 'withcoral' AND repo = 'coral'
+GROUP BY commit__author__email
+ORDER BY commits DESC;
+```
+
+Full output — all 70 distinct author emails on the origin (verbatim, ordered by count):
+
+| `commit__author__email` | commits |
+|---|---|
+| `james@withcoral.com` | **184** |
+| `simonw@withcoral.com` | **115** |
+| `33761650+AlbertQM@users.noreply.github.com` | 111 |
+| `saul@withcoral.com` | **99** |
+| `ludo@phoebe.ai` | 60 |
+| `bradleydpbutcher@gmail.com` | 45 |
+| `pawel.kapica@gmail.com` | 40 |
+| `ilia@phoebe.ai` | **26** |
+| `269256696+coral-release-bot[bot]@users.noreply.github.com` | 21 |
+| `70472031+vinayaksonthalia@users.noreply.github.com` | 18 |
+| `james.audretsch@phoebe.ai` | **17** |
+| `148879663+wiz-abhi@users.noreply.github.com` | 16 |
+| `antonmry@users.noreply.github.com` | 15 |
+| `ss5063711@gmail.com` | 14 |
+| `andrea@withcoral.com` | **13** |
+| `jishanahmedshaikh@gmail.com` | 13 |
+| `140815511+Arnav1709@users.noreply.github.com` | 13 |
+| `martin.rajdl@me.com` | 12 |
+| `2022.mohit.jeswani@ves.ac.in` | 9 |
+| `144056431+Yashagarwal9798@users.noreply.github.com` | 8 |
+| `akashmr880@gmail.com` | 8 |
+| `iamhassaans@gmail.com` | 7 |
+| `32628578+sahil9001@users.noreply.github.com` | 6 |
+| `47355538+siiddhantt@users.noreply.github.com` | 6 |
+| `35931397+kyracheng@users.noreply.github.com` | 5 |
+| `123734227+bishalbera@users.noreply.github.com` | 5 |
+| `157990661+RajdeepKushwaha5@users.noreply.github.com` | 4 |
+| `146172889+Vickyavh7@users.noreply.github.com` | 4 |
+| `111079176+BAVYASAKTHIVEL-21@users.noreply.github.com` | 3 |
+| `siddhigupta811@gmail.com` | 3 |
+| `sakshikajal14@gmail.com` | 3 |
+| `mohitjeswani74@gmail.com` | 3 |
+| `anish79u@gmail.com` | 2 |
+| `130288820+Rishikesh63@users.noreply.github.com` | 2 |
+| `ludovic.fardel@gmail.com` | 2 |
+| `90707480+Kvnpsiddhartha@users.noreply.github.com` | 2 |
+| `73647277+OoJae@users.noreply.github.com` | 2 |
+| `rayhan22269@iiitd.ac.in` | 2 |
+| `128019369+athul-2003@users.noreply.github.com` | 2 |
+| `73388412+ShamithaReddy@users.noreply.github.com` | 2 |
+| `157233255+ravindhar1108@users.noreply.github.com` | 2 |
+| `154318149+kr3shna@users.noreply.github.com` | 2 |
+| `111228216+Prem4777@users.noreply.github.com` | 2 |
+| `9d.24.nancy.sangani@gmail.com` | 2 |
+| `157653362+blacksmith-sh[bot]@users.noreply.github.com` | 1 |
+| `139765981+YasharthPanwar-2003@users.noreply.github.com` | 1 |
+| `mehru.codes@gmail.com` | 1 |
+| `sw@netcetera.org` | 1 |
+| `161115788+Geethapranay1@users.noreply.github.com` | 1 |
+| `saaiaravindhraja@gmail.com` | 1 |
+| `krishkhati0007king@gmail.com` | 1 |
+| `taimoorking23102004@gmail.com` | 1 |
+| `86097533+prasannakumar414@users.noreply.github.com` | 1 |
+| `83650338+praveshhh@users.noreply.github.com` | 1 |
+| `32316065+arunkumar0398@users.noreply.github.com` | 1 |
+| `93150941+sidshivam625@users.noreply.github.com` | 1 |
+| `snp2315@gmail.com` | 1 |
+| `exedistrict@gmail.com` | 1 |
+| `rohansingh2804@gmail.com` | 1 |
+| `115855149+yunus25jmi1@users.noreply.github.com` | 1 |
+| `96873014+HydrallHarsh@users.noreply.github.com` | 1 |
+| `97343691+Abchoudhary2512@users.noreply.github.com` | 1 |
+| `109931778+mintlify[bot]@users.noreply.github.com` | 1 |
+| `84870556+guglxni@users.noreply.github.com` | 1 |
+| `harshsinghathena@gmail.com` | 1 |
+| `162829558+Devanshk11@users.noreply.github.com` | 1 |
+| `james@phoebe.ai` | **1** |
+| `147735975+pooja-bhavani@users.noreply.github.com` | 1 |
+| `lorenzo.cambiaghi@hotmail.com` | 1 |
+| `manojachanta7172@gmail.com` | 1 |
+
+**How to read it.** `users.noreply.github.com` and `[bot]` addresses are
+**privacy-safe** — they are GitHub's automatic private aliases. Everything else
+is a **real personal email**, which is exactly what this report is about:
+
+- The **7 maintainer emails** highlighted in this report (Sections 3–4.1) account for **455 commits**.
+- The same one-command scan also surfaces **27 more personal addresses from external contributors** (`gmail.com`, `hotmail.com`, `me.com`, `ves.ac.in`, `iiitd.ac.in`, `netcetera.org`, …) on **236 more commits**.
+- Total exposure on the origin: **34 distinct personal email addresses on 691 of 956 commits**.
+
+**Step 3 — how we got the full 40-char SHAs for the proof tables.** The
+`github.commits` table has **no dedicated SHA column** — the commit SHA lives at
+the end of `commit__url`. We extract it with `regexp_match(commit__url,
+'/commits/([^/]+)$')[1]` (note the quoted regex; `regexp_extract` does not exist
+in this engine):
+
+```sql
+SELECT commit__author__name,
+       commit__author__email,
+       commit__author__date,
+       substr(commit__message, 1, 60) AS message,
+       regexp_match(commit__url, '/commits/([^/]+)$')[1] AS sha
+FROM github.commits
+WHERE owner = 'withcoral' AND repo = 'coral'
+  AND commit__author__email = 'james@withcoral.com'
+ORDER BY commit__author__date DESC
+LIMIT 3;
+```
+
+Output:
+
+| `commit__author__name` | `commit__author__email` | `commit__author__date` | `message` | `sha` |
+|---|---|---|---|---|
+| James Summerfield | `james@withcoral.com` | 2026-07-26T10:19:03Z | `feat(mcp): require task lifecycle (#1941)` | `e6e0607bf4bb5e5ce4c0534f0189e10363046155` |
+| James Summerfield | `james@withcoral.com` | 2026-07-26T10:19:02Z | `feat(app): persist tasks in SQL (#1940)` | `b1975f4a68b566607a0386544ee15f264c451cd7` |
+| James Summerfield | `james@withcoral.com` | 2026-07-24T11:58:31Z | `fix(mcp): simplify task lifecycle results (#1939)` | `e04c4ac4febbba822d55dcc1bac5f9e241e9177c` |
+
+Running the same query with a different `commit__author__email` value produces
+the proof rows used in Sections 4.1–4.2 (each SHA is the raw value returned by
+`coral_sql`, no transcription):
+
+| Email | Latest commit SHA (from `coral_sql`) | Date | Message (truncated) |
+|---|---|---|---|
+| `simonw@withcoral.com` | `303ffe96aabef7d33ac08538606b95d79a7cb0bd` | 2026-07-31 | `chore(spec): add missing auth block to v4 Gitlab source (#20…` |
+| `saul@withcoral.com` | `f575c9d14afc3fcd237602b03d9408e75d9e031c` | 2026-07-31 | `feat(app): persist identity spec documents with shared envel…` |
+| `ilia@phoebe.ai` | `52ff0ac66c8f7bd92062770a4f5295432dea80a4` | 2026-07-31 | `feat(catalog): expose catalog-qualified table discovery (#18…` |
+| `james.audretsch@phoebe.ai` | `793abae752d33716399222ce4d978b6f8b94a15b` | 2026-07-14 | `feat(cli): add tasks runtime feature (#1561)` |
+| `andrea@withcoral.com` | `cf744bd783b23c4371d14ed7e9b7640e26cfab10` | 2026-07-10 | `feat(sources/core-v4/microsoft_graph_v4): add Microsoft Grap…` |
+| `james@phoebe.ai` | `0b4e846764359af760c5567e4aa130e33e85c8f0` | 2026-04-03 | `Initial commit` |
+
+**Step 4 — the fork.** Same queries, just change the two filters. The fork's
+`main` is slightly behind origin, so totals are a little lower — but the
+exposed emails are the same values:
+
+```sql
+SELECT COUNT(*) AS total_commits
+FROM github.commits
+WHERE owner = 'FiscalMindset' AND repo = 'coral';
+-- total_commits
+-- 917
+
+SELECT commit__author__email, COUNT(*) AS commits
+FROM github.commits
+WHERE owner = 'FiscalMindset' AND repo = 'coral'
+GROUP BY commit__author__email
+ORDER BY commits DESC
+LIMIT 15;
+-- james@withcoral.com 184 · simonw@withcoral.com 110 · saul@withcoral.com 86
+-- ilia@phoebe.ai 24 · james.audretsch@phoebe.ai 17 · andrea@withcoral.com 13
+-- (external contributors: ludo@phoebe.ai 60 · bradleydpbutcher@gmail.com 44
+--  pawel.kapica@gmail.com 39 · ss5063711@gmail.com 14 …)
 ```
 
 ---
