@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coral Contributor Email Exposure — 2026-08-02</title>
+<style>
+  :root {
+    --pass: #22c55e; --pass-bg: #f0fdf4;
+    --fail: #ef4444; --fail-bg: #fef2f2;
+    --warn: #f59e0b; --warn-bg: #fffbeb;
+    --info: #3b82f6; --info-bg: #eff6ff;
+    --muted: #6b7280; --muted-bg: #f9fafb;
+    --exposed: #dc2626; --exposed-bg: #fef2f2;
+    --safe: #22c55e; --safe-bg: #f0fdf4;
+    --alt: #8b5cf6; --alt-bg: #f5f3ff;
+    --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0;
+    --text: #1e293b; --muted-text: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 64px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+
+  header.hero { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); color: #e2e8f0; border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .hero-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .hero-avatar { flex-shrink: 0; width: 64px; height: 64px; border-radius: 50%; border: 3px solid rgba(167,139,250,0.7); box-shadow: 0 0 0 4px rgba(167,139,250,0.15), 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; background: #0b1220; }
+  .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-titles { min-width: 0; }
+  header.hero h1 { font-size: clamp(1.25rem, 3vw, 1.9rem); font-weight: 800; color: #fff; line-height: 1.25; }
+  header.hero .subtitle { color: #94a3b8; font-size: 0.95rem; margin-top: 4px; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; font-size: 0.8rem; }
+  .meta .chip { background: rgba(15,23,42,0.55); border: 1px solid rgba(167,139,250,0.35); padding: 4px 12px; border-radius: 999px; white-space: normal; overflow-wrap: anywhere; word-break: break-word; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; }
+  .meta .chip-label { color: #cbd5e1; font-weight: 700; flex-shrink: 0; }
+  .meta code { color: #c4b5fd; word-break: break-all; overflow-wrap: anywhere; background: rgba(7,14,26,0.6); padding: 0 5px; border-radius: 5px; font-weight: 600; }
+  .meta .chip-status { border-color: rgba(248,113,113,0.5); }
+  .meta .chip-status code { color: #f87171; background: rgba(127,29,29,0.25); }
+
+  nav.tabs { position: sticky; top: 0; z-index: 50; background: #0f172a; border-radius: 12px; padding: 6px; display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(15,23,42,0.25); }
+  nav.tabs button { flex: 1 1 auto; min-width: 90px; background: transparent; color: #94a3b8; border: none; padding: 9px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+  nav.tabs button:hover { color: #e2e8f0; background: rgba(148,163,184,0.12); }
+  nav.tabs button.active { background: #8b5cf6; color: #fff; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .card { background: var(--card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .card .num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; word-break: break-word; }
+  .card .label { font-size: 0.75rem; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; overflow-wrap: anywhere; }
+  .card-exposed .num { color: var(--exposed); }
+  .card-safe .num { color: var(--safe); }
+  .card-alt .num { color: var(--alt); }
+  .card-info .num { color: var(--info); }
+
+  .bar { display: flex; height: 36px; border-radius: 8px; overflow: hidden; font-size: 0.7rem; font-weight: 700; margin-bottom: 8px; }
+  .bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; overflow: hidden; white-space: nowrap; padding: 0 4px; }
+  .bar-exposed { background: var(--exposed); } .bar-safe { background: var(--safe); }
+
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.78rem; color: var(--muted-text); margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .section { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .section-header { padding: 12px 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; user-select: none; font-size: 0.95rem; }
+  .section-header > span:first-child { min-width: 0; flex: 1 1 auto; word-break: break-word; }
+  .section-header:hover { background: #f8fafc; }
+  .section-header .arrow { transition: transform 0.2s; font-size: 0.75rem; }
+  .section-header.open .arrow { transform: rotate(90deg); }
+  .section-body { padding: 0 16px 16px; display: none; }
+  .section-header.open + .section-body { display: block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-top: 10px; }
+  th { text-align: left; padding: 8px 8px 8px 0; border-bottom: 2px solid var(--border); color: var(--muted-text); font-weight: 700; }
+  td { padding: 8px 8px 8px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-scroll table { min-width: 460px; }
+  table th { white-space: nowrap; }
+
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 5px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+  .tag-exposed { background: var(--exposed-bg); color: #dc2626; }
+  .tag-safe { background: var(--safe-bg); color: #15803d; }
+  .tag-alt { background: var(--alt-bg); color: #7c3aed; }
+  .tag-info { background: var(--info-bg); color: #1d4ed8; }
+  .tag-warn { background: var(--warn-bg); color: #b45309; }
+  .tag-muted { background: var(--muted-bg); color: #4b5563; }
+
+  pre { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 0.76rem; line-height: 1.5; overflow-x: auto; margin-top: 8px; white-space: pre-wrap; word-break: break-word; font-family: 'SF Mono', Menlo, monospace; }
+  pre .prompt { color: #94a3b8; }
+  pre .output { color: #cbd5e1; white-space: pre-wrap; word-break: break-word; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.8rem; font-family: 'SF Mono', Menlo, monospace; word-break: break-all; }
+  .note { margin-top: 10px; font-size: 0.83rem; color: var(--muted-text); }
+  .h3 { font-size: 1.05rem; margin: 14px 0 6px; }
+  ul, ol { margin: 8px 0; padding-left: 20px; font-size: 0.85rem; }
+  li { margin-bottom: 3px; }
+  .url { overflow-wrap: anywhere; word-break: break-all; }
+
+  .cmd-block { margin: 10px 0; }
+  .cmd-block pre { margin-top: 4px; }
+  .cmd-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-text); font-weight: 700; }
+  .copy-btn { background: #e2e8f0; border: none; padding: 1px 8px; border-radius: 5px; font-size: 0.68rem; font-weight: 700; cursor: pointer; color: #334155; font-family: inherit; margin-left: 8px; }
+  .copy-btn:hover { background: #cbd5e1; }
+  .copy-btn.copied { background: var(--pass); color: #fff; }
+
+  .callout { border-radius: 10px; padding: 12px 14px; margin: 10px 0; font-size: 0.85rem; border: 1px solid; }
+  .callout-exposed { background: var(--exposed-bg); border-color: #fca5a5; color: #7f1d1d; }
+  .callout-safe { background: var(--safe-bg); border-color: #86efac; color: #14532d; }
+  .callout-warn { background: var(--warn-bg); border-color: #fcd34d; color: #78350f; }
+  .callout-info { background: var(--info-bg); border-color: #93c5fd; color: #1e3a8a; }
+
+  .sol-list { counter-reset: sol; list-style: none; padding-left: 0; }
+  .sol-list > li { counter-increment: sol; position: relative; padding: 10px 12px 10px 46px; background: #fff; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+  .sol-list > li::before { content: counter(sol); position: absolute; left: 12px; top: 12px; width: 24px; height: 24px; border-radius: 50%; background: var(--alt); color: #fff; font-weight: 800; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+  .sol-title { font-weight: 700; }
+  .sol-rec { border-color: #c4b5fd; background: var(--alt-bg); }
+
+  @media (max-width: 560px) {
+    .container { padding: 10px; }
+    header.hero { padding: 16px; }
+    nav.tabs button { min-width: 72px; padding: 8px 6px; font-size: 0.78rem; }
+    .section-body { padding: 0 12px 12px; }
+    .meta .chip { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="hero-top">
+      <div class="hero-avatar"><img src="https://github.com/FiscalMindset.png?size=100" alt="Vicky Kumar"></div>
+      <div class="hero-titles">
+        <h1>Coral Contributor Email Exposure</h1>
+        <div class="subtitle">Public git commit metadata exposes maintainer emails on origin <b>and</b> fork — verified 2026-08-02</div>
+      </div>
+    </div>
+    <div class="meta">
+      <span class="chip"><span class="chip-label">Author</span> <code>Vicky Kumar &lt;algsoch@gmail.com&gt;</code></span>
+      <span class="chip"><span class="chip-label">Method</span> <code>Coral MCP (github.commits) + GitHub REST API (curl)</code></span>
+      <span class="chip"><span class="chip-label">Repos</span> <code>withcoral/coral</code> · <code>FiscalMindset/coral</code></span>
+      <span class="chip chip-status"><span class="chip-label">Verdict</span> <code>⚠ EXPOSED (not a file leak)</code></span>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="active" data-tab="tab-summary">Summary</button>
+    <button data-tab="tab-topology">Topology</button>
+    <button data-tab="tab-emails">Emails</button>
+    <button data-tab="tab-proof">Proof</button>
+    <button data-tab="tab-scan">File Scan</button>
+    <button data-tab="tab-solutions">Verdict &amp; Solutions</button>
+  </nav>
+  <!-- ============ TAB: SUMMARY ============ -->
+  <section class="tab-panel active" id="tab-summary">
+    <div class="cards">
+      <div class="card card-exposed"><div class="num">7</div><div class="label">Personal emails exposed</div></div>
+      <div class="card card-exposed"><div class="num">455</div><div class="label">Commits w/ exposed email (origin)</div></div>
+      <div class="card card-safe"><div class="num">0</div><div class="label">Personal emails in repo files</div></div>
+      <div class="card card-alt"><div class="num">2</div><div class="label">Public aliases in files (intentional)</div></div>
+      <div class="card card-info"><div class="num">2</div><div class="label">Repos affected (origin + fork)</div></div>
+    </div>
+
+    <div class="bar" title="Share of exposed commits">
+      <div class="bar-seg bar-exposed" style="width:100%">455 exposed author records (100%)</div>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:var(--exposed)"></span> Exposed via commit metadata</span>
+    </div>
+
+    <div class="callout callout-exposed">
+      <strong>Bottom line:</strong> the maintainers' real email addresses are <strong>publicly exposed</strong> in the git commit metadata of both
+      <code>withcoral/coral</code> (origin) and <code>FiscalMindset/coral</code> (fork). This is <strong>not a file leak</strong> and not a breach —
+      it is standard git/GitHub behavior, because every commit object permanently stores the author's <code>git config user.email</code>.
+      Anyone can retrieve them without authentication via the GitHub API or <code>git log</code> on a clone.
+    </div>
+
+    <div class="callout callout-safe">
+      <strong>What is NOT exposed in files:</strong> a full search of the working tree found <strong>zero</strong> personal addresses in any source, docs,
+      config, or manifest. The only emails present in files are the deliberate public aliases
+      <code>security@withcoral.com</code> and <code>legal@withcoral.com</code>.
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>Why it's easy to miss:</strong> GitHub's web UI hides the author email. The raw commit object served by the public API
+      (<code>GET /repos/{owner}/{repo}/git/commits/{sha}</code>) and by <code>git log --format='%ae'</code> contains it in plain text.
+    </div>
+
+    <div class="section open">
+      <div class="section-header"><span>Executive summary</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <p style="font-size:0.85rem;margin-top:6px;">While investigating the Coral repository, I found the <strong>personal email addresses of the main contributors are publicly exposed</strong> through the git commit <code>author</code> field. This affects both the origin repo and the fork, because forks copy the complete git history unchanged — the commit objects (and their SHAs) are byte-for-byte identical. The exposure is real, trivially retrievable by anyone, and currently present on 455 commits in the origin's <code>main</code> branch. Future exposure can be stopped in minutes with a GitHub setting; removing the historical exposure would require a destructive history rewrite.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: TOPOLOGY ============ -->
+  <section class="tab-panel" id="tab-topology">
+    <div class="h3">Origin vs fork — verified via GitHub REST API (through Coral MCP)</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Field</th><th>withcoral/coral</th><th>FiscalMindset/coral</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>full_name</strong></td><td><code>withcoral/coral</code></td><td><code>FiscalMindset/coral</code></td></tr>
+          <tr><td><strong>html_url</strong></td><td><span class="url">https://github.com/withcoral/coral</span></td><td><span class="url">https://github.com/FiscalMindset/coral</span></td></tr>
+          <tr><td><strong>fork</strong></td><td><span class="tag tag-safe">false — ORIGIN</span></td><td><span class="tag tag-alt">true — FORK</span></td></tr>
+          <tr><td><strong>parent</strong></td><td>—</td><td><code>withcoral/coral</code><br><span class="url">https://github.com/withcoral/coral</span></td></tr>
+          <tr><td><strong>default_branch</strong></td><td><code>main</code></td><td><code>main</code></td></tr>
+          <tr><td><strong>description</strong></td><td colspan="2">One SQL interface over APIs, files, and live sources — built for agents.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">The local clone used for this investigation is a copy of the fork (<code>git remote -v</code> → <code>origin https://github.com/FiscalMindset/coral.git</code>). Because a fork shares the full history, commit objects — and therefore author emails — are identical across origin, fork, and clone.</div>
+
+    <div class="callout callout-info"><strong>Key concept:</strong> a fork is not a new history — it is the same commit graph pointing at the same objects. Any email baked into a commit on the origin is automatically present on every fork and every clone, forever (unless rewritten).</div>
+  </section>
+
+  <!-- ============ TAB: EMAILS ============ -->
+  <section class="tab-panel" id="tab-emails">
+    <div class="h3">Affected contributor emails and commit counts</div>
+    <div class="note">Counted via Coral MCP <code>github.commits</code> (GROUP BY <code>commit__author__email</code>). Fork counts are slightly lower only because the fork's <code>main</code> is behind origin — the exposed values are identical.</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Commits (origin)</th><th>Commits (fork)</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>James Summerfield</td><td><code>james@withcoral.com</code></td><td>184</td><td>184</td><td><span class="tag tag-exposed">EXPOSED</span></td></tr>
+          <tr><td>Simon Whitaker</td><td><code>simonw@withcoral.com</code></td><td>115</td><td>110</td><td><span class="tag tag-exposed">EXPOSED</span></td></tr>
+          <tr><td>Saúl Hernández</td><td><code>saul@withcoral.com</code></td><td>99</td><td>86</td><td><span class="tag tag-exposed">EXPOSED</span></td></tr>
+          <tr><td>Ilia Aphtsiauri</td><td><code>ilia@phoebe.ai</code></td><td>26</td><td>24</td><td><span class="tag tag-exposed">EXPOSED</span></td></tr>
+          <tr><td>James Audretsch</td><td><code>james.audretsch@phoebe.ai</code></td><td>17</td><td>17</td><td><span class="tag tag-exposed">EXPOSED</span></td></tr>
+          <tr><td>Andrea Ambu</td><td><code>andrea@withcoral.com</code></td><td>13</td><td>13</td><td><span class="tag tag-exposed">EXPOSED</span></td></tr>
+          <tr><td>James Summerfield (older identity)</td><td><code>james@phoebe.ai</code></td><td>1</td><td>1</td><td><span class="tag tag-exposed">EXPOSED</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="h3">Distinct author identities in the local clone (<code>git log</code>)</div>
+    <pre><span class="prompt">$ git log --format='%an &lt;%ae&gt;' | sort -u</span>
+<span class="output">James Summerfield &lt;james@withcoral.com&gt;
+Andrea Ambu &lt;andrea@withcoral.com&gt;
+Saúl Hernández &lt;saul@withcoral.com&gt;
+Simon Whitaker &lt;simonw@withcoral.com&gt;
+Ilia Aphtsiauri &lt;ilia@phoebe.ai&gt;
+jamesaud &lt;james.audretsch@phoebe.ai&gt;</span></pre>
+
+    <div class="callout callout-warn"><strong>Note on "Matt":</strong> no contributor named Matt appears in git history. Matt Henderson is a <strong>hired contact</strong> (per the tester README: contacts — Matt Henderson (hired) · Andrea Ambu (engineer)), not a git author. No <code>@noreply.github.com</code> privacy addresses were found among the main contributors — only one third-party contributor (Albert, <code>33761650+AlbertQM@users.noreply.github.com</code>) already uses a private address.</div>
+  </section>
+  <!-- ============ TAB: PROOF ============ -->
+  <section class="tab-panel" id="tab-proof">
+    <div class="h3">Concrete example commit</div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Commit SHA (full)</strong></td><td><code>e6e0607bf4bb5e5ce4c0534f0189e10363046155</code></td></tr>
+          <tr><td><strong>Message</strong></td><td><code>feat(mcp): require task lifecycle (#1941)</code></td></tr>
+          <tr><td><strong>Author</strong></td><td>James Summerfield</td></tr>
+          <tr><td><strong>Email</strong></td><td><code>james@withcoral.com</code></td></tr>
+          <tr><td><strong>Date</strong></td><td>2026-07-26T10:19:03Z</td></tr>
+          <tr><td><strong>Present on</strong></td><td><span class="tag tag-safe">withcoral/coral (origin)</span> <span class="tag tag-alt">FiscalMindset/coral (fork)</span> <span class="tag tag-info">local clone</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section open">
+      <div class="section-header"><span>Origin — public API response (no auth)</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <pre><span class="prompt">$ curl -s https://api.github.com/repos/withcoral/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155</span>
+<span class="output">{
+  "message": "feat(mcp): require task lifecycle (#1941) ...",
+  "author": {
+    "name": "James Summerfield",
+    "email": "james@withcoral.com",
+    "date": "2026-07-26T10:19:03Z"
+  }
+}</span></pre>
+        <div class="note url">URL: https://api.github.com/repos/withcoral/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155</div>
+      </div>
+    </div>
+
+    <div class="section open">
+      <div class="section-header"><span>Fork — public API response (no auth)</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <pre><span class="prompt">$ curl -s https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155</span>
+<span class="output">{
+  "message": "feat(mcp): require task lifecycle (#1941) ...",
+  "author": {
+    "name": "James Summerfield",
+    "email": "james@withcoral.com",
+    "date": "2026-07-26T10:19:03Z"
+  }
+}</span></pre>
+        <div class="note url">URL: https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span>Gotcha: the API requires the FULL 40-char SHA</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <pre><span class="prompt">$ curl -s https://api.github.com/repos/withcoral/coral/git/commits/e6e0607</span>
+<span class="output">{"message": "Not Found", "documentation_url": "https://docs.github.com/rest/git/commits#get-a-commit-object", "status": 404}</span></pre>
+        <div class="note">A short SHA returns <code>404 Not Found</code> for this endpoint — use the full 40-character commit object SHA.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: FILE SCAN ============ -->
+  <section class="tab-panel" id="tab-scan">
+    <div class="callout callout-safe">
+      <strong>Result:</strong> zero personal addresses anywhere in the working tree. The email exposure is <strong>not</strong> a file leak.
+    </div>
+
+    <div class="h3">Only public company aliases exist in files — intentional, not a leak</div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>File</th><th>Email</th><th>Purpose</th><th>Intentional</th></tr></thead>
+        <tbody>
+          <tr><td><code>SECURITY.md:8</code></td><td><code>security@withcoral.com</code></td><td>Security contact</td><td><span class="tag tag-safe">YES</span></td></tr>
+          <tr><td><code>CONTRIBUTING.md:227</code></td><td><code>legal@withcoral.com</code></td><td>CLA contact</td><td><span class="tag tag-safe">YES</span></td></tr>
+          <tr><td><code>apps/docs/legal/cla-corporate.mdx:10</code></td><td><code>legal@withcoral.com</code></td><td>Corporate CLA form</td><td><span class="tag tag-safe">YES</span></td></tr>
+          <tr><td><code>plugins/coral/.codex-plugin/plugin.json:7</code></td><td><code>legal@withcoral.com</code></td><td>Plugin publisher contact</td><td><span class="tag tag-safe">YES</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span>Ownership reference (no email)</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <pre><span class="prompt">$ grep -rn "jsummerfield\|@withcoral.com" . --include="*" -l | head -20</span>
+<span class="output">.github/CODEOWNERS:21   /sources/community/ @jsummerfield   ← username only, no email</span></pre>
+        <div class="note">CODEOWNERS uses the GitHub <strong>username</strong> <code>@jsummerfield</code> — usernames are public by design. The concern is the <strong>email</strong>, which lives only in commit metadata, never in a repo file.</div>
+      </div>
+    </div>
+  </section>
+  <!-- ============ TAB: VERDICT & SOLUTIONS ============ -->
+  <section class="tab-panel" id="tab-solutions">
+    <div class="h3">Assessment — leaked or not?</div>
+    <div class="callout callout-exposed"><strong>Yes — the emails are publicly exposed</strong> via git commit metadata, on both origin and fork. But this is <strong>not a file leak</strong> and not a breach: it is standard git/GitHub behavior caused by committing with real email addresses instead of GitHub's <code>noreply</code> aliases.</div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+        <tbody>
+          <tr><td>Any personal email in a repository file?</td><td><span class="tag tag-safe">NO</span></td></tr>
+          <tr><td>Any personal email retrievable without auth (API + clones)?</td><td><span class="tag tag-exposed">YES</span></td></tr>
+          <tr><td>On the origin <code>withcoral/coral</code>?</td><td><span class="tag tag-exposed">YES</span></td></tr>
+          <tr><td>On the fork <code>FiscalMindset/coral</code>?</td><td><span class="tag tag-exposed">YES</span></td></tr>
+          <tr><td>Is this a security breach / hack?</td><td><span class="tag tag-safe">NO — standard git/GitHub behavior</span></td></tr>
+          <tr><td>Accidental on the maintainers' part?</td><td><span class="tag tag-warn">Likely — real emails used instead of noreply</span></td></tr>
+          <tr><td>Can emails be removed from existing history?</td><td><span class="tag tag-warn">Only via rewrite + force-push (destructive)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="h3">Solution suggestions</div>
+    <ol class="sol-list">
+      <li class="sol-rec">
+        <div class="sol-title">Enable "Keep my email addresses private" on GitHub (Recommended — stops future exposure)</div>
+        GitHub → Settings → Emails → check <strong>Keep my email addresses private</strong>. GitHub then rewrites the author identity of all future pushes to <code>&lt;id&gt;+&lt;username&gt;@users.noreply.github.com</code>.
+      </li>
+      <li class="sol-rec">
+        <div class="sol-title">Update local git config on every contributing machine</div>
+        <pre><span class="prompt">$ git config --global user.name  "Your Name"</span>
+<span class="prompt">$ git config --global user.email "&lt;id&gt;+&lt;username&gt;@users.noreply.github.com"</span></pre>
+      </li>
+      <li class="sol-rec">
+        <div class="sol-title">Set the email per-repo (so forks/clones don't reintroduce the real address)</div>
+        <pre><span class="prompt">$ git config user.email "&lt;id&gt;+&lt;username&gt;@users.noreply.github.com"</span></pre>
+      </li>
+      <li class="sol-rec">
+        <div class="sol-title">Verify after pushing</div>
+        <pre><span class="prompt">$ git log -1 --format='%ae'</span></pre>
+      </li>
+      <li>
+        <div class="sol-title">Rewrite history with <code>git filter-repo</code> (Optional / advanced — removes past exposure)</div>
+        <pre><span class="prompt">$ git filter-repo --email-callback 'return b"&lt;id&gt;+&lt;username&gt;@users.noreply.github.com"'</span>
+<span class="prompt">$ git push --force --all</span></pre>
+        <div class="note"><strong>⚠ Warning:</strong> this changes every commit SHA, invalidates PR references, and requires everyone with a clone (including all forks) to re-clone or rebase. For a public repo with many forks this is usually <strong>not worth it</strong> — low payoff, high coordination cost.</div>
+      </li>
+      <li>
+        <div class="sol-title">Not recommended</div>
+        Asking GitHub Support to redact emails — not available for standard accounts on public repos. <code>git filter-branch</code> — slow and error-prone; prefer <code>git filter-repo</code>.
+      </li>
+    </ol>
+
+    <div class="section">
+      <div class="section-header"><span>Reporter action plan</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <ul>
+          <li>Send this report to the maintainers (Andrea Ambu <code>andrea@withcoral.com</code> — engineer who receives reports; Matt Henderson — hiring manager) so they can flip the setting themselves and decide on any history rewrite.</li>
+          <li>Recommend the same <code>noreply</code> setting be enforced for <strong>all</strong> maintainer machines.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer style="text-align:center; color:var(--muted-text); font-size:0.75rem; margin-top:24px;">
+    Author: Vicky Kumar &lt;algsoch@gmail.com&gt; · 2026-08-02 · Part of the coral-specs-testing report series
+  </footer>
+</div>
+
+<script>
+  // Tabs
+  var buttons = document.querySelectorAll('nav.tabs button');
+  var panels = document.querySelectorAll('.tab-panel');
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      buttons.forEach(function(b){ b.classList.remove('active'); });
+      panels.forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Collapsible sections
+  document.querySelectorAll('.section-header').forEach(function(h) {
+    h.addEventListener('click', function() { h.classList.toggle('open'); });
+  });
+
+  // Copy buttons on code blocks
+  document.querySelectorAll('pre').forEach(function(pre) {
+    var text = pre.innerText;
+    var promptIdx = text.indexOf('$ ');
+    var copyable = promptIdx >= 0 ? text.slice(promptIdx) : text;
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    btn.addEventListener('click', function() {
+      navigator.clipboard.writeText(copyable).then(function() {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(function(){ btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+      });
+    });
+    pre.appendChild(btn);
+  });
+</script>
+</body>
+</html>

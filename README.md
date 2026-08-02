@@ -48,7 +48,20 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Every report has a matching `.md` (raw) and `.html` (responsive) version.
 
-### 🆕 2026-07-31 v2 — Full 733-table re-run: az-minted admin token + 4-layer retry strategy
+### 🆕 2026-08-02 — Coral contributor email exposure (public git commit metadata)
+
+| | |
+|---|---|
+| **Date** | 2026-08-02 |
+| **Method** | Coral MCP (`github.commits`) + GitHub REST API (`curl`, no auth) |
+| **Repos** | `withcoral/coral` (origin) · `FiscalMindset/coral` (fork) · local clone |
+| **Verdict** | ⚠️ EXPOSED — maintainer emails public via commit metadata on both repos (not a file leak) |
+
+Investigated the contributor email question. Personal addresses (`james@withcoral.com`, `simonw@withcoral.com`, `saul@withcoral.com`, `ilia@phoebe.ai`, `james.audretsch@phoebe.ai`, `andrea@withcoral.com`, `james@phoebe.ai`) are retrievable by anyone via `GET /repos/{owner}/{repo}/git/commits/{full-sha}` on both origin and fork — commit objects are identical across a fork. Zero personal emails in repo files (only deliberate `security@` / `legal@` aliases). Fix: GitHub "Keep my email address private" → commit as `noreply`; history removal requires `git filter-repo` + force-push.
+
+- **[Markdown](reports/2026-08-02-commit-email-exposure.md)** · **[HTML](reports/2026-08-02-commit-email-exposure.html)** — repo topology proof (fork flags), per-email commit counts, full-SHA API proof on both repos, file-scan results, verdict + solution suggestions.
+
+### 2026-07-31 v2 — Full 733-table re-run: az-minted admin token + 4-layer retry strategy
 
 | | |
 |---|---|
