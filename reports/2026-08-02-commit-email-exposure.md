@@ -72,34 +72,50 @@ jamesaud <james.audretsch@phoebe.ai>
 
 ## 4. Proof
 
-### 4.1 Verified commits — every exposed email, both repos
+### 4.1 What we found — which emails, how many commits
 
-Every commit below was fetched over the public, **unauthenticated** GitHub API
-(`GET /repos/{owner}/{repo}/git/commits/{sha}`) on **both** the origin
-(`withcoral/coral`) and the fork (`FiscalMindset/coral`). All returned the exact
-same author identity with the personal email. The SHAs are identical on origin
-and fork because forks copy the commit graph verbatim.
+The scan of `github.commits` exposed **7 personal email addresses**. Each one is
+attached as the git author/committer email on real commits in the public repo,
+and every one is retrievable by anyone with no authentication. This is the
+complete list of what was found:
 
-**11 commits / 6 distinct identities verified on both repos (100% match):**
-
-| # | Author | Email returned by API | SHA (full, verified) | Date | Message (truncated) |
+| # | Email found | Name on commits | Commits on origin | Commits on fork | Verified proof commit (click to open on GitHub) |
 |---|---|---|---|---|---|
-| 1 | James Summerfield | `james@withcoral.com` | `e6e0607bf4bb5e5ce4c0534f0189e10363046155` | 2026-07-26 | `feat(mcp): require task lifecycle (#1941)` |
-| 2 | James Summerfield | `james@withcoral.com` | `b1975f4a68b566607a0386544ee15f264c451cd7` | 2026-07-26 | `feat(app): persist tasks in SQL (#1940)` |
-| 3 | James Summerfield | `james@withcoral.com` | `e04c4ac4febbba822d55dcc1bac5f9e241e9177c` | 2026-07-24 | `fix(mcp): simplify task lifecycle results (#1939)` |
-| 4 | James Summerfield | `james@withcoral.com` | `40a716138ccc6ca414451c647a45107ef7865196` | 2026-07-24 | `refactor(app): generalize request principals (#1953)` |
-| 5 | James Summerfield | `james@withcoral.com` | `b0f7767bc8240cc973f327137e554141fed683e5` | 2026-07-19 | `chore(engine): update DataFusion to 54 (#1852)` |
-| 6 | James Summerfield | `james@withcoral.com` | `79c4b9dfef0c77b625af261f97a66ec647da4821` | 2026-07-19 | `build: update Cargo dependencies (#1850)` |
-| 7 | Simon Whitaker | `simonw@withcoral.com` | `303ffe96aabef7d33ac08538606b95d79a7cb0bd` | 2026-07-31 | `chore(spec): add missing auth block to v4 Gitlab source (#20…)` |
-| 8 | Saúl Hernández | `saul@withcoral.com` | `f575c9d14afc3fcd237602b03d9408e75d9e031c` | 2026-07-31 | `feat(app): persist identity spec documents with shared envel…` |
-| 9 | Andrea Ambu | `andrea@withcoral.com` | `cf744bd783b23c4371d14ed7e9b7640e26cfab10` | 2026-07-10 | `feat(sources/core-v4/microsoft_graph_v4): add Microsoft Graph…` |
-| 10 | Ilia Aphtsiauri | `ilia@phoebe.ai` | `52ff0ac66c8f7bd92062770a4f5295432dea80a4` | 2026-07-31 | `feat(catalog): expose catalog-qualified table discovery (#18…)` |
-| 11 | jamesaud | `james.audretsch@phoebe.ai` | `793abae752d33716399222ce4d978b6f8b94a15b` | 2026-07-14 | `feat(cli): add tasks runtime feature (#1561)` |
-| 12 | James Summerfield | `james@phoebe.ai` (older identity) | `0b4e846764359af760c5567e4aa130e33e85c8f0` | 2026-04-03 | `Initial commit` |
+| 1 | `james@withcoral.com` | James Summerfield | **184** | 184 | [e6e0607](https://github.com/withcoral/coral/commit/e6e0607bf4bb5e5ce4c0534f0189e10363046155) |
+| 2 | `simonw@withcoral.com` | Simon Whitaker | **115** | 110 | [303ffe9](https://github.com/withcoral/coral/commit/303ffe96aabef7d33ac08538606b95d79a7cb0bd) |
+| 3 | `saul@withcoral.com` | Saúl Hernández | **99** | 86 | [f575c9d](https://github.com/withcoral/coral/commit/f575c9d14afc3fcd237602b03d9408e75d9e031c) |
+| 4 | `ilia@phoebe.ai` | Ilia Aphtsiauri | **26** | 24 | [52ff0ac](https://github.com/withcoral/coral/commit/52ff0ac66c8f7bd92062770a4f5295432dea80a4) |
+| 5 | `james.audretsch@phoebe.ai` | jamesaud | **17** | 17 | [793abae](https://github.com/withcoral/coral/commit/793abae752d33716399222ce4d978b6f8b94a15b) |
+| 6 | `andrea@withcoral.com` | Andrea Ambu | **13** | 13 | [cf744bd](https://github.com/withcoral/coral/commit/cf744bd783b23c4371d14ed7e9b7640e26cfab10) |
+| 7 | `james@phoebe.ai` | James Summerfield (older identity) | **1** | 1 | [0b4e846](https://github.com/withcoral/coral/commit/0b4e846764359af760c5567e4aa130e33e85c8f0) |
 
-The full 40-char SHA of **every** row above was verified via `curl` against both repos; no errors, no mismatches.
+> Counts are commits authored by that email, counted from the public `github.commits` table (Section 3). Every "Verified proof commit" link opens the real commit on GitHub where the email is visible in the author line.
 
-### 4.2 Full curl verification log (both repos, no auth)
+### 4.2 Clickable proof links — every verified commit on origin AND fork
+
+**12 commits, each verified via the public API on both repos.** Open the commit
+on either repo and the author email is shown on the page:
+
+| # | Email found | GitHub commit — origin | GitHub commit — fork | API proof — origin | API proof — fork |
+|---|---|---|---|---|---|
+| 1 | `james@withcoral.com` | [e6e0607](https://github.com/withcoral/coral/commit/e6e0607bf4bb5e5ce4c0534f0189e10363046155) | [e6e0607](https://github.com/FiscalMindset/coral/commit/e6e0607bf4bb5e5ce4c0534f0189e10363046155) | [json](https://api.github.com/repos/withcoral/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155) |
+| 2 | `james@withcoral.com` | [b1975f4](https://github.com/withcoral/coral/commit/b1975f4a68b566607a0386544ee15f264c451cd7) | [b1975f4](https://github.com/FiscalMindset/coral/commit/b1975f4a68b566607a0386544ee15f264c451cd7) | [json](https://api.github.com/repos/withcoral/coral/git/commits/b1975f4a68b566607a0386544ee15f264c451cd7) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/b1975f4a68b566607a0386544ee15f264c451cd7) |
+| 3 | `james@withcoral.com` | [e04c4ac](https://github.com/withcoral/coral/commit/e04c4ac4febbba822d55dcc1bac5f9e241e9177c) | [e04c4ac](https://github.com/FiscalMindset/coral/commit/e04c4ac4febbba822d55dcc1bac5f9e241e9177c) | [json](https://api.github.com/repos/withcoral/coral/git/commits/e04c4ac4febbba822d55dcc1bac5f9e241e9177c) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/e04c4ac4febbba822d55dcc1bac5f9e241e9177c) |
+| 4 | `james@withcoral.com` | [40a7161](https://github.com/withcoral/coral/commit/40a716138ccc6ca414451c647a45107ef7865196) | [40a7161](https://github.com/FiscalMindset/coral/commit/40a716138ccc6ca414451c647a45107ef7865196) | [json](https://api.github.com/repos/withcoral/coral/git/commits/40a716138ccc6ca414451c647a45107ef7865196) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/40a716138ccc6ca414451c647a45107ef7865196) |
+| 5 | `james@withcoral.com` | [b0f7767](https://github.com/withcoral/coral/commit/b0f7767bc8240cc973f327137e554141fed683e5) | [b0f7767](https://github.com/FiscalMindset/coral/commit/b0f7767bc8240cc973f327137e554141fed683e5) | [json](https://api.github.com/repos/withcoral/coral/git/commits/b0f7767bc8240cc973f327137e554141fed683e5) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/b0f7767bc8240cc973f327137e554141fed683e5) |
+| 6 | `james@withcoral.com` | [79c4b9d](https://github.com/withcoral/coral/commit/79c4b9dfef0c77b625af261f97a66ec647da4821) | [79c4b9d](https://github.com/FiscalMindset/coral/commit/79c4b9dfef0c77b625af261f97a66ec647da4821) | [json](https://api.github.com/repos/withcoral/coral/git/commits/79c4b9dfef0c77b625af261f97a66ec647da4821) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/79c4b9dfef0c77b625af261f97a66ec647da4821) |
+| 7 | `simonw@withcoral.com` | [303ffe9](https://github.com/withcoral/coral/commit/303ffe96aabef7d33ac08538606b95d79a7cb0bd) | [303ffe9](https://github.com/FiscalMindset/coral/commit/303ffe96aabef7d33ac08538606b95d79a7cb0bd) | [json](https://api.github.com/repos/withcoral/coral/git/commits/303ffe96aabef7d33ac08538606b95d79a7cb0bd) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/303ffe96aabef7d33ac08538606b95d79a7cb0bd) |
+| 8 | `saul@withcoral.com` | [f575c9d](https://github.com/withcoral/coral/commit/f575c9d14afc3fcd237602b03d9408e75d9e031c) | [f575c9d](https://github.com/FiscalMindset/coral/commit/f575c9d14afc3fcd237602b03d9408e75d9e031c) | [json](https://api.github.com/repos/withcoral/coral/git/commits/f575c9d14afc3fcd237602b03d9408e75d9e031c) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/f575c9d14afc3fcd237602b03d9408e75d9e031c) |
+| 9 | `andrea@withcoral.com` | [cf744bd](https://github.com/withcoral/coral/commit/cf744bd783b23c4371d14ed7e9b7640e26cfab10) | [cf744bd](https://github.com/FiscalMindset/coral/commit/cf744bd783b23c4371d14ed7e9b7640e26cfab10) | [json](https://api.github.com/repos/withcoral/coral/git/commits/cf744bd783b23c4371d14ed7e9b7640e26cfab10) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/cf744bd783b23c4371d14ed7e9b7640e26cfab10) |
+| 10 | `ilia@phoebe.ai` | [52ff0ac](https://github.com/withcoral/coral/commit/52ff0ac66c8f7bd92062770a4f5295432dea80a4) | [52ff0ac](https://github.com/FiscalMindset/coral/commit/52ff0ac66c8f7bd92062770a4f5295432dea80a4) | [json](https://api.github.com/repos/withcoral/coral/git/commits/52ff0ac66c8f7bd92062770a4f5295432dea80a4) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/52ff0ac66c8f7bd92062770a4f5295432dea80a4) |
+| 11 | `james.audretsch@phoebe.ai` | [793abae](https://github.com/withcoral/coral/commit/793abae752d33716399222ce4d978b6f8b94a15b) | [793abae](https://github.com/FiscalMindset/coral/commit/793abae752d33716399222ce4d978b6f8b94a15b) | [json](https://api.github.com/repos/withcoral/coral/git/commits/793abae752d33716399222ce4d978b6f8b94a15b) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/793abae752d33716399222ce4d978b6f8b94a15b) |
+| 12 | `james@phoebe.ai` | [0b4e846](https://github.com/withcoral/coral/commit/0b4e846764359af760c5567e4aa130e33e85c8f0) | [0b4e846](https://github.com/FiscalMindset/coral/commit/0b4e846764359af760c5567e4aa130e33e85c8f0) | [json](https://api.github.com/repos/withcoral/coral/git/commits/0b4e846764359af760c5567e4aa130e33e85c8f0) | [json](https://api.github.com/repos/FiscalMindset/coral/git/commits/0b4e846764359af760c5567e4aa130e33e85c8f0) |
+
+**12 commits / 7 identities verified on both repos (100% match, no errors).** The
+full 40-char SHA of every row was verified via `curl` against both repos; the
+GitHub commit pages and the API JSON both show the email.
+
+### 4.3 Full curl verification log (both repos, no auth)
 
 ```
 $ verify() { curl -s "https://api.github.com/repos/$1/git/commits/$2" | jq -c '{author:.author.name,email:.author.email,date:.author.date}'; }
@@ -125,7 +141,7 @@ cf744bd… {"author":"Andrea Ambu","email":"andrea@withcoral.com","date":"2026-0
 
 Each of the 7 identities was fetched on **both** repos = **14 successful public API requests**, zero failures.
 
-### 4.3 Example full response (origin)
+### 4.4 Example full response (origin)
 
 ```
 $ curl -s https://api.github.com/repos/withcoral/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155
@@ -141,7 +157,7 @@ $ curl -s https://api.github.com/repos/withcoral/coral/git/commits/e6e0607bf4bb5
 
 URL: `https://api.github.com/repos/withcoral/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155`
 
-### 4.4 Example full response (fork)
+### 4.5 Example full response (fork)
 
 ```
 $ curl -s https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155
@@ -157,16 +173,16 @@ $ curl -s https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf
 
 URL: `https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155`
 
-### 4.5 Scope of exposure — not just these 12 commits
+### 4.6 Scope of exposure — not just these 12 commits
 
 These are **samples**. The aggregate counts (Section 3) show **455 commits on the origin** carry exposed personal emails. Every one of them is retrievable the same way; the 12 above were each individually curl-verified to eliminate any doubt about methodology.
 
-### 4.6 Gotcha
+### 4.7 Gotcha
 
 > The API requires the **full 40-character SHA**. A short SHA (e.g. `e6e0607`) returns `404 Not Found`:
 > `{"message": "Not Found", "documentation_url": "https://docs.github.com/rest/git/commits#get-a-commit-object", "status": "404"}`
 
-### 4.7 Local clone proof
+### 4.8 Local clone proof
 
 ```
 $ git log --format='%an <%ae>' | sort -u

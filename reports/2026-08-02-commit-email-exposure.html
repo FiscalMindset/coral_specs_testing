@@ -19,6 +19,10 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 64px; }
+  a { color: #2563eb; text-decoration: none; font-weight: 600; overflow-wrap: anywhere; word-break: break-word; }
+  a:hover { text-decoration: underline; }
+  a:visited { color: #7c3aed; }
+  td a { display: inline-block; }
   .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
 
   header.hero { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); color: #e2e8f0; border-radius: 14px; padding: 24px; margin-bottom: 16px; }
@@ -256,6 +260,23 @@ jamesaud &lt;james.audretsch@phoebe.ai&gt;</span></pre>
       <strong>Scope:</strong> <strong>12 commits / 7 identities verified</strong> over the public, <strong>unauthenticated</strong> GitHub API on <strong>both</strong> the origin (<code>withcoral/coral</code>) and the fork (<code>FiscalMindset/coral</code>) = <strong>14 successful requests, 0 failures, 0 mismatches</strong>. SHAs are identical on origin and fork because forks copy the commit graph verbatim.
     </div>
 
+    <div class="h3">What we found — which emails, how many commits</div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>#</th><th>Email found</th><th>Name on commits</th><th>Commits (origin)</th><th>Commits (fork)</th><th>Verified proof commit (open on GitHub)</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>james@withcoral.com</code></td><td>James Summerfield</td><td><strong>184</strong></td><td>184</td><td><a href="https://github.com/withcoral/coral/commit/e6e0607bf4bb5e5ce4c0534f0189e10363046155">e6e0607</a></td></tr>
+          <tr><td>2</td><td><code>simonw@withcoral.com</code></td><td>Simon Whitaker</td><td><strong>115</strong></td><td>110</td><td><a href="https://github.com/withcoral/coral/commit/303ffe96aabef7d33ac08538606b95d79a7cb0bd">303ffe9</a></td></tr>
+          <tr><td>3</td><td><code>saul@withcoral.com</code></td><td>Saúl Hernández</td><td><strong>99</strong></td><td>86</td><td><a href="https://github.com/withcoral/coral/commit/f575c9d14afc3fcd237602b03d9408e75d9e031c">f575c9d</a></td></tr>
+          <tr><td>4</td><td><code>ilia@phoebe.ai</code></td><td>Ilia Aphtsiauri</td><td><strong>26</strong></td><td>24</td><td><a href="https://github.com/withcoral/coral/commit/52ff0ac66c8f7bd92062770a4f5295432dea80a4">52ff0ac</a></td></tr>
+          <tr><td>5</td><td><code>james.audretsch@phoebe.ai</code></td><td>jamesaud</td><td><strong>17</strong></td><td>17</td><td><a href="https://github.com/withcoral/coral/commit/793abae752d33716399222ce4d978b6f8b94a15b">793abae</a></td></tr>
+          <tr><td>6</td><td><code>andrea@withcoral.com</code></td><td>Andrea Ambu</td><td><strong>13</strong></td><td>13</td><td><a href="https://github.com/withcoral/coral/commit/cf744bd783b23c4371d14ed7e9b7640e26cfab10">cf744bd</a></td></tr>
+          <tr><td>7</td><td><code>james@phoebe.ai</code></td><td>James Summerfield (older identity)</td><td><strong>1</strong></td><td>1</td><td><a href="https://github.com/withcoral/coral/commit/0b4e846764359af760c5567e4aa130e33e85c8f0">0b4e846</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">Counts are commits authored by that email, counted from the public <code>github.commits</code> table. Every proof link opens the real commit on GitHub where the email is visible in the author line.</div>
+
     <div class="h3">Verified commits — every exposed email, both repos</div>
     <div class="table-scroll">
       <table>
@@ -275,6 +296,32 @@ jamesaud &lt;james.audretsch@phoebe.ai&gt;</span></pre>
           <tr><td>12</td><td>James Summerfield</td><td><code>james@phoebe.ai</code> (older identity)</td><td><code>0b4e846764359af760c5567e4aa130e33e85c8f0</code></td><td>2026-04-03</td><td><code>Initial commit</code></td></tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="section open">
+      <div class="section-header"><span>Clickable proof links — every verified commit on origin AND fork (open in browser)</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>#</th><th>Email found</th><th>GitHub commit — origin</th><th>GitHub commit — fork</th><th>API proof — origin</th><th>API proof — fork</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><code>james@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/e6e0607bf4bb5e5ce4c0534f0189e10363046155">e6e0607</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/e6e0607bf4bb5e5ce4c0534f0189e10363046155">e6e0607</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155">json</a></td></tr>
+              <tr><td>2</td><td><code>james@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/b1975f4a68b566607a0386544ee15f264c451cd7">b1975f4</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/b1975f4a68b566607a0386544ee15f264c451cd7">b1975f4</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/b1975f4a68b566607a0386544ee15f264c451cd7">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/b1975f4a68b566607a0386544ee15f264c451cd7">json</a></td></tr>
+              <tr><td>3</td><td><code>james@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/e04c4ac4febbba822d55dcc1bac5f9e241e9177c">e04c4ac</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/e04c4ac4febbba822d55dcc1bac5f9e241e9177c">e04c4ac</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/e04c4ac4febbba822d55dcc1bac5f9e241e9177c">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/e04c4ac4febbba822d55dcc1bac5f9e241e9177c">json</a></td></tr>
+              <tr><td>4</td><td><code>james@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/40a716138ccc6ca414451c647a45107ef7865196">40a7161</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/40a716138ccc6ca414451c647a45107ef7865196">40a7161</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/40a716138ccc6ca414451c647a45107ef7865196">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/40a716138ccc6ca414451c647a45107ef7865196">json</a></td></tr>
+              <tr><td>5</td><td><code>james@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/b0f7767bc8240cc973f327137e554141fed683e5">b0f7767</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/b0f7767bc8240cc973f327137e554141fed683e5">b0f7767</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/b0f7767bc8240cc973f327137e554141fed683e5">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/b0f7767bc8240cc973f327137e554141fed683e5">json</a></td></tr>
+              <tr><td>6</td><td><code>james@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/79c4b9dfef0c77b625af261f97a66ec647da4821">79c4b9d</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/79c4b9dfef0c77b625af261f97a66ec647da4821">79c4b9d</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/79c4b9dfef0c77b625af261f97a66ec647da4821">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/79c4b9dfef0c77b625af261f97a66ec647da4821">json</a></td></tr>
+              <tr><td>7</td><td><code>simonw@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/303ffe96aabef7d33ac08538606b95d79a7cb0bd">303ffe9</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/303ffe96aabef7d33ac08538606b95d79a7cb0bd">303ffe9</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/303ffe96aabef7d33ac08538606b95d79a7cb0bd">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/303ffe96aabef7d33ac08538606b95d79a7cb0bd">json</a></td></tr>
+              <tr><td>8</td><td><code>saul@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/f575c9d14afc3fcd237602b03d9408e75d9e031c">f575c9d</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/f575c9d14afc3fcd237602b03d9408e75d9e031c">f575c9d</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/f575c9d14afc3fcd237602b03d9408e75d9e031c">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/f575c9d14afc3fcd237602b03d9408e75d9e031c">json</a></td></tr>
+              <tr><td>9</td><td><code>andrea@withcoral.com</code></td><td><a href="https://github.com/withcoral/coral/commit/cf744bd783b23c4371d14ed7e9b7640e26cfab10">cf744bd</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/cf744bd783b23c4371d14ed7e9b7640e26cfab10">cf744bd</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/cf744bd783b23c4371d14ed7e9b7640e26cfab10">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/cf744bd783b23c4371d14ed7e9b7640e26cfab10">json</a></td></tr>
+              <tr><td>10</td><td><code>ilia@phoebe.ai</code></td><td><a href="https://github.com/withcoral/coral/commit/52ff0ac66c8f7bd92062770a4f5295432dea80a4">52ff0ac</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/52ff0ac66c8f7bd92062770a4f5295432dea80a4">52ff0ac</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/52ff0ac66c8f7bd92062770a4f5295432dea80a4">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/52ff0ac66c8f7bd92062770a4f5295432dea80a4">json</a></td></tr>
+              <tr><td>11</td><td><code>james.audretsch@phoebe.ai</code></td><td><a href="https://github.com/withcoral/coral/commit/793abae752d33716399222ce4d978b6f8b94a15b">793abae</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/793abae752d33716399222ce4d978b6f8b94a15b">793abae</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/793abae752d33716399222ce4d978b6f8b94a15b">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/793abae752d33716399222ce4d978b6f8b94a15b">json</a></td></tr>
+              <tr><td>12</td><td><code>james@phoebe.ai</code></td><td><a href="https://github.com/withcoral/coral/commit/0b4e846764359af760c5567e4aa130e33e85c8f0">0b4e846</a></td><td><a href="https://github.com/FiscalMindset/coral/commit/0b4e846764359af760c5567e4aa130e33e85c8f0">0b4e846</a></td><td><a href="https://api.github.com/repos/withcoral/coral/git/commits/0b4e846764359af760c5567e4aa130e33e85c8f0">json</a></td><td><a href="https://api.github.com/repos/FiscalMindset/coral/git/commits/0b4e846764359af760c5567e4aa130e33e85c8f0">json</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">12 commits / 7 identities verified on both repos (100% match, no errors). GitHub commit pages and API JSON both show the email.</div>
+      </div>
     </div>
 
     <div class="callout callout-warn">

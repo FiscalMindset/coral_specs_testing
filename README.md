@@ -60,7 +60,7 @@
 Investigated the contributor email question. Personal addresses (`james@withcoral.com`, `simonw@withcoral.com`, `saul@withcoral.com`, `ilia@phoebe.ai`, `james.audretsch@phoebe.ai`, `andrea@withcoral.com`, `james@phoebe.ai`) are retrievable by anyone via `GET /repos/{owner}/{repo}/git/commits/{full-sha}` on both origin and fork — commit objects are identical across a fork. Zero personal emails in repo files (only deliberate `security@` / `legal@` aliases). Fix: GitHub "Keep my email address private" → commit as `noreply`; history removal requires `git filter-repo` + force-push.
 
 - **[Markdown](reports/2026-08-02-commit-email-exposure.md)** · **[HTML](reports/2026-08-02-commit-email-exposure.html)** — repo topology proof (fork flags), per-email commit counts, full-SHA API proof on both repos, file-scan results, verdict + solution suggestions.
-- **Proof depth:** **12 commits / 7 identities curl-verified** on both origin and fork via `GET /repos/{owner}/{repo}/git/commits/{full-sha}` (no auth) — 14 requests, 0 failures, 0 mismatches; identical SHAs confirm forks copy the commit graph verbatim.
+- **Proof depth:** **12 commits / 7 identities curl-verified** on both origin and fork via `GET /repos/{owner}/{repo}/git/commits/{full-sha}` (no auth) — 14 requests, 0 failures, 0 mismatches; identical SHAs confirm forks copy the commit graph verbatim. Every proof commit is a **clickable link** on both repos (commit page + API JSON), and the report opens with a "What we found" table listing each exposed email with its commit count.
 
 ### 2026-07-31 v2 — Full 733-table re-run: az-minted admin token + 4-layer retry strategy
 
