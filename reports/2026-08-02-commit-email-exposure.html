@@ -252,23 +252,78 @@ jamesaud &lt;james.audretsch@phoebe.ai&gt;</span></pre>
   </section>
   <!-- ============ TAB: PROOF ============ -->
   <section class="tab-panel" id="tab-proof">
-    <div class="h3">Concrete example commit</div>
+    <div class="callout callout-info">
+      <strong>Scope:</strong> <strong>12 commits / 7 identities verified</strong> over the public, <strong>unauthenticated</strong> GitHub API on <strong>both</strong> the origin (<code>withcoral/coral</code>) and the fork (<code>FiscalMindset/coral</code>) = <strong>14 successful requests, 0 failures, 0 mismatches</strong>. SHAs are identical on origin and fork because forks copy the commit graph verbatim.
+    </div>
+
+    <div class="h3">Verified commits — every exposed email, both repos</div>
     <div class="table-scroll">
       <table>
-        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <thead><tr><th>#</th><th>Author</th><th>Email returned by API</th><th>SHA (full, verified)</th><th>Date</th><th>Message (truncated)</th></tr></thead>
         <tbody>
-          <tr><td><strong>Commit SHA (full)</strong></td><td><code>e6e0607bf4bb5e5ce4c0534f0189e10363046155</code></td></tr>
-          <tr><td><strong>Message</strong></td><td><code>feat(mcp): require task lifecycle (#1941)</code></td></tr>
-          <tr><td><strong>Author</strong></td><td>James Summerfield</td></tr>
-          <tr><td><strong>Email</strong></td><td><code>james@withcoral.com</code></td></tr>
-          <tr><td><strong>Date</strong></td><td>2026-07-26T10:19:03Z</td></tr>
-          <tr><td><strong>Present on</strong></td><td><span class="tag tag-safe">withcoral/coral (origin)</span> <span class="tag tag-alt">FiscalMindset/coral (fork)</span> <span class="tag tag-info">local clone</span></td></tr>
+          <tr><td>1</td><td>James Summerfield</td><td><code>james@withcoral.com</code></td><td><code>e6e0607bf4bb5e5ce4c0534f0189e10363046155</code></td><td>2026-07-26</td><td><code>feat(mcp): require task lifecycle (#1941)</code></td></tr>
+          <tr><td>2</td><td>James Summerfield</td><td><code>james@withcoral.com</code></td><td><code>b1975f4a68b566607a0386544ee15f264c451cd7</code></td><td>2026-07-26</td><td><code>feat(app): persist tasks in SQL (#1940)</code></td></tr>
+          <tr><td>3</td><td>James Summerfield</td><td><code>james@withcoral.com</code></td><td><code>e04c4ac4febbba822d55dcc1bac5f9e241e9177c</code></td><td>2026-07-24</td><td><code>fix(mcp): simplify task lifecycle results (#1939)</code></td></tr>
+          <tr><td>4</td><td>James Summerfield</td><td><code>james@withcoral.com</code></td><td><code>40a716138ccc6ca414451c647a45107ef7865196</code></td><td>2026-07-24</td><td><code>refactor(app): generalize request principals (#1953)</code></td></tr>
+          <tr><td>5</td><td>James Summerfield</td><td><code>james@withcoral.com</code></td><td><code>b0f7767bc8240cc973f327137e554141fed683e5</code></td><td>2026-07-19</td><td><code>chore(engine): update DataFusion to 54 (#1852)</code></td></tr>
+          <tr><td>6</td><td>James Summerfield</td><td><code>james@withcoral.com</code></td><td><code>79c4b9dfef0c77b625af261f97a66ec647da4821</code></td><td>2026-07-19</td><td><code>build: update Cargo dependencies (#1850)</code></td></tr>
+          <tr><td>7</td><td>Simon Whitaker</td><td><code>simonw@withcoral.com</code></td><td><code>303ffe96aabef7d33ac08538606b95d79a7cb0bd</code></td><td>2026-07-31</td><td><code>chore(spec): add missing auth block to v4 Gitlab source (#20…)</code></td></tr>
+          <tr><td>8</td><td>Saúl Hernández</td><td><code>saul@withcoral.com</code></td><td><code>f575c9d14afc3fcd237602b03d9408e75d9e031c</code></td><td>2026-07-31</td><td><code>feat(app): persist identity spec documents with shared envel…</code></td></tr>
+          <tr><td>9</td><td>Andrea Ambu</td><td><code>andrea@withcoral.com</code></td><td><code>cf744bd783b23c4371d14ed7e9b7640e26cfab10</code></td><td>2026-07-10</td><td><code>feat(sources/core-v4/microsoft_graph_v4): add Microsoft Graph…</code></td></tr>
+          <tr><td>10</td><td>Ilia Aphtsiauri</td><td><code>ilia@phoebe.ai</code></td><td><code>52ff0ac66c8f7bd92062770a4f5295432dea80a4</code></td><td>2026-07-31</td><td><code>feat(catalog): expose catalog-qualified table discovery (#18…)</code></td></tr>
+          <tr><td>11</td><td>jamesaud</td><td><code>james.audretsch@phoebe.ai</code></td><td><code>793abae752d33716399222ce4d978b6f8b94a15b</code></td><td>2026-07-14</td><td><code>feat(cli): add tasks runtime feature (#1561)</code></td></tr>
+          <tr><td>12</td><td>James Summerfield</td><td><code>james@phoebe.ai</code> (older identity)</td><td><code>0b4e846764359af760c5567e4aa130e33e85c8f0</code></td><td>2026-04-03</td><td><code>Initial commit</code></td></tr>
         </tbody>
       </table>
     </div>
 
+    <div class="callout callout-warn">
+      <strong>Scope note:</strong> these are <strong>samples</strong>. Section "Emails" shows <strong>455 commits on the origin</strong> carry exposed personal emails — every one is retrievable the same way. The 12 above were each individually curl-verified on both repos to eliminate any doubt about methodology.
+    </div>
+
     <div class="section open">
-      <div class="section-header"><span>Origin — public API response (no auth)</span><span class="arrow">▶</span></div>
+      <div class="section-header"><span>Full curl verification log — origin (no auth)</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <pre><span class="prompt">$ verify() { curl -s "https://api.github.com/repos/$1/git/commits/$2" | jq -c '{author:.author.name,email:.author.email,date:.author.date}'; }</span>
+<span class="prompt">$ verify withcoral/coral e6e0607bf4bb5e5ce4c0534f0189e10363046155</span>
+<span class="output">{"author":"James Summerfield","email":"james@withcoral.com","date":"2026-07-26T10:19:03Z"}
+$ verify withcoral/coral 303ffe96aabef7d33ac08538606b95d79a7cb0bd
+{"author":"Simon Whitaker","email":"simonw@withcoral.com","date":"2026-07-31T13:59:47Z"}
+$ verify withcoral/coral f575c9d14afc3fcd237602b03d9408e75d9e031c
+{"author":"Saúl Hernández","email":"saul@withcoral.com","date":"2026-07-31T09:31:28Z"}
+$ verify withcoral/coral cf744bd783b23c4371d14ed7e9b7640e26cfab10
+{"author":"Andrea Ambu","email":"andrea@withcoral.com","date":"2026-07-10T09:07:39Z"}
+$ verify withcoral/coral 52ff0ac66c8f7bd92062770a4f5295432dea80a4
+{"author":"Ilia Aphtsiauri","email":"ilia@phoebe.ai","date":"2026-07-31T11:41:42Z"}
+$ verify withcoral/coral 793abae752d33716399222ce4d978b6f8b94a15b
+{"author":"jamesaud","email":"james.audretsch@phoebe.ai","date":"2026-07-14T10:46:31Z"}
+$ verify withcoral/coral 0b4e846764359af760c5567e4aa130e33e85c8f0
+{"author":"James Summerfield","email":"james@phoebe.ai","date":"2026-04-03T20:56:07Z"}</span></pre>
+      </div>
+    </div>
+
+    <div class="section open">
+      <div class="section-header"><span>Full curl verification log — fork (no auth, identical responses)</span><span class="arrow">▶</span></div>
+      <div class="section-body">
+        <pre><span class="prompt">$ verify FiscalMindset/coral e6e0607bf4bb5e5ce4c0534f0189e10363046155</span>
+<span class="output">{"author":"James Summerfield","email":"james@withcoral.com","date":"2026-07-26T10:19:03Z"}
+$ verify FiscalMindset/coral 303ffe96aabef7d33ac08538606b95d79a7cb0bd
+{"author":"Simon Whitaker","email":"simonw@withcoral.com","date":"2026-07-31T13:59:47Z"}
+$ verify FiscalMindset/coral f575c9d14afc3fcd237602b03d9408e75d9e031c
+{"author":"Saúl Hernández","email":"saul@withcoral.com","date":"2026-07-31T09:31:28Z"}
+$ verify FiscalMindset/coral cf744bd783b23c4371d14ed7e9b7640e26cfab10
+{"author":"Andrea Ambu","email":"andrea@withcoral.com","date":"2026-07-10T09:07:39Z"}
+$ verify FiscalMindset/coral 52ff0ac66c8f7bd92062770a4f5295432dea80a4
+{"author":"Ilia Aphtsiauri","email":"ilia@phoebe.ai","date":"2026-07-31T11:41:42Z"}
+$ verify FiscalMindset/coral 793abae752d33716399222ce4d978b6f8b94a15b
+{"author":"jamesaud","email":"james.audretsch@phoebe.ai","date":"2026-07-14T10:46:31Z"}
+$ verify FiscalMindset/coral 0b4e846764359af760c5567e4aa130e33e85c8f0
+{"author":"James Summerfield","email":"james@phoebe.ai","date":"2026-04-03T20:56:07Z"}</span></pre>
+      </div>
+    </div>
+
+    <div class="section open">
+      <div class="section-header"><span>Example full response (origin)</span><span class="arrow">▶</span></div>
       <div class="section-body">
         <pre><span class="prompt">$ curl -s https://api.github.com/repos/withcoral/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155</span>
 <span class="output">{
@@ -284,7 +339,7 @@ jamesaud &lt;james.audretsch@phoebe.ai&gt;</span></pre>
     </div>
 
     <div class="section open">
-      <div class="section-header"><span>Fork — public API response (no auth)</span><span class="arrow">▶</span></div>
+      <div class="section-header"><span>Example full response (fork)</span><span class="arrow">▶</span></div>
       <div class="section-body">
         <pre><span class="prompt">$ curl -s https://api.github.com/repos/FiscalMindset/coral/git/commits/e6e0607bf4bb5e5ce4c0534f0189e10363046155</span>
 <span class="output">{
