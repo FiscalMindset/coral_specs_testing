@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/identity_tests-6/6_PASS-22c55e" alt="6/6 PASS">
   <img src="https://img.shields.io/badge/timeouts-0_(resolved)-22c55e" alt="0 timeouts (resolved)">
   <img src="https://img.shields.io/badge/reports_frozen-✓-8b5cf6" alt="reports frozen">
-  <img src="https://img.shields.io/badge/last_updated-2026--08--04-6b7280" alt="last updated 2026-08-04">
+  <img src="https://img.shields.io/badge/last_updated-2026--08--05-6b7280" alt="last updated 2026-08-05">
 </p>
 
 ---
@@ -48,7 +48,23 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Every report has a matching `.md` (raw) and `.html` (responsive) version.
 
-### 🆕 2026-08-04 — Business Premium licensed-tenant test: 23 tables unlocked
+### 🆕 2026-08-05 — Full-scope (az admin token) re-test: pass 70 → 146
+
+| | |
+|---|---|
+| **Date** | 2026-08-05 |
+| **Tenant** | `algsoch762.onmicrosoft.com` (Business Premium) |
+| **Token** | az-minted admin token, 18 scopes (`Directory.AccessAsUser.All` + 17 more) |
+| **Tables tested** | 733 (battery @ 3 workers/60s + serial clean of 44 trace-race tables) |
+| **Passing** | **146** (was 70 with 9-scope token) |
+| **Unlocked** | 87 tables (52 auth→pass, 29 error→pass, 6 bad_request→pass) |
+| **Remaining errors** | 15 real (Edu-role 500s ×4, planner 405 ×2, storage URI spec bug ×2, Microsoft-side 500/503 ×7) |
+
+Granting all scopes proves the previous run's blocker was the **token, not the license** — the exact live 403 repro `users_user_users_user_listuser` now returns real rows. Error count collapsed 155 → 15 (telemetry-trace race cleared + scope-resolved errors). Tradeoff: 10 chat/Teams/files/sites tables flipped pass→auth because the admin token lacks the OAuth chat/team/file scopes — the manifest should union both scope sets for a single consent covering everything.
+
+- **[Markdown](reports/2026-08-05-licensed-allscope-test-report.md)** · **[HTML](reports/2026-08-05-licensed-allscope-test-report.html)** — bottom line, transition matrix, all 87 unlocks, 15 remaining errors, live verification, full 733-table searchable results.
+
+### 2026-08-04 — Business Premium licensed-tenant test: 23 tables unlocked
 
 | | |
 |---|---|
@@ -217,4 +233,4 @@ Investigated the contributor email question. Personal addresses (`james@withcora
 
 ---
 
-<p align="center"><sub>Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-08-04</sub></p>
+<p align="center"><sub>Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-08-05</sub></p>
