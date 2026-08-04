@@ -4,8 +4,44 @@
 
 - **Date run:** 2026-08-05 13:30 IST (2026-08-05 08:00 UTC)
 - **Test name:** Deep-data drill-down — extract real IDs from live top-level responses, then call the **ID-driven table functions** (channels, members, messages, drive children, site lists) to prove the data exists
-- **Predecessor:** `2026-08-05-sharepoint-teams-report.md` (77 top-level tables: 15 pass / 32 auth / 15 not_found / 10 unsupported / 3 bad_request / 2 error)
-- **Stats line:** ~24 live `coral sql` calls · every real input/output captured · 0 timeouts · deep rows pulled for chats, drives, teams, sites
+- **Predecessor:** `2026-08-05-sharepoint-teams-report.md` (77 top-level tables)
+- **Stats line:** **15 deep-data calls** · 12 ✅ pass · 1 🔒 auth · 1 🔍 not_found · 1 🚫 unsupported · 0 timeouts · every input/output captured
+
+## 📊 Stats — how many tests, how many passed/failed
+
+### This deep-data battery (15 calls)
+
+| Status | Count | % |
+|---|---|--:|
+| ✅ pass | 12 | 80.0% |
+| 🔒 auth | 1 | 6.7% |
+| ⚠️ bad_request | 0 | 0.0% |
+| 🔍 not_found | 1 | 6.7% |
+| 🚫 unsupported | 1 | 6.7% |
+| 💥 error | 0 | 0.0% |
+| **Total** | **15** | 100% |
+
+**By area:**
+
+| Area | calls | pass | fail |
+|---|---|--:|--:|
+| SharePoint drives (A1–A3) | 3 | 3 | 0 |
+| Chats & messages (B1–B3) | 3 | 3 | 0 |
+| Teams & channels (C1–C3) | 3 | 3 | 0 |
+| Sites & lists (D1–D3) | 3 | 3 | 0 |
+| Blocked/scope (E1–E3) | 3 | 0 | 3 |
+
+### Combined with the prior 77-table battery (92 calls total)
+
+| Status | Count | % |
+|---|---|--:|
+| ✅ pass | 27 | 29.3% |
+| 🔒 auth | 33 | 35.9% |
+| ⚠️ bad_request | 3 | 3.3% |
+| 🔍 not_found | 16 | 17.4% |
+| 🚫 unsupported | 11 | 12.0% |
+| 💥 error | 2 | 2.2% |
+| **Total** | **92** | 100% |
 
 ## 🎯 Bottom line — answers to: "data is on SharePoint & Teams, why is it not showing / not responsive?"
 
@@ -73,7 +109,7 @@ teams_channel_..._getmessages(team_id, channel_id)       →  403 needs ChannelM
 |---|---|---|
 | `19:60ec5d2639f1419690333dd0e91adeeb@thread.tacv2` | algsoch-app | Algsoch Android app - companion mode + thinking tags |
 | `19:73f069c0f8b2434d9fbdc3142770f9bc@thread.tacv2` | janadhikar | JanAdhikar - citizen rights legal aid Android app |
-| `19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2` | General | Engineering coordination across all FiscalMindset repositories (Blindfold, Algsoch, JanAdhikar) — email engfiscalmindset@algsoch762.onmicrosoft.com |
+| `19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2` | General | Engineering coordination across all FiscalMindset repositories — email engfiscalmindset@algsoch762.onmicrosoft.com |
 | `19:cc8117e4c093461fb15e5d171417e36e@thread.tacv2` | docs-research | Documentation updates, knowledge graphs, graphify output |
 | `19:db2a5e637b4d4b43b4d2a3da26752f16@thread.tacv2` | ai-sessions | OpenCode + Claude Code session activity and tooling |
 | `19:de2a4e6af0d94fda9f07619dd16a484c@thread.tacv2` | contributors | Contributor activity, code review, pair sessions |
@@ -157,7 +193,6 @@ SELECT * FROM microsoft_graph_v4.drives_drive_drives_drive_listdrive LIMIT 5
 
 ```
 Documents library found — webUrl https://algsoch762.sharepoint.com/Shared Documents (drive id b!E_Vek…)
-b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1
 ```
 
 ### `A2` — Drive metadata by id — `pass`
@@ -165,7 +200,7 @@ b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.drives_drive_drives_drive_getdrive(drive_id => 'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1') LIMIT 5
+SELECT * FROM microsoft_graph_v4.drives_drive_drives_drive_getdrive(drive_id => 'b!E_Vek…') LIMIT 5
 ```
 
 **Output (real):**
@@ -179,13 +214,13 @@ drivetype=documentLibrary · quota total=27487790694400 · used=1904849 · owner
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.drives_driveitem_drives_items_listchildren(drive_id => 'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq', driveitem_id => 'root') LIMIT 5
+SELECT * FROM microsoft_graph_v4.drives_driveitem_drives_items_listchildren(drive_id => 'b!TXxe8…', driveitem_id => 'root') LIMIT 5
 ```
 
 **Output (real):**
 
 ```
-14 items — Attachments, Meetings, Copilot Chat Files, Recordings + 10 files (see table above)
+14 items — Attachments, Meetings, Copilot Chat Files, Recordings + 10 files
 ```
 
 ### `B1` — Chat index — `pass`
@@ -207,13 +242,13 @@ SELECT * FROM microsoft_graph_v4.me_chat_me_listchats LIMIT 5
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.chats_chatmessage_chats_listmessages(chat_id => '19:uni01_iwjlwfdx2iesykvm6ujufhf4tidikdyqnyywmmoamwn6qrdkfnqq@thread.v2') LIMIT 20
+SELECT * FROM microsoft_graph_v4.chats_chatmessage_chats_listmessages(chat_id => '19:uni01…') LIMIT 20
 ```
 
 **Output (real):**
 
 ```
-odata_count=11 · 11 message rows incl. 📅 calendar conflict, 💡 SDR/BDR idea, 📞 Reliance SOC2 notes (see table above)
+odata_count=11 · 11 message rows incl. 📅 calendar conflict, 💡 SDR/BDR idea, 📞 Reliance SOC2 notes
 ```
 
 ### `B3` — Meeting chat messages — `pass`
@@ -221,7 +256,7 @@ odata_count=11 · 11 message rows incl. 📅 calendar conflict, 💡 SDR/BDR ide
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.chats_chatmessage_chats_listmessages(chat_id => '19:meeting_YWEwNzIyYjQtMTZkOS00NGE5LThlMGItOGYwMzQzODkyYjg2@thread.v2') LIMIT 5
+SELECT * FROM microsoft_graph_v4.chats_chatmessage_chats_listmessages(chat_id => '19:meeting_YWEw…') LIMIT 5
 ```
 
 **Output (real):**
@@ -249,7 +284,7 @@ SELECT * FROM microsoft_graph_v4.me_team_me_listjoinedteams LIMIT 5
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.teams_channel_teams_listchannels(team_id => '3060ff24-37d9-4dd6-9197-ec864a7672cf') LIMIT 10
+SELECT * FROM microsoft_graph_v4.teams_channel_teams_listchannels(team_id => '3060ff24…') LIMIT 10
 ```
 
 **Output (real):**
@@ -263,7 +298,7 @@ odata_count=7 · 7 channels (algsoch-app, janadhikar, General, docs-research, ai
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.teams_conversationmember_teams_listmembers(team_id => '3060ff24-37d9-4dd6-9197-ec864a7672cf') LIMIT 10
+SELECT * FROM microsoft_graph_v4.teams_conversationmember_teams_listmembers(team_id => '3060ff24…') LIMIT 10
 ```
 
 **Output (real):**
@@ -291,13 +326,13 @@ SELECT * FROM microsoft_graph_v4.me_site_me_listfollowedsites LIMIT 5
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.sites_list_sites_listlists(site_id => 'algsoch762.sharepoint.com,431ccd8b-74d7-4e53-9d28-cccc55242d41,3e018d22-2760-4d30-a758-1d447d00119b') LIMIT 10
+SELECT * FROM microsoft_graph_v4.sites_list_sites_listlists(site_id => 'algsoch762.sharepoint.com,…') LIMIT 10
 ```
 
 **Output (real):**
 
 ```
-3 lists — CompanyList006e…, Events, Shared Documents (see table above)
+3 lists — CompanyList006e…, Events, Shared Documents
 ```
 
 ### `D3` — Site drive by drive+site id — `pass`
@@ -305,7 +340,7 @@ SELECT * FROM microsoft_graph_v4.sites_list_sites_listlists(site_id => 'algsoch7
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.sites_drive_sites_getdrives(drive_id => 'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', site_id => 'algsoch762.sharepoint.com,431ccd8b-74d7-4e53-9d28-cccc55242d41,3e018d22-2760-4d30-a758-1d447d00119b') LIMIT 5
+SELECT * FROM microsoft_graph_v4.sites_drive_sites_getdrives(drive_id => 'b!E_Vek…', site_id => 'algsoch762…') LIMIT 5
 ```
 
 **Output (real):**
@@ -319,7 +354,7 @@ documentLibrary · quota 25 TiB · used 1.9 MB
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.teams_channel_teams_channels_getmessages(team_id => '3060ff24-37d9-4dd6-9197-ec864a7672cf', channel_id => '19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2') LIMIT 5
+SELECT * FROM microsoft_graph_v4.teams_channel_teams_channels_getmessages(team_id => '3060ff24…', channel_id => '19:Itsh…') LIMIT 5
 ```
 
 **Output (real):**
@@ -333,7 +368,7 @@ SELECT * FROM microsoft_graph_v4.teams_channel_teams_channels_getmessages(team_i
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.me_team_me_joinedteams_listchannels(team_id => '3060ff24-37d9-4dd6-9197-ec864a7672cf') LIMIT 5
+SELECT * FROM microsoft_graph_v4.me_team_me_joinedteams_listchannels(team_id => '3060ff24…') LIMIT 5
 ```
 
 **Output (real):**
@@ -347,7 +382,7 @@ SELECT * FROM microsoft_graph_v4.me_team_me_joinedteams_listchannels(team_id => 
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.teams_channel_teams_team_channels_getallmessages(team_id => '3060ff24-37d9-4dd6-9197-ec864a7672cf') LIMIT 5
+SELECT * FROM microsoft_graph_v4.teams_channel_teams_team_channels_getallmessages(team_id => '3060ff24…') LIMIT 5
 ```
 
 **Output (real):**
@@ -362,7 +397,7 @@ SELECT * FROM microsoft_graph_v4.teams_channel_teams_team_channels_getallmessage
 |---|---|
 | top-level lists (77-table battery) | ~17–26 s each (tenant-wide enumeration) |
 | ID-driven deep calls (this report) | ~1–4 s each |
-| timeouts | 0 across ~24 deep calls |
+| timeouts | 0 across 15 deep calls |
 
 ## 🧾 Raw evidence
 
