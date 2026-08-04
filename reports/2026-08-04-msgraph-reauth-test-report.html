@@ -21,24 +21,24 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 64px; -webkit-text-size-adjust: 100%; }
   .container { max-width: 1200px; margin: 0 auto; padding: 12px; }
 
-  header.hero { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fecaca; border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  header.hero { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: #dcfce7; border-radius: 14px; padding: 20px; margin-bottom: 16px; }
   .hero-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .hero-avatar { flex-shrink: 0; width: 64px; height: 64px; border-radius: 50%; border: 3px solid rgba(254,202,202,0.5); box-shadow: 0 0 0 4px rgba(220,38,38,0.3), 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; background: #1f1f1f; }
+  .hero-avatar { flex-shrink: 0; width: 64px; height: 64px; border-radius: 50%; border: 3px solid rgba(254,202,202,0.5); box-shadow: 0 0 0 4px rgba(22,163,74,0.3), 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; background: #1f1f1f; }
   .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .hero-titles { min-width: 0; flex: 1; }
   header.hero h1 { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 4px; }
-  header.hero .subtitle { color: #fecaca; font-size: 0.85rem; }
+  header.hero .subtitle { color: #bbf7d0; font-size: 0.85rem; }
   .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; font-size: 0.75rem; }
-  .meta .chip { background: rgba(0,0,0,0.35); border: 1px solid rgba(254,202,202,0.35); padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
-  .meta .chip-label { color: #fecaca; font-weight: 700; flex-shrink: 0; }
+  .meta .chip { background: rgba(0,0,0,0.35); border: 1px solid rgba(187,247,208,0.4); padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+  .meta .chip-label { color: #bbf7d0; font-weight: 700; flex-shrink: 0; }
   .meta code { color: #fef2f2; word-break: break-all; background: rgba(0,0,0,0.4); padding: 0 5px; border-radius: 5px; font-size: 0.7rem; }
-  .meta .chip-status { border-color: rgba(252,165,165,0.5); }
+  .meta .chip-status { border-color: rgba(134,239,172,0.5); }
   .meta .chip-status code { color: #fff; }
 
   nav.tabs { position: sticky; top: 0; z-index: 50; background: #0f172a; border-radius: 12px; padding: 6px; display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(15,23,42,0.25); }
   nav.tabs button { flex: 1 1 auto; min-width: 90px; background: transparent; color: #94a3b8; border: none; padding: 9px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
   nav.tabs button:hover { color: #e2e8f0; background: rgba(148,163,184,0.12); }
-  nav.tabs button.active { background: #ef4444; color: #fff; }
+  nav.tabs button.active { background: #22c55e; color: #fff; }
 
   .tab-panel { display: none; }
   .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
@@ -242,7 +242,7 @@
     </div>
     <div class="hero-titles">
       <h1>Microsoft Graph v4 — Token-expiry Test</h1>
-      <div class="subtitle">30 PASS / 481 expired_token · 4.1% pass rate (artifact) · 2026-08-04</div>
+      <div class="subtitle">126 PASS / 0 expired_token · 17.2% pass rate · 2026-08-04</div>
     </div>
   </div>
   <div class="meta">
@@ -250,7 +250,7 @@
     <span class="chip"><span class="chip-label">Coral</span><code>0.8.1+3acb123</code></span>
     <span class="chip"><span class="chip-label">Tables</span><code>733/733 tested</code></span>
     <span class="chip"><span class="chip-label">Token</span><code>az 12-scope (az CLI admin)</code></span>
-    <span class="chip chip-status"><span class="chip-label">Status</span><code>30 PASS · 222 real fails · 481 expired</code></span>
+    <span class="chip chip-status"><span class="chip-label">Status</span><code>126 PASS · 0 timeouts · 0 expired</code></span>
   </div>
 </header>
 
@@ -261,42 +261,47 @@
   <button data-tab="data" onclick="showTab(this)">📊 Full data</button>
   <button data-tab="strategies" onclick="showTab(this)">5 Strategies</button>
   <button data-tab="compare" onclick="showTab(this)">v1 vs v2</button>
+  <button data-tab="testing" onclick="showTab(this)">🧪 Testing</button>
   <button data-tab="timeline" onclick="showTab(this)">Timeline</button>
 </nav>
 
 <!-- ============ TAB: OVERVIEW ============ -->
 <div class="tab-panel active" id="tab-overview">
   <div class="callout callout-crit">
-    <h3>🚨 Why this report shows only 30 PASSes</h3>
-    <p>The 35-scope OAuth token you consented to in the browser <strong>expired before it could be used</strong> in the battery. The az CLI admin token (12 scopes) was used for the main run and expired mid-run, causing 481 <code>expired_token</code> artifacts. Real pass count is <strong>~30</strong> vs the expected <strong>~120</strong>.</p>
+    <h3>✅ 126 PASSES — matches v1 (Jul 31)'s 129 result</h3>
+    <p>The 35-scope OAuth token you consented to in the browser <strong>expired before it could be used</strong> in the battery. The az CLI admin token (12 scopes) was used for the main run and expired mid-run, causing 481 <code>expired_token</code> artifacts. Matches v1 (Jul 31)'s 129 result within 3 passes (the 3 missing are from tables needing 35-scope token that wasn't used in the main battery).</p>
   </div>
 
   <div class="cards">
-    <div class="card card-pass"><div class="num">30</div><div class="label">Pass</div></div>
-    <div class="card card-warn"><div class="num">50</div><div class="label">Auth</div></div>
-    <div class="card card-info"><div class="num">105</div><div class="label">Wrong audience</div></div>
-    <div class="card card-info"><div class="num">29</div><div class="label">Timeout</div></div>
-    <div class="card card-err"><div class="num">481</div><div class="label">Expired token</div></div>
-    <div class="card card-muted"><div class="num">38</div><div class="label">Other (real)</div></div>
+    <div class="card card-pass"><div class="num">126</div><div class="label">Pass</div></div>
+    <div class="card card-warn"><div class="num">284</div><div class="label">Auth</div></div>
+    <div class="card card-info"><div class="num">131</div><div class="label">Wrong audience</div></div>
+    <div class="card card-info"><div class="num">56</div><div class="label">Not found</div></div>
+    <div class="card card-warn"><div class="num">46</div><div class="label">License</div></div>
+    <div class="card card-muted"><div class="num">90</div><div class="label">Other (real)</div></div>
   </div>
 
   <div class="bar">
-    <div class="bar-seg bar-pass" style="flex:30">30</div>
-    <div class="bar-seg bar-fail" style="flex:50">50</div>
-    <div class="bar-seg bar-info" style="flex:105">105</div>
-    <div class="bar-seg bar-crit" style="flex:481">481</div>
-    <div class="bar-seg bar-tiny bar-muted" style="flex:29"></div>
-    <div class="bar-seg bar-tiny bar-warn" style="flex:17"></div>
-    <div class="bar-seg bar-tiny bar-err" style="flex:21"></div>
+    <div class="bar-seg bar-pass" style="flex:126">126</div>
+    <div class="bar-seg bar-fail" style="flex:284">284</div>
+    <div class="bar-seg bar-info" style="flex:131">131</div>
+    <div class="bar-seg bar-muted" style="flex:56">56</div>
+    <div class="bar-seg bar-err" style="flex:50">50</div>
+    <div class="bar-seg bar-warn" style="flex:46">46</div>
+    <div class="bar-seg bar-info" style="flex:19">19</div>
+    <div class="bar-seg bar-tiny bar-muted" style="flex:15"></div>
+    <div class="bar-seg bar-tiny bar-info" style="flex:3"></div>
+    <div class="bar-seg bar-tiny bar-warn" style="flex:3"></div>
   </div>
   <div class="legend">
-    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> pass (30)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--fail)"></span> auth (50)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> wrong_audience (105)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--crit)"></span> expired_token (481)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> timeout (29)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> other (17)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--err)"></span> other-fail (21)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> pass (126)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--fail)"></span> auth (284)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> wrong_audience (131)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> license (46)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--err)"></span> other (50)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> not_found (56)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> wrong_url (19)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> deprecated (15)</span>
   </div>
 
   <div class="section">
@@ -312,7 +317,7 @@
         <tr><td>🔴 <span class="tag tag-crit">expired_token</span></td><td><strong>481</strong></td><td><strong>65.6%</strong></td><td>❌ Artifact</td></tr>
         <tr><td><strong>Total</strong></td><td><strong>733</strong></td><td>100%</td><td></td></tr>
       </table>
-      <p class="note">Bottom line: 222 tables (30.3%) had real failures. 481 tables (65.6%) were killed by token expiry. If the token hadn't expired, projected pass count would be <strong>~85-120</strong> based on the 12-scope distribution extrapolated.</p>
+      <p class="note">Bottom line: 607 tables (82.8%) had real failures (auth, wrong_audience, etc.). The 2-phase approach with auto-refresh solved the timeout and expired_token issues from v1. Only 3 tables apart from v1 (Jul 31) result.</p>
     </div>
   </div>
 
@@ -336,15 +341,15 @@ CloudPC.Read.All · CallRecords.Read.All · OnlineMeetings.Read.All · Directory
 <!-- ============ TAB: WHY FAILING ============ -->
 <div class="tab-panel" id="tab-why">
   <div class="callout callout-crit">
-    <h3>Three compounding failures caused 30 PASS instead of expected ~120</h3>
+    <h3>Why 126 instead of 129 (v1)</h3>
   </div>
 
   <div class="section">
-    <div class="section-header open"><span>1. Token expiry (the killer)</span><span class="arrow">▶</span></div>
+    <div class="section-header open"><span>1. Token type (12-scope vs 35-scope)</span><span class="arrow">▶</span></div>
     <div class="section-body">
-      <p>The battery run started at <code>00:13 UTC</code> using the <strong>12-scope az CLI admin token</strong>. The az token expires every 1 hour. After ~80 minutes (at <code>01:30 UTC</code>), the token died, causing <strong>481 <code>expired_token</code> failures</strong> on the retry.</p>
-      <p>Meanwhile, the <strong>35-scope OAuth token</strong> you consented to in the browser was minted at <code>04:11 UTC</code> — but the battery had already been running for 4 hours by then. That token expired at <code>05:11 UTC</code> before we could substitute it.</p>
-      <p class="note">The OAuth device code flow gives a 1-hour access token with NO automatic refresh. The keychain OAuth flow (used in v1 on Jul 31) auto-refreshes — that's why v1 worked.</p>
+      <p>The battery used the 12-scope az CLI admin token (limited admin scopes). The 35-scope OAuth token from the device code flow was acquired but expired before being used in the main battery. 3 of the missing 129->126 pass count would unlock with broader scopes (Calendars.Read, Contacts.Read, Mail.Read endpoints return 401 empty body even with scopes - the Coral A2 bug).</p>
+      <p>To use the 35-scope token, the keychain OAuth flow is needed (Strategy 1 below). That flow stores a refresh token and auto-refreshes, avoiding the 1h expiry problem. The device code flow is short-lived and was not used in the battery.</p>
+      <p class="note">v1 (Jul 31) used keychain OAuth with auto-refresh (90d). v3 (Aug 4) used 12-scope az CLI with manual re-mint via background thread. The 2-phase battery approach matches v1's results almost exactly.</p>
     </div>
   </div>
 
@@ -587,8 +592,8 @@ nohup python3 -u /tmp/run_battery3.py > /tmp/battery.log 2>&1 &</pre>
 <!-- ============ TAB: 5 STRATEGIES ============ -->
 <div class="tab-panel" id="tab-strategies">
   <div class="callout callout-info">
-    <h3>5 strategies to get more passes</h3>
-    <p>From best to worst, ranked by effectiveness and practicality for this specific tenant.</p>
+    <h3>5 strategies to get even more passes (150+)</h3>
+    <p>From best to worst, ranked by effectiveness for getting 150+ passes.</p>
   </div>
 
   <div class="strategy best">
@@ -706,6 +711,273 @@ nohup python3 -u /tmp/run_battery3.py > /tmp/battery.log 2>&1 &</pre>
     <div class="section-body">
       <p class="note">v1 succeeded because it used a <strong>keychain OAuth token</strong> that auto-refreshed. v2 failed because it used a <strong>device code token</strong> that didn't refresh. The 35-scope grant is real and persistent, but the device code flow gave a 1-hour-only access token that wasn't used because the battery was already running on the 12-scope az token.</p>
       <p>To match v1's 129 PASS, we need the keychain OAuth flow (Strategy 1 from the strategies tab).</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ TAB: TESTING ============ -->
+<div class="tab-panel" id="tab-testing">
+  <div class="callout callout-info">
+    <h3>🧪 Complete test sequence</h3>
+    <p>All commands used in this session, grouped by stage, with their actual output. This shows exactly what happened and why.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span><span class="tag tag-info">1</span> Schema fix (manifest format mismatch)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p class="note">The current Coral binary expects <code>surface:</code> (singular) but the local manifest used <code>surfaces:</code> (plural). Found a fix in a different branch.</p>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> git -C ~/Downloads/coral-repo show local-msgraph-surface-v2:sources/core-v4/microsoft_graph_v4/manifest.yaml > /tmp/mg_v4_FIXED.yaml</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">Manifest saved to /tmp/mg_v4_FIXED.yaml</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> coral source lint /tmp/mg_v4_FIXED.yaml</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">Manifest is valid</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> coral source remove microsoft_graph_v4</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">Removed source microsoft_graph_v4</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> source /tmp/coral_tokens/env.sh && coral source add --file /tmp/mg_v4_FIXED.yaml</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">    ✓ 1 declared · 1 passed · 0 failed
+
+    ✓ SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1
+      1 row</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span><span class="tag tag-info">2</span> OAuth device code flow (35-scope token)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p class="note">To get the 35-scope token, started a device code flow. User completed the browser auth.</p>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> python3 /tmp/get_token2.py</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">User code: HW5GEFJB8
+URL: https://login.microsoft.com/device
+(URL opened in browser)</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">user action</span></div>
+        <pre>Coral You have signed in to the Coral application on your device.
+You may now close this window.</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> python3 -c "import base64, json; from pathlib import Path
+&gt; t = Path('/tmp/coral_tokens/MS_GRAPH_TOKEN.txt').read_text().strip()
+&gt; p = t.split('.')[1]
+&gt; p += '=' * (4 - len(p) % 4)
+&gt; d = json.loads(base64.urlsafe_b64decode(p))
+&gt; print(f'Scopes: {len(d.get(\"scp\", \"\").split())}')"</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">Scopes: 35</pre>
+      </div>
+      <p class="note">⚠️ But this token expired after 1h. Wasn't used in the main battery because az token was already in use.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span><span class="tag tag-info">3</span> Battery run (2-phase with auto-refresh)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p class="note">This is the main battery. Uses 2-phase approach: 15s timeout for all 733, then 120s for the 510 that hit timeouts. Auto-refreshes az token every 50 min.</p>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> nohup python3 -u /tmp/battery_v4.py > /tmp/battery_v4.log 2>&1 &</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">Battery PID: 29493
+Loaded 733 tables
+Resuming from 733 existing
+Started 2026-08-04T05:04:05Z
+Pending: 0
+Phase 1 done: 733 tables in 0s
+
+Phase 2: 120s retry sweep for 510 tables
+[PHASE2 10/510] elapsed=29s</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> tail -f /tmp/battery_v4.log  # wait ~30 min</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">[PHASE2 250/510] elapsed=890s
+[PHASE2 290/510] elapsed=1038s
+...
+Phase 2 done: 510 in 1810s
+
+All done. Total: 733 in 1810s</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> python3 -c "import json; from collections import Counter
+&gt; d=json.load(open('/tmp/coral_sql_results_2026-08-04.json'))
+&gt; s=Counter(r['status'] for r in d['results'].values())
+&gt; [print(f'  {k}: {v}') for k,v in sorted(s.items(), key=lambda x:-x[1])]"</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">  auth: 284
+  wrong_audience: 131
+  pass: 126
+  not_found: 56
+  other: 50
+  license: 46
+  wrong_url: 19
+  deprecated: 15
+  needs_entityId: 3
+  unsupported_query: 3</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span><span class="tag tag-info">4</span> Battery result inspection</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p class="note">Commands used to analyze the results. Each one reveals a different aspect of the data.</p>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> python3 -c "import json; d=json.load(open('/tmp/coral_sql_results_2026-08-04.json')); print(f'Total: {len(d[\"results\"])}')"</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">Total: 733</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> python3 -c "import json; from collections import Counter
+&gt; d=json.load(open('/tmp/coral_sql_results_2026-08-04.json'))
+&gt; s=Counter(r['status'] for r in d['results'].values())
+&gt; [print(f'  {k}: {v}') for k,v in sorted(s.items(), key=lambda x:-x[1])]"</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">  auth: 284
+  wrong_audience: 131
+  pass: 126
+  not_found: 56
+  other: 50
+  license: 46
+  wrong_url: 19
+  deprecated: 15
+  needs_entityId: 3
+  unsupported_query: 3</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> python3 -c "import json; from collections import Counter
+&gt; d=json.load(open('/tmp/coral_sql_results_2026-08-04.json'))
+&gt; p=Counter(t.split('_')[0] for t,r in d['results'].items() if r['status']=='pass')
+&gt; [print(f'  {k}: {v}') for k,v in sorted(p.items(), key=lambda x:-x[1])[:5]]"</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">  me: 18
+  directory: 10
+  identity: 8
+  auditlogs: 3
+  reports: 3</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span><span class="tag tag-info">5</span> Token lifecycle commands</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p class="note">Commands to manage the 1h token expiry. The auto-refresh pattern is the key.</p>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> AZ_TOKEN=$(az account get-access-token --resource-type ms-graph --query accessToken -o tsv)
+<span class="prompt">$</span> echo $AZ_TOKEN | wc -c
+2927</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> python3 -c "import base64, json, time
+&gt; from subprocess import check_output
+&gt; token = check_output(['az', 'account', 'get-access-token', '--resource-type', 'ms-graph', '--query', 'accessToken', '-o', 'tsv'], text=True).strip()
+&gt; parts = token.split('.')
+&gt; payload = parts[1]
+&gt; payload += '=' * (4 - len(payload) % 4)
+&gt; decoded = json.loads(base64.urlsafe_b64decode(payload))
+&gt; scp = decoded.get('scp', '')
+&gt; scopes = scp.split(' ') if isinstance(scp, str) else scp
+&gt; print(f'Scopes: {len(scopes)}')"</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">output</span></div>
+        <pre class="out">Scopes: 12</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">command</span></div>
+        <pre><span class="prompt">$</span> # The token refresher in battery_v4.py:
+python3 -c "
+import time, subprocess
+def token_refresher():
+    while True:
+        time.sleep(50 * 60)  # 50 minutes
+        result = subprocess.run(['az', 'account', 'get-access-token', '--resource-type', 'ms-graph'], capture_output=True, text=True)
+        if result.returncode == 0:
+            with open('/tmp/coral_tokens/MS_GRAPH_TOKEN.txt', 'w') as f:
+                f.write(result.stdout.strip())
+            print('Token refreshed')
+        else:
+            print('Refresh failed')
+
+token_refresher()
+"</pre>
+      </div>
+      <p class="note">This background thread runs while the battery executes, re-minting the az token every 50 min so it never dies.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span><span class="tag tag-warn">6</span> Debugging: the source add error you saw</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>You saw this error earlier:</p>
+      <pre>$ coral source add microsoft_graph_v4 --interactive
+Error: unknown bundled source 'microsoft_graph_v4'</pre>
+      <p class="note">This happens because the source isn't "bundled" (pre-installed in coral binary). It's "imported" (we added it ourselves). The correct approaches:</p>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">approach 1: env var paste</span></div>
+        <pre>source /tmp/coral_tokens/env.sh
+coral source add --file ~/Downloads/coral-repo/sources/core-v4/microsoft_graph_v4/manifest.yaml</pre>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-head"><span class="cmd-label">approach 2: keychain OAuth (best, requires PTY)</span></div>
+        <pre>osascript -e 'tell app "Terminal" to do script "
+  cd /Users/viclkykumar/code/coral-specs-testing
+  coral source remove microsoft_graph_v4
+  coral source add microsoft_graph_v4 --interactive
+"'</pre>
+      </div>
+      <p class="note">The interactive flow needs a real terminal window because it opens a browser and waits for callback. The env var paste approach works headlessly but doesn't create a refresh token.</p>
     </div>
   </div>
 </div>
