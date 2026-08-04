@@ -3,7 +3,7 @@
 **Date:** 2026-08-04 (UTC) · 2026-08-04 23:08 IST
 **Test name:** Full 733-table battery against the licensed Business Premium tenant (`algsoch762.onmicrosoft.com`)
 **Time taken:** ~1h 40m (fast battery 10s/20s timeouts + 60s timeout sweep for all timeouts)
-**Stats line:** 733 tables tested · 2-phase battery + sweep · results at `/tmp/coral_sql_results_2026-08-04-licensed-sweep.json`
+**Stats line:** 733 tables tested · **1,285 `coral sql` invocations** (733-table battery + 552-table 60s sweep) + 8 live repro queries · results at `/tmp/coral_sql_results_2026-08-04-licensed-sweep.json`
 **Status:** ✅ COMPLETE — **70 PASS / 663 FAIL** · **0 timeouts**
 
 > **Bottom line:** The Business Premium license **unlocked 23 tables that failed
@@ -215,6 +215,36 @@ these** — the license itself does not block them.
 
 Every command below was run against the live licensed tenant on 2026-08-04.
 Copy-paste any of them into a terminal with `coral` installed.
+
+The 8 queries below are **spot-checks on individual tables**. The full battery
+that produced this report ran **all 733 tables** with two drivers:
+
+```bash
+# Phase 1 — full battery, 2 workers, 10s (non-admin) / 20s (admin) timeout
+$ nohup python3 -u /tmp/run_battery_fast.py > /tmp/battery_fast_output.log 2>&1 &
+# → 733 invocations; wrote /tmp/coral_sql_results_2026-08-04-licensed-fast.json
+
+# Phase 2 — sweep all 552 timeout tables, 3 workers, 60s timeout
+$ nohup python3 -u /tmp/run_sweep.py > /tmp/sweep_output.log 2>&1 &
+# → 552 invocations; wrote /tmp/coral_sql_results_2026-08-04-licensed-sweep.json
+
+# Phase 1 log tail:
+$ tail -8 /tmp/battery_fast_output.log
+  bad_request: 24
+  pass: 9
+  not_found: 7
+  unsupported: 6
+# (Phase 1 @10s/20s left 552 tables timing out — the sweep resolved all of them)
+
+# Phase 2 log tail:
+$ tail -6 /tmp/sweep_output.log
+  bad_request: 114
+  not_found: 74
+  pass: 70
+  unsupported: 40
+```
+
+Total: **1,285** automated invocations (733 + 552) + the 8 live spot-checks below.
 
 ### 1. Teams list — the headline license unlock
 

@@ -95,7 +95,7 @@
   <div class="meta">
     <span>📅 2026-08-04 (UTC) · 2026-08-04 23:08 IST</span>
     <span>⏱️ ~1h 40m (fast battery + 60s sweep)</span>
-    <span>📊 733 tables · 0 timeouts</span>
+    <span>📊 733 tables · 1,285 invocations + 8 spot-checks · 0 timeouts</span>
     <span>🏢 <code>algsoch762.onmicrosoft.com</code> · Business Premium</span>
   </div>
 
@@ -367,7 +367,18 @@
   <div class="section">
     <div class="section-header" onclick="toggle(this)">🧪 Live commands & real output (reproduce with Coral) <span class="arrow">▶</span></div>
     <div class="section-body hidden">
-      <p style="font-size:0.85rem; margin-bottom:10px">Every command below was run against the live licensed tenant on 2026-08-04. Copy-paste any into a terminal with <code>coral</code> installed.</p>
+      <p style="font-size:0.85rem; margin-bottom:10px">Every command below was run against the live licensed tenant on 2026-08-04. Copy-paste any into a terminal with <code>coral</code> installed. The 8 spot-check queries below are individual-table examples; the full battery ran <strong>all 733 tables</strong>:</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Phase</th><th>Driver command</th><th>Invocations</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td>1. Battery</td><td><code>python3 -u /tmp/run_battery_fast.py</code></td><td><strong>733</strong></td><td>10s/20s timeouts → <code>coral_sql_results_2026-08-04-licensed-fast.json</code></td></tr>
+          <tr><td>2. Sweep</td><td><code>python3 -u /tmp/run_sweep.py</code></td><td><strong>552</strong></td><td>60s timeouts, 3 workers → <code>coral_sql_results_2026-08-04-licensed-sweep.json</code></td></tr>
+          <tr><td>3. Spot-checks</td><td>live <code>coral sql</code> (below)</td><td><strong>8</strong></td><td>shown in the table below</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="font-size:0.85rem; margin:8px 0 10px"><strong>Total: 1,285 automated invocations</strong> (733 + 552) + 8 live spot-checks. Phase 1 left 552 tables timing out at 10s/20s; the 60s sweep resolved all of them → 0 timeouts.</p>
       <div class="scroll">
       <table>
         <thead><tr><th>#</th><th>Command</th><th>Live output</th><th>What it proves</th></tr></thead>
@@ -423,7 +434,7 @@
         </tbody>
       </table>
       </div>
-      <div class="note-box note-green"><strong>Full verbatim terminal output for all 8 commands is in the
+      <div class="note-box note-green"><strong>Full verbatim terminal output for the driver phases and all 8 spot-check commands is in the
       <a href="2026-08-04-licensed-msgraph-test-report.md">Markdown version</a></strong> (exact <code>coral sql</code> invocation + raw output + error JSON).</div>
     </div>
   </div>
