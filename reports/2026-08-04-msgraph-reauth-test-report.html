@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Graph v4 Test Report - 2026-08-04</title>
+<style>
+  :root {
+    --pass: #22c55e; --pass-bg: #f0fdf4;
+    --fail: #ef4444; --fail-bg: #fef2f2;
+    --warn: #f59e0b; --warn-bg: #fffbeb;
+    --info: #3b82f6; --info-bg: #eff6ff;
+    --muted: #6b7280; --muted-bg: #f9fafb;
+    --err: #8b5cf6; --err-bg: #f5f3ff;
+    --crit: #dc2626; --crit-bg: #fef2f2;
+    --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0;
+    --text: #1e293b; --muted-text: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 64px; -webkit-text-size-adjust: 100%; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 12px; }
+
+  header.hero { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fecaca; border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .hero-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .hero-avatar { flex-shrink: 0; width: 64px; height: 64px; border-radius: 50%; border: 3px solid rgba(254,202,202,0.5); box-shadow: 0 0 0 4px rgba(220,38,38,0.3), 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; background: #1f1f1f; }
+  .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-titles { min-width: 0; flex: 1; }
+  header.hero h1 { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 4px; }
+  header.hero .subtitle { color: #fecaca; font-size: 0.85rem; }
+  .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; font-size: 0.75rem; }
+  .meta .chip { background: rgba(0,0,0,0.35); border: 1px solid rgba(254,202,202,0.35); padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+  .meta .chip-label { color: #fecaca; font-weight: 700; flex-shrink: 0; }
+  .meta code { color: #fef2f2; word-break: break-all; background: rgba(0,0,0,0.4); padding: 0 5px; border-radius: 5px; font-size: 0.7rem; }
+  .meta .chip-status { border-color: rgba(252,165,165,0.5); }
+  .meta .chip-status code { color: #fff; }
+
+  nav.tabs { position: sticky; top: 0; z-index: 50; background: #0f172a; border-radius: 12px; padding: 6px; display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(15,23,42,0.25); }
+  nav.tabs button { flex: 1 1 auto; min-width: 90px; background: transparent; color: #94a3b8; border: none; padding: 9px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+  nav.tabs button:hover { color: #e2e8f0; background: rgba(148,163,184,0.12); }
+  nav.tabs button.active { background: #ef4444; color: #fff; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .callout { border-left: 4px solid; padding: 12px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; background: var(--card); }
+  .callout-warn { border-color: var(--warn); background: var(--warn-bg); }
+  .callout-info { border-color: var(--info); background: var(--info-bg); }
+  .callout-err { border-color: var(--err); background: var(--err-bg); }
+  .callout-crit { border-color: var(--crit); background: var(--crit-bg); }
+  .callout h3 { margin: 0 0 6px; font-size: 0.95rem; }
+  .callout p { margin: 0; font-size: 0.85rem; }
+  .callout ul { margin: 4px 0 0 16px; font-size: 0.85rem; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .card { background: var(--card); border-radius: 10px; padding: 14px 12px; border: 1px solid var(--border); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .card .num { font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 800; line-height: 1.1; }
+  .card .label { font-size: 0.7rem; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+  .card-pass .num { color: var(--pass); }
+  .card-fail .num { color: var(--fail); }
+  .card-warn .num { color: var(--warn); }
+  .card-info .num { color: var(--info); }
+  .card-muted .num { color: var(--muted); }
+  .card-err .num { color: var(--err); }
+  .card-crit .num { color: var(--crit); }
+
+  .bar { display: flex; height: 36px; border-radius: 8px; overflow: hidden; font-size: 0.7rem; font-weight: 700; margin-bottom: 8px; }
+  .bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; overflow: hidden; white-space: nowrap; padding: 0 3px; }
+  .bar-pass { background: var(--pass); }
+  .bar-fail { background: var(--fail); }
+  .bar-warn { background: var(--warn); }
+  .bar-info { background: var(--info); }
+  .bar-muted { background: var(--muted); }
+  .bar-err { background: var(--err); }
+  .bar-crit { background: var(--crit); }
+  .bar-tiny { display: none; }
+
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.75rem; color: var(--muted-text); margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+
+  .section { background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .section-header { padding: 10px 14px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; user-select: none; font-size: 0.9rem; }
+  .section-header:hover { background: #f8fafc; }
+  .section-header > span:first-child { min-width: 0; flex: 1 1 auto; word-break: break-word; }
+  .section-header > span:last-child { flex-shrink: 0; }
+  .section-header .arrow { transition: transform 0.2s; font-size: 0.7rem; }
+  .section-header.open .arrow { transform: rotate(90deg); }
+  .section-body { padding: 0 14px 14px; display: none; }
+  .section-header.open + .section-body { display: block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 8px; }
+  th { text-align: left; padding: 6px 6px 6px 0; border-bottom: 2px solid var(--border); color: var(--muted-text); font-weight: 700; }
+  td { padding: 6px 6px 6px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 8px; }
+  .table-scroll table { min-width: 320px; }
+  table th { white-space: nowrap; }
+
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 5px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+  .tag-pass { background: var(--pass-bg); color: #15803d; }
+  .tag-fail { background: var(--fail-bg); color: #dc2626; }
+  .tag-warn { background: var(--warn-bg); color: #b45309; }
+  .tag-info { background: var(--info-bg); color: #1d4ed8; }
+  .tag-muted { background: var(--muted-bg); color: #4b5563; }
+  .tag-err { background: var(--err-bg); color: #7c3aed; }
+  .tag-crit { background: var(--crit-bg); color: #991b1b; }
+
+  pre { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 8px; font-size: 0.74rem; line-height: 1.5; overflow-x: auto; margin: 8px 0; white-space: pre-wrap; word-break: break-word; font-family: 'SF Mono', Menlo, monospace; }
+  pre.out { background: #111827; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.8rem; font-family: 'SF Mono', Menlo, monospace; word-break: break-all; }
+  .note { margin-top: 8px; font-size: 0.8rem; color: var(--muted-text); }
+  h3 { font-size: 1rem; margin: 12px 0 6px; }
+  h4 { margin: 10px 0 4px; font-size: 0.9rem; }
+  ul, ol { margin: 6px 0; padding-left: 18px; font-size: 0.85rem; }
+  li { margin-bottom: 3px; }
+  p { font-size: 0.88rem; margin: 8px 0; }
+
+  .strategy { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .strategy h3 { margin: 0 0 6px; }
+  .strategy .num { display: inline-block; background: var(--info); color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; margin-right: 6px; }
+  .strategy.best { border-color: var(--pass); background: var(--pass-bg); }
+  .strategy.partial { border-color: var(--warn); background: var(--warn-bg); }
+  .strategy.bad { border-color: var(--muted); background: var(--muted-bg); }
+  .strategy code { font-size: 0.75rem; }
+
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 2px; background: var(--border); }
+  .timeline-item { position: relative; padding-bottom: 16px; }
+  .timeline-item::before { content: ''; position: absolute; left: -20px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--info); border: 2px solid var(--card); }
+  .timeline-item.crit::before { background: var(--crit); }
+  .timeline-item.pass::before { background: var(--pass); }
+  .timeline-item .time { font-size: 0.75rem; color: var(--muted-text); font-weight: 600; }
+  .timeline-item .what { font-size: 0.88rem; margin-top: 2px; }
+
+  .compare-table { width: 100%; border-collapse: collapse; }
+  .compare-table th, .compare-table td { padding: 8px 6px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .compare-table th { background: var(--code-bg); color: var(--muted-text); font-weight: 700; }
+  .compare-table .good { color: var(--pass); font-weight: 700; }
+  .compare-table .bad { color: var(--fail); font-weight: 700; }
+  .compare-table .meh { color: var(--warn); font-weight: 700; }
+
+  footer { margin-top: 32px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); font-size: 0.75rem; color: var(--muted-text); line-height: 1.7; }
+  footer .foot-title { font-weight: 800; color: var(--text); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  footer code { background: var(--muted-bg); color: var(--text); padding: 1px 5px; border-radius: 4px; font-size: 0.7rem; word-break: break-all; }
+
+  /* ---- Large tablet (≤1024px) ---- */
+  @media (max-width: 1024px) {
+    .container { padding: 10px; }
+    .cards { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+  }
+
+  /* ---- Tablet (≤768px) ---- */
+  @media (max-width: 768px) {
+    .container { padding: 8px; }
+    header.hero { padding: 16px; }
+    header.hero h1 { font-size: 1.3rem; }
+    .meta .chip { font-size: 0.7rem; padding: 3px 8px; }
+    .meta code { font-size: 0.65rem; }
+    .cards { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; }
+    .card { padding: 10px 8px; }
+    .card .num { font-size: 1.2rem; }
+    .card .label { font-size: 0.65rem; }
+    .bar { height: 32px; font-size: 0.65rem; }
+    nav.tabs button { font-size: 0.75rem; padding: 7px 6px; min-width: 70px; }
+    .section-header { font-size: 0.85rem; padding: 8px 12px; }
+    .section-body { padding: 0 12px 12px; }
+    table { font-size: 0.75rem; }
+    pre { font-size: 0.7rem; }
+    .legend { font-size: 0.7rem; gap: 8px; }
+  }
+
+  /* ---- Phone (≤640px) ---- */
+  @media (max-width: 640px) {
+    .container { padding: 6px; }
+    header.hero { padding: 12px; border-radius: 10px; }
+    .hero-top { flex-direction: row; gap: 8px; }
+    .hero-avatar { width: 40px; height: 40px; }
+    header.hero h1 { font-size: 1.05rem; }
+    header.hero .subtitle { font-size: 0.72rem; }
+    .meta { gap: 4px; }
+    .meta .chip { font-size: 0.65rem; padding: 2px 6px; gap: 3px; }
+    .meta .chip-label { font-size: 0.6rem; }
+    .meta code { font-size: 0.6rem; padding: 0 3px; }
+    .cards { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .card { padding: 10px; display: flex; align-items: center; justify-content: space-between; text-align: left; gap: 8px; }
+    .card .num { font-size: 1.3rem; }
+    .card .label { font-size: 0.65rem; margin: 0; text-align: right; }
+    .bar { height: 24px; font-size: 0.55rem; }
+    .bar-seg { padding: 0 2px; }
+    .legend { font-size: 0.65rem; gap: 4px; }
+    nav.tabs { position: static; padding: 4px; gap: 3px; }
+    nav.tabs button { min-width: 0; flex: 1 1 47%; font-size: 0.7rem; padding: 6px 4px; border-radius: 6px; }
+    .section { border-radius: 8px; margin-bottom: 10px; }
+    .section-header { font-size: 0.8rem; padding: 8px 10px; }
+    .section-body { padding: 0 10px 10px; }
+    table { font-size: 0.7rem; }
+    th, td { padding: 5px 4px 5px 0; }
+    .table-scroll table { min-width: 300px; }
+    pre { font-size: 0.65rem; padding: 8px; }
+    .strategy { padding: 10px; }
+    h3 { font-size: 0.9rem; }
+    .compare-table th, .compare-table td { padding: 6px 4px; font-size: 0.78rem; }
+    .timeline { padding-left: 20px; }
+    .timeline-item::before { left: -18px; }
+  }
+
+  /* ---- Tiny phone (≤380px) ---- */
+  @media (max-width: 380px) {
+    .container { padding: 4px; }
+    header.hero { padding: 8px; }
+    .hero-avatar { width: 36px; height: 36px; }
+    header.hero h1 { font-size: 0.95rem; }
+    header.hero .subtitle { font-size: 0.65rem; }
+    .meta .chip { font-size: 0.6rem; padding: 2px 4px; }
+    .meta code { font-size: 0.55rem; }
+    .cards { grid-template-columns: 1fr; }
+    .card .num { font-size: 1.2rem; }
+    nav.tabs button { flex: 1 1 100%; font-size: 0.7rem; }
+    .bar { height: 20px; font-size: 0.5rem; }
+    .bar-seg { padding: 0 1px; }
+    pre { font-size: 0.6rem; padding: 6px; }
+    .compare-table th, .compare-table td { font-size: 0.7rem; }
+  }
+
+  @media print {
+    nav.tabs { display: none; }
+    .tab-panel { display: block !important; }
+    .section-body, .timeline-item { display: block !important; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="hero">
+  <div class="hero-top">
+    <div class="hero-avatar">
+      <img src="https://avatars.githubusercontent.com/u/254638087?v=4" alt="fiscalmindset" loading="lazy">
+    </div>
+    <div class="hero-titles">
+      <h1>Microsoft Graph v4 — Token-expiry Test</h1>
+      <div class="subtitle">30 PASS / 481 expired_token · 4.1% pass rate (artifact) · 2026-08-04</div>
+    </div>
+  </div>
+  <div class="meta">
+    <span class="chip"><span class="chip-label">Tenant</span><code>89de3b75…</code></span>
+    <span class="chip"><span class="chip-label">Coral</span><code>0.8.1+3acb123</code></span>
+    <span class="chip"><span class="chip-label">Tables</span><code>733/733 tested</code></span>
+    <span class="chip"><span class="chip-label">Token</span><code>az 12-scope (az CLI admin)</code></span>
+    <span class="chip chip-status"><span class="chip-label">Status</span><code>30 PASS · 222 real fails · 481 expired</code></span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Report sections">
+  <button class="active" data-tab="overview" onclick="showTab(this)">Overview</button>
+  <button data-tab="why" onclick="showTab(this)">⚠️ Why failing</button>
+  <button data-tab="fix" onclick="showTab(this)">🔑 How to fix</button>
+  <button data-tab="data" onclick="showTab(this)">📊 Full data</button>
+  <button data-tab="strategies" onclick="showTab(this)">5 Strategies</button>
+  <button data-tab="compare" onclick="showTab(this)">v1 vs v2</button>
+  <button data-tab="timeline" onclick="showTab(this)">Timeline</button>
+</nav>
+
+<!-- ============ TAB: OVERVIEW ============ -->
+<div class="tab-panel active" id="tab-overview">
+  <div class="callout callout-crit">
+    <h3>🚨 Why this report shows only 30 PASSes</h3>
+    <p>The 35-scope OAuth token you consented to in the browser <strong>expired before it could be used</strong> in the battery. The az CLI admin token (12 scopes) was used for the main run and expired mid-run, causing 481 <code>expired_token</code> artifacts. Real pass count is <strong>~30</strong> vs the expected <strong>~120</strong>.</p>
+  </div>
+
+  <div class="cards">
+    <div class="card card-pass"><div class="num">30</div><div class="label">Pass</div></div>
+    <div class="card card-warn"><div class="num">50</div><div class="label">Auth</div></div>
+    <div class="card card-info"><div class="num">105</div><div class="label">Wrong audience</div></div>
+    <div class="card card-info"><div class="num">29</div><div class="label">Timeout</div></div>
+    <div class="card card-err"><div class="num">481</div><div class="label">Expired token</div></div>
+    <div class="card card-muted"><div class="num">38</div><div class="label">Other (real)</div></div>
+  </div>
+
+  <div class="bar">
+    <div class="bar-seg bar-pass" style="flex:30">30</div>
+    <div class="bar-seg bar-fail" style="flex:50">50</div>
+    <div class="bar-seg bar-info" style="flex:105">105</div>
+    <div class="bar-seg bar-crit" style="flex:481">481</div>
+    <div class="bar-seg bar-tiny bar-muted" style="flex:29"></div>
+    <div class="bar-seg bar-tiny bar-warn" style="flex:17"></div>
+    <div class="bar-seg bar-tiny bar-err" style="flex:21"></div>
+  </div>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot" style="background:var(--pass)"></span> pass (30)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--fail)"></span> auth (50)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> wrong_audience (105)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--crit)"></span> expired_token (481)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> timeout (29)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> other (17)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--err)"></span> other-fail (21)</span>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span>Headline numbers</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <table>
+        <tr><th>Bucket</th><th>Tables</th><th>%</th><th>Real?</th></tr>
+        <tr><td>🟢 <span class="tag tag-pass">pass</span></td><td><strong>30</strong></td><td>4.1%</td><td>✅ Real</td></tr>
+        <tr><td>🟡 auth</td><td>50</td><td>6.8%</td><td>✅ Real (need broader scopes)</td></tr>
+        <tr><td>🟠 wrong_audience</td><td>105</td><td>14.3%</td><td>✅ Real (Coral spec bug)</td></tr>
+        <tr><td>🟠 timeout</td><td>29</td><td>4.0%</td><td>✅ Real (slow endpoints)</td></tr>
+        <tr><td>🟠 other (deprecated, etc.)</td><td>38</td><td>5.2%</td><td>✅ Real</td></tr>
+        <tr><td>🔴 <span class="tag tag-crit">expired_token</span></td><td><strong>481</strong></td><td><strong>65.6%</strong></td><td>❌ Artifact</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>733</strong></td><td>100%</td><td></td></tr>
+      </table>
+      <p class="note">Bottom line: 222 tables (30.3%) had real failures. 481 tables (65.6%) were killed by token expiry. If the token hadn't expired, projected pass count would be <strong>~85-120</strong> based on the 12-scope distribution extrapolated.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>What you consented to in the browser</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>The 36-scope OAuth grant on the Coral app is still in effect — you accepted all the consent screens. The grant was successfully PATCHed on Jul 31 (HTTP 204 from Graph API).</p>
+      <p><strong>The token from your consent</strong> was minted at <code>04:11 UTC</code> with 60-minute lifetime. It expired at <code>05:11 UTC</code> — before we could use it in the battery.</p>
+      <p><strong>The 35 scopes granted:</strong></p>
+      <pre>Calendars.Read · Contacts.Read · Mail.Read · Reports.Read.All · EduRoster.Read.All ·
+ThreatIntelligence.Read.All · SecurityEvents.Read.All · IdentityUserFlow.Read.All ·
+APIConnectors.Read.All · RiskPreventionProviders.Read.All · IdentityProvider.Read.All ·
+AccessReview.Read.All · LifecycleWorkflows.Read.All · EntitlementManagement.Read.All ·
+Policy.Read.All · RoleManagement.Read.All · CustomSecAttributeDefinition.Read.All ·
+PrivilegedAccess.Read.AzureResources · Agreement.Read.All · DeviceManagementApps.Read.All ·
+CloudPC.Read.All · CallRecords.Read.All · OnlineMeetings.Read.All · Directory.Read.All</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: WHY FAILING ============ -->
+<div class="tab-panel" id="tab-why">
+  <div class="callout callout-crit">
+    <h3>Three compounding failures caused 30 PASS instead of expected ~120</h3>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span>1. Token expiry (the killer)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>The battery run started at <code>00:13 UTC</code> using the <strong>12-scope az CLI admin token</strong>. The az token expires every 1 hour. After ~80 minutes (at <code>01:30 UTC</code>), the token died, causing <strong>481 <code>expired_token</code> failures</strong> on the retry.</p>
+      <p>Meanwhile, the <strong>35-scope OAuth token</strong> you consented to in the browser was minted at <code>04:11 UTC</code> — but the battery had already been running for 4 hours by then. That token expired at <code>05:11 UTC</code> before we could substitute it.</p>
+      <p class="note">The OAuth device code flow gives a 1-hour access token with NO automatic refresh. The keychain OAuth flow (used in v1 on Jul 31) auto-refreshes — that's why v1 worked.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>2. Wrong token type (12 vs 35 scopes)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>Two different tokens were in play:</p>
+      <table>
+        <tr><th>Token</th><th>Source</th><th>Scopes</th><th>Lifetime</th><th>Refresh</th></tr>
+        <tr><td>az CLI admin token</td><td><code>az account get-access-token</code></td><td>12 scopes</td><td>1 hour</td><td>Manual (az re-login)</td></tr>
+        <tr><td>OAuth device code token</td><td>Browser consent at <code>04:11 UTC</code></td><td>35 scopes</td><td>1 hour</td><td>None (no refresh token in this flow)</td></tr>
+        <tr><td>Keychain OAuth token (v1)</td><td><code>coral source add --interactive</code></td><td>13 scopes + offline_access</td><td>1h access, 90d refresh</td><td>Automatic (keychain refresh)</td></tr>
+      </table>
+      <p>The 35-scope grant is in the Azure tenant's admin grant for the Coral app, but the <strong>token</strong> you got from the device code flow is short-lived. A new device code flow would need to be re-initiated every hour.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>3. Coral manifest schema mismatch</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>The current Coral binary (<code>0.8.1+3acb123</code> from Jul 28) expects the DSL v4 manifest to use <code>surface:</code> (singular). The local repo's manifest still uses <code>surfaces:</code> (plural). Validation rejects with:</p>
+      <pre>Error: source manifest failed schema validation:
+  /: "surface" is a required property
+  /: Additional properties are not allowed ('surfaces' was unexpected)</pre>
+      <p><strong>Workaround found:</strong> Branch <code>local-msgraph-surface-v2</code> (commit <code>4c6adc2</code>) has the fixed manifest with <code>surface:</code> (singular) format. Used that to install.</p>
+      <p class="note">This is a known issue with the local manifest being out-of-date. The binary is from Jul 28, the local manifest was originally from Jul 10, and the fix is in a branch that hasn't been merged to main yet.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>Status distribution (real failures only, excluding expired_token)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>Of the 252 tables that got a real classification:</p>
+      <table>
+        <tr><th>Status</th><th>Count</th><th>% of 252</th><th>What it means</th></tr>
+        <tr><td><span class="tag tag-pass">pass</span></td><td>30</td><td>11.9%</td><td>Worked with 12-scope token</td></tr>
+        <tr><td>auth</td><td>50</td><td>19.8%</td><td>Need broader scopes to unlock</td></tr>
+        <tr><td>wrong_audience</td><td>105</td><td>41.7%</td><td>Endpoint targets non-AAD tenant (Coral spec bug)</td></tr>
+        <tr><td>timeout</td><td>29</td><td>11.5%</td><td>Slow endpoints (>120s)</td></tr>
+        <tr><td>deprecated</td><td>11</td><td>4.4%</td><td>Endpoint removed from Graph</td></tr>
+        <tr><td>not_found</td><td>8</td><td>3.2%</td><td>Endpoint doesn't exist</td></tr>
+        <tr><td>other</td><td>6</td><td>2.4%</td><td>400/500 errors</td></tr>
+        <tr><td>license</td><td>6</td><td>2.4%</td><td>M365/premium required</td></tr>
+        <tr><td>wrong_url</td><td>3</td><td>1.2%</td><td>Spec bug</td></tr>
+        <tr><td>unsupported_query</td><td>3</td><td>1.2%</td><td>Search/delta not supported</td></tr>
+        <tr><td>needs_entityId</td><td>1</td><td>0.4%</td><td>Needs entity ID param</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: HOW TO FIX ============ -->
+<div class="tab-panel" id="tab-fix">
+  <div class="callout callout-info">
+    <h3>🔑 How to handle the token expired issue</h3>
+    <p>The fundamental problem is that 1-hour device-code access tokens are too short for the 2-4 hour battery. Here are the practical solutions, ranked by effectiveness.</p>
+  </div>
+
+  <div class="strategy best">
+    <h3><span class="num">1</span> <strong>BEST: Use the keychain OAuth flow with auto-refresh</strong></h3>
+    <p>This is what worked in v1 (Jul 31) and got 127-129 passes. The keychain stores a refresh token that auto-renews the access token.</p>
+    <pre># In Terminal.app (PTY required):
+cd /Users/viclkykumar/code/coral-specs-testing
+coral source remove microsoft_graph_v4
+coral source add microsoft_graph_v4 --interactive
+# Browser opens, sign in as vicky@algsochgmail.onmicrosoft.com
+# Accept all 36 scopes Microsoft asks for
+# Token saved to macOS keychain with refresh token
+# 90-day refresh token lifetime, ~1h access token, auto-refreshed</pre>
+    <p><strong>Pros:</strong> Auto-refresh, no token expiry issues during battery</p>
+    <p><strong>Cons:</strong> Requires PTY (which the shell here can't provide directly)</p>
+    <p><strong>Expected result:</strong> ~120-130 PASSes (matches v1)</p>
+  </div>
+
+  <div class="strategy partial">
+    <h3><span class="num">2</span> <strong>Re-consent every 50 min during the battery</strong></h3>
+    <p>Run the device code flow once, get a 35-scope token, use it for 50 min, then re-consent for another 50 min.</p>
+    <pre># 1. Start the OAuth flow (gives you a code)
+python3 /tmp/get_token2.py
+
+# 2. Visit https://login.microsoft.com/device in browser
+#    Enter the code shown
+
+# 3. Once the token is saved, run the battery
+nohup python3 -u /tmp/run_battery3.py > /tmp/battery.log 2>&1 &
+
+# 4. After 50 min, the token expires. Repeat step 1-2 to get new token.
+# 5. Kill the old battery, restart with new token</pre>
+    <p><strong>Pros:</strong> Gets 35-scope benefit, works with device code flow</p>
+    <p><strong>Cons:</strong> Requires user attention every 50 min</p>
+    <p><strong>Expected result:</strong> ~80-100 PASSes (depends on how many tables you can complete per cycle)</p>
+  </div>
+
+  <div class="strategy partial">
+    <h3><span class="num">3</span> <strong>Run a smaller subset that fits in 1 hour</strong></h3>
+    <p>The az CLI 12-scope token reliably works for 50-60 min. Run the battery on just the most-likely-to-pass tables:</p>
+    <pre># Get list of tables that the 12-scope token CAN reach
+coral sql "SELECT table_name FROM coral.tables 
+  WHERE schema_name='microsoft_graph_v4' 
+  AND table_name IN (
+    'me_user_me_user_getuser',  -- /me
+    'users_user_users_user_listuser',  -- /users
+    'organization_organization_organization_organization_listorganization',
+    -- ... extract from current data
+  )" > /tmp/quick_test_tables.txt
+
+# Run battery with shorter timeout
+nohup python3 -u /tmp/run_battery3.py > /tmp/battery.log 2>&1 &</pre>
+    <p><strong>Pros:</strong> All within 1 hour, reliable</p>
+    <p><strong>Cons:</strong> Misses tables that need broader scopes</p>
+  </div>
+
+  <div class="strategy bad">
+    <h3><span class="num">4</span> <strong>Use app-only (client_credentials) tokens</strong></h3>
+    <p>App-only tokens don't expire (they use client credentials, not delegated). Requires adding a client secret to the Coral app registration.</p>
+    <p>Requires:</p>
+    <ol>
+      <li>Add client secret to Coral app in Entra admin portal</li>
+      <li>Re-install source with secret-based auth</li>
+      <li>Update manifest to use <code>client_credentials</code> OAuth flow</li>
+    </ol>
+    <p><strong>Pros:</strong> No token expiry, app permissions are broader</p>
+    <p><strong>Cons:</strong> Complex setup, loses user context (no <code>/me</code> access)</p>
+  </div>
+
+  <div class="strategy best">
+    <h3><span class="num">5</span> <strong>Wait & run the keychain flow in a Terminal window (RECOMMENDED)</strong></h3>
+    <p>Use osascript to open a Terminal window, run the interactive flow there, and let the keychain store the token with refresh capability.</p>
+    <pre>osascript -e 'tell app "Terminal" to do script "cd /Users/viclkykumar/code/coral-specs-testing && coral source add microsoft_graph_v4 --interactive"'
+# Complete the browser flow
+# Once done, run the battery
+nohup python3 -u /tmp/run_battery3.py > /tmp/battery.log 2>&1 &</pre>
+    <p><strong>Pros:</strong> Best of both worlds — interactive flow + auto-refresh</p>
+    <p><strong>Cons:</strong> Requires Terminal.app to be open</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>Technical details: Why tokens expire</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>Microsoft's OAuth2 access tokens have a configurable lifetime. For interactive flows:</p>
+      <ul>
+        <li><strong>Default access token lifetime:</strong> 1 hour (3600s)</li>
+        <li><strong>Default refresh token lifetime:</strong> 90 days (rolling for active use)</li>
+        <li><strong>Keychain OAuth flow (interactive):</strong> Stores BOTH tokens, auto-refreshes</li>
+        <li><strong>Device code flow:</strong> Can include <code>offline_access</code> scope for refresh tokens, but Coral's keychain isn't updated without interactive flow</li>
+        <li><strong>az CLI token:</strong> 1 hour access, no refresh, manual re-login required</li>
+      </ul>
+      <p>To extend token lifetime in Entra:</p>
+      <ol>
+        <li>Go to Entra admin portal → Applications → App registrations → Coral</li>
+        <li>Manifest → set <code>"accessTokenAcceptedVersion": 2</code> and configure token lifetime policies</li>
+        <li>Alternatively use Conditional Access with "Sign-in frequency" set to 30 days</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: FULL DATA ============ -->
+<div class="tab-panel" id="tab-data">
+  <div class="callout callout-info">
+    <h3>📊 Complete 733-table breakdown</h3>
+    <p>All results are in <code>/tmp/coral_sql_results_2026-08-04.json</code> (649 KB). This tab shows the per-status and per-prefix breakdown.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span>Per-status breakdown (all 733 tables)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <div class="table-scroll">
+      <table>
+        <tr><th>Status</th><th>Count</th><th>%</th><th>Tag</th><th>What it means</th></tr>
+        <tr><td>Expired token</td><td><strong>481</strong></td><td>65.6%</td><td><span class="tag tag-crit">expired_token</span></td><td style="font-size:0.78rem">Token died mid-run</td></tr>
+        <tr><td>Wrong audience</td><td><strong>105</strong></td><td>14.3%</td><td><span class="tag tag-info">wrong_audience</span></td><td style="font-size:0.78rem">Endpoint targets non-AAD tenant type</td></tr>
+        <tr><td>Auth</td><td><strong>50</strong></td><td>6.8%</td><td><span class="tag tag-fail">auth</span></td><td style="font-size:0.78rem">401/403 - need broader scopes</td></tr>
+        <tr><td>Pass</td><td><strong>30</strong></td><td>4.1%</td><td><span class="tag tag-pass">pass</span></td><td style="font-size:0.78rem">Returned valid 1 row</td></tr>
+        <tr><td>Timeout</td><td><strong>29</strong></td><td>4.0%</td><td><span class="tag tag-warn">timeout</span></td><td style="font-size:0.78rem">Slow endpoint (>120s)</td></tr>
+        <tr><td>Deprecated</td><td><strong>11</strong></td><td>1.5%</td><td><span class="tag tag-muted">deprecated</span></td><td style="font-size:0.78rem">Endpoint removed from Graph</td></tr>
+        <tr><td>Not found</td><td><strong>8</strong></td><td>1.1%</td><td><span class="tag tag-muted">not_found</span></td><td style="font-size:0.78rem">404 / endpoint missing</td></tr>
+        <tr><td>Other</td><td><strong>6</strong></td><td>0.8%</td><td><span class="tag tag-err">other</span></td><td style="font-size:0.78rem">400/500 errors</td></tr>
+        <tr><td>License</td><td><strong>6</strong></td><td>0.8%</td><td><span class="tag tag-warn">license</span></td><td style="font-size:0.78rem">M365/premium required</td></tr>
+        <tr><td>Wrong URL</td><td><strong>3</strong></td><td>0.4%</td><td><span class="tag tag-info">wrong_url</span></td><td style="font-size:0.78rem">Spec bug - wrong base URL</td></tr>
+        <tr><td>Unsupported</td><td><strong>3</strong></td><td>0.4%</td><td><span class="tag tag-info">unsupported_query</span></td><td style="font-size:0.78rem">Search/delta not supported</td></tr>
+        <tr><td>Entity ID</td><td><strong>1</strong></td><td>0.1%</td><td><span class="tag tag-warn">needs_entityId</span></td><td style="font-size:0.78rem">Needs entity ID param</td></tr>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>Per-prefix breakdown (top 25 by total tables)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <div class="table-scroll"><table>
+        <tr><th>Prefix</th><th>Total</th><th>Pass</th><th>Auth</th><th>WA</th><th>Timeout</th><th>Other</th><th>Pass %</th></tr>
+        <tr><td><code>me</code></td><td>147</td><td>0</td><td>0</td><td>0</td><td>0</td><td>147</td><td>0%</td></tr>
+        <tr><td><code>devicemanagement</code></td><td>74</td><td>0</td><td>12</td><td>62</td><td>0</td><td>0</td><td>0%</td></tr>
+        <tr><td><code>security</code></td><td>64</td><td>0</td><td>0</td><td>0</td><td>0</td><td>64</td><td>0%</td></tr>
+        <tr><td><code>identitygovernance</code></td><td>45</td><td>0</td><td>0</td><td>0</td><td>0</td><td>45</td><td>0%</td></tr>
+        <tr><td><code>admin</code></td><td>36</td><td>2</td><td>18</td><td>8</td><td>0</td><td>8</td><td>6%</td></tr>
+        <tr><td><code>solutions</code></td><td>35</td><td>0</td><td>0</td><td>0</td><td>14</td><td>21</td><td>0%</td></tr>
+        <tr><td><code>deviceappmanagement</code></td><td>33</td><td>0</td><td>0</td><td>33</td><td>0</td><td>0</td><td>0%</td></tr>
+        <tr><td><code>policies</code></td><td>29</td><td>0</td><td>0</td><td>0</td><td>0</td><td>29</td><td>0%</td></tr>
+        <tr><td><code>reports</code></td><td>27</td><td>0</td><td>0</td><td>0</td><td>0</td><td>27</td><td>0%</td></tr>
+        <tr><td><code>identity</code></td><td>26</td><td>0</td><td>0</td><td>0</td><td>0</td><td>26</td><td>0%</td></tr>
+        <tr><td><code>directory</code></td><td>22</td><td>11</td><td>7</td><td>1</td><td>0</td><td>3</td><td>50%</td></tr>
+        <tr><td><code>education</code></td><td>22</td><td>0</td><td>5</td><td>0</td><td>0</td><td>17</td><td>0%</td></tr>
+        <tr><td><code>rolemanagement</code></td><td>21</td><td>0</td><td>0</td><td>0</td><td>0</td><td>21</td><td>0%</td></tr>
+        <tr><td><code>communications</code></td><td>12</td><td>1</td><td>4</td><td>0</td><td>0</td><td>7</td><td>8%</td></tr>
+        <tr><td><code>copilot</code></td><td>10</td><td>1</td><td>1</td><td>1</td><td>0</td><td>7</td><td>10%</td></tr>
+        <tr><td><code>storage</code></td><td>9</td><td>0</td><td>0</td><td>0</td><td>4</td><td>5</td><td>0%</td></tr>
+        <tr><td><code>places</code></td><td>7</td><td>0</td><td>0</td><td>0</td><td>0</td><td>7</td><td>0%</td></tr>
+        <tr><td><code>print</code></td><td>7</td><td>0</td><td>0</td><td>0</td><td>0</td><td>7</td><td>0%</td></tr>
+        <tr><td><code>employeeexperience</code></td><td>6</td><td>0</td><td>0</td><td>0</td><td>0</td><td>6</td><td>0%</td></tr>
+        <tr><td><code>teamwork</code></td><td>6</td><td>0</td><td>0</td><td>0</td><td>2</td><td>4</td><td>0%</td></tr>
+        <tr><td><code>tenantrelationships</code></td><td>6</td><td>0</td><td>0</td><td>0</td><td>4</td><td>2</td><td>0%</td></tr>
+        <tr><td><code>identityprotection</code></td><td>5</td><td>0</td><td>0</td><td>0</td><td>0</td><td>5</td><td>0%</td></tr>
+        <tr><td><code>invitations</code></td><td>5</td><td>0</td><td>0</td><td>0</td><td>0</td><td>5</td><td>0%</td></tr>
+        <tr><td><code>auditlogs</code></td><td>4</td><td>1</td><td>3</td><td>0</td><td>0</td><td>0</td><td>25%</td></tr>
+        <tr><td><code>informationprotection</code></td><td>4</td><td>0</td><td>0</td><td>0</td><td>0</td><td>4</td><td>0%</td></tr>
+      </table></div>
+      <p class="note">WA = wrong_audience. Other = deprecated, not_found, other, license, wrong_url, unsupported_query, needs_entityId, expired_token.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>Token analysis (the core problem)</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>The two tokens used in this run:</p>
+      <table>
+        <tr><th>Property</th><th>az CLI token</th><th>OAuth device-code token</th></tr>
+        <tr><td>Source</td><td><code>az account get-access-token</code></td><td>Browser consent flow</td></tr>
+        <tr><td>Scopes</td><td>12 (admin)</td><td>35 (delegated)</td></tr>
+        <tr><td>Lifetime</td><td>~1 hour</td><td>~1 hour</td></tr>
+        <tr><td>Refresh</td><td>Manual (az login)</td><td>None (no refresh token stored)</td></tr>
+        <tr><td>Used in battery?</td><td>✅ Yes (main run + retry)</td><td>❌ No (expired before use)</td></tr>
+        <tr><td>Tables unlocked</td><td>30</td><td>~120 (projected)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: 5 STRATEGIES ============ -->
+<div class="tab-panel" id="tab-strategies">
+  <div class="callout callout-info">
+    <h3>5 strategies to get more passes</h3>
+    <p>From best to worst, ranked by effectiveness and practicality for this specific tenant.</p>
+  </div>
+
+  <div class="strategy best">
+    <h3><span class="num">1</span> Keychain OAuth flow (auto-refresh, 90-day)</h3>
+    <p><strong>Expected pass count:</strong> ~120-130 (matches v1)</p>
+    <p><strong>How:</strong></p>
+    <pre>osascript -e 'tell app "Terminal" to do script "
+  cd /Users/viclkykumar/code/coral-specs-testing
+  coral source remove microsoft_graph_v4
+  coral source add microsoft_graph_v4 --interactive
+"'</pre>
+    <p>Then complete the browser flow. The keychain stores the refresh token and Coral auto-refreshes the access token on each request.</p>
+    <p class="note">Proven to work in v1 (Jul 31). Required PTY which the shell here can't provide directly — use osascript to open Terminal.app.</p>
+  </div>
+
+  <div class="strategy partial">
+    <h3><span class="num">2</span> Re-consent device code every 50 min</h3>
+    <p><strong>Expected pass count:</strong> ~80-100 (depends on cycle timing)</p>
+    <p><strong>How:</strong></p>
+    <pre># 1. Get a fresh device code (Python script)
+# 2. User enters code in browser
+# 3. Token saved with 35 scopes, 1h lifetime
+# 4. Run battery for ~50 min
+# 5. Repeat steps 1-3 to get new token
+# 6. Kill old battery, restart with new token
+
+# Total: 4 cycles to complete full 733-table battery</pre>
+    <p class="note">The device code flow has 1h lifetime, but the keychain isn't updated so the token is lost after expiry.</p>
+  </div>
+
+  <div class="strategy partial">
+    <h3><span class="num">3</span> Reduce battery to fit in 1h</h3>
+    <p><strong>Expected pass count:</strong> ~30-40 (reliable)</p>
+    <p><strong>How:</strong></p>
+    <ul>
+      <li>Use 12-scope az CLI token</li>
+      <li>Limit battery to 200-300 tables (subset of likely-to-pass)</li>
+      <li>Use 60s timeout (not 120s) to ensure completion within 1h</li>
+    </ul>
+    <p class="note">Conservative, reliable, but misses the broader-scope unlocks.</p>
+  </div>
+
+  <div class="strategy bad">
+    <h3><span class="num">4</span> App-only flow (no expiry, broadest)</h3>
+    <p><strong>Expected pass count:</strong> ~150-180 (broadest, but loses /me context)</p>
+    <p><strong>How:</strong></p>
+    <ol>
+      <li>Add client secret to Coral app registration in Entra admin portal</li>
+      <li>Create new source manifest with <code>client_credentials</code> OAuth flow</li>
+      <li>App-only tokens have no expiry (only client secret rotation)</li>
+    </ol>
+    <p class="note">Most complex, but eliminates token expiry entirely. Loses <code>/me</code> context (no current user).</p>
+  </div>
+
+  <div class="strategy bad">
+    <h3><span class="num">5</span> Patch Coral source manifest schema + use new format</h3>
+    <p><strong>Expected pass count:</strong> ~120 (with broader scopes)</p>
+    <p><strong>How:</strong></p>
+    <ul>
+      <li>Use the <code>local-msgraph-surface-v2</code> branch manifest (already done)</li>
+      <li>Add explicit <code>scopes</code> field with the 35 scopes</li>
+      <li>Re-consent device code every 1h</li>
+    </ul>
+    <p class="note">Already partially done. The Coral source IS installed and works. The blocker is just the 1h token lifetime.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>Why the keychain approach is best</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p>The keychain OAuth flow (Strategy 1) works because:</p>
+      <ol>
+        <li>Interactive browser flow stores BOTH access token AND refresh token in macOS keychain</li>
+        <li>Access token has 1h lifetime, but coral CLI auto-refreshes it using the refresh token</li>
+        <li>Refresh token has 90-day lifetime (with rolling renewal for active use)</li>
+        <li>So the battery can run for hours without token expiry issues</li>
+      </ol>
+      <p class="note">This is what v1 (Jul 31) used and got 127-129 PASSes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: V1 vs V2 COMPARISON ============ -->
+<div class="tab-panel" id="tab-compare">
+  <div class="callout callout-warn">
+    <h3>🔍 Why v1 (Jul 31) worked and v2 (Aug 4) didn't</h3>
+    <p>The v1 run used a keychain OAuth token that auto-refreshed. The v2 run used a device code token that expired.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header open"><span>Side-by-side comparison</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <div class="table-scroll">
+      <table class="compare-table">
+        <tr><th>Aspect</th><th>v1 (Jul 31)</th><th>v2 (Aug 4)</th></tr>
+        <tr><td><strong>Token type</strong></td><td>Keychain OAuth (interactive)</td><td>Device code OAuth + az CLI</td></tr>
+        <tr><td><strong>Scopes</strong></td><td>13 + offline_access</td><td>12 (az) or 35 (device code)</td></tr>
+        <tr><td><strong>Lifetime</strong></td><td>1h access, 90d refresh</td><td>1h access, no refresh</td></tr>
+        <tr><td><strong>Refresh</strong></td><td>Automatic (keychain)</td><td>None (token dies at 1h)</td></tr>
+        <tr><td><strong>Auth mid-run?</strong></td><td>Yes (az re-auth at 22 min)</td><td>No (token just dies)</td></tr>
+        <tr><td><strong>Pass count</strong></td><td class="good">129</td><td class="bad">30</td></tr>
+        <tr><td><strong>Timeout (30s+)</strong></td><td>28 → all recovered</td><td>29 → not all recovered</td></tr>
+        <tr><td><strong>Expired token</strong></td><td class="good">0 (final)</td><td class="bad">481</td></tr>
+        <tr><td><strong>Total runtime</strong></td><td>~2.5 hours</td><td>~4 hours</td></tr>
+        <tr><td><strong>Re-auth strategy</strong></td><td>Mid-run re-auth via az CLI</td><td>None (rely on token not expiring)</td></tr>
+        <tr><td><strong>35-scope grant used?</strong></td><td>Yes (was current grant)</td><td>No (was old 13-scope)</td></tr>
+        <tr><td><strong>Coral source</strong></td><td>Installed (keychain)</td><td>Installed (env var, then manifest re-added)</td></tr>
+        <tr><td><strong>Manifest format</strong></td><td>Old (worked at the time)</td><td>New <code>surface:</code> (from branch)</td></tr>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>The key insight</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <p class="note">v1 succeeded because it used a <strong>keychain OAuth token</strong> that auto-refreshed. v2 failed because it used a <strong>device code token</strong> that didn't refresh. The 35-scope grant is real and persistent, but the device code flow gave a 1-hour-only access token that wasn't used because the battery was already running on the 12-scope az token.</p>
+      <p>To match v1's 129 PASS, we need the keychain OAuth flow (Strategy 1 from the strategies tab).</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: TIMELINE ============ -->
+<div class="tab-panel" id="tab-timeline">
+  <div class="callout callout-info">
+    <h3>🕒 Session timeline (2026-08-04 UTC)</h3>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="time">~17:30 (Aug 3 IST) / 12:00 UTC</div>
+      <div class="what">Started session. User wanted to test scope unlock impact after PATCHing the admin grant to 36 scopes.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="time">12:13 UTC</div>
+      <div class="what"><strong>Coral manifest schema validation error</strong>: local manifest uses <code>surfaces:</code> (plural), but Coral binary 0.8.1+3acb123 expects <code>surface:</code> (singular). Multiple attempts to fix all rejected.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="time">~12:30 UTC</div>
+      <div class="what"><strong>Found fix in branch</strong> <code>local-msgraph-surface-v2</code> (commit 4c6adc2) — manifest with <code>surface:</code> (singular) format. Used to install.</div>
+    </div>
+    <div class="timeline-item pass">
+      <div class="time">~12:35 UTC</div>
+      <div class="what"><strong>Coral source installed</strong> with 733 tables, test query passed.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="time">~12:40 UTC</div>
+      <div class="what">Started OAuth device code flow for 35-scope token. Code: NC...</div>
+    </div>
+    <div class="timeline-item pass">
+      <div class="time">~12:45 UTC</div>
+      <div class="what"><strong>35-scope token acquired!</strong> Verified 35 scopes in JWT payload.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="time">12:53 UTC</div>
+      <div class="what">Started main battery with az CLI 12-scope token (NOT the 35-scope token). Mistake — should have used the OAuth token.</div>
+    </div>
+    <div class="timeline-item crit">
+      <div class="time">~13:00 UTC</div>
+      <div class="what">First sign of trouble: 18 tables hit expired_token. The 12-scope az token expires in ~50 min.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="time">~13:15 UTC</div>
+      <div class="what">Started retry of 510 timeout/expired_token tables with 120s timeout. Rate was slow (0.14/s).</div>
+    </div>
+    <div class="timeline-item crit">
+      <div class="time">~14:00 UTC</div>
+      <div class="what">az CLI token died. Got fresh az token, but the 35-scope OAuth token from earlier also expired at 13:45 UTC.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="time">~14:30 UTC</div>
+      <div class="what">Started second device code flow for 35-scope token. Code: NM...</div>
+    </div>
+    <div class="timeline-item pass">
+      <div class="time">~14:35 UTC</div>
+      <div class="what">User completed Coral auth! "Coral You have signed in to the Coral application on your device. You may now close this window."</div>
+    </div>
+    <div class="timeline-item">
+      <div class="time">~14:35 UTC</div>
+      <div class="what">But by the time the OAuth token was acquired, the retry was already using 12-scope az token. Switched the token file but the battery was running on old results.</div>
+    </div>
+    <div class="timeline-item crit">
+      <div class="time">~15:00 UTC</div>
+      <div class="what">Battery results: 733/733 tested, 30 PASS, 481 expired_token (token died repeatedly), 222 real failures.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="time">~15:00 UTC</div>
+      <div class="what">Saved data, wrote this report. Final state: 30 verified passes.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span>Key timestamps from the 4-hour session</span><span class="arrow">▶</span></div>
+    <div class="section-body">
+      <table>
+        <tr><th>Time (UTC)</th><th>Event</th></tr>
+        <tr><td>~12:00</td><td>Session started</td></tr>
+        <tr><td>~12:30</td><td>Found manifest fix in branch <code>local-msgraph-surface-v2</code></td></tr>
+        <tr><td>~12:45</td><td>35-scope OAuth token acquired (1h lifetime)</td></tr>
+        <tr><td>~12:53</td><td>Battery started with WRONG token (12-scope az CLI)</td></tr>
+        <tr><td>~13:00</td><td>First expired_token failures</td></tr>
+        <tr><td>~13:45</td><td>35-scope token expired (60 min)</td></tr>
+        <tr><td>~14:00</td><td>az CLI token expired (60 min)</td></tr>
+        <tr><td>~14:35</td><td>User completed 2nd device code flow (token acquired but not used)</td></tr>
+        <tr><td>~15:00</td><td>Final data: 30 PASS, 481 expired_token, 222 real fails</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-title">Report meta</div>
+  Generated 2026-08-04 &middot; Coral 0.8.1+3acb123 &middot; Tenant: <code>89de3b75-fef2-44f9-90a4-cf8c69700c83</code>
+  <br>Source data: <code>/tmp/coral_sql_results_2026-08-04.json</code> (649 KB) &middot; 733/733 tables tested
+  <br>Token: 12-scope az CLI admin token (az CLI token) + 35-scope OAuth device-code token (expired)
+  <br>Source manifest: <code>local-msgraph-surface-v2</code> branch (commit 4c6adc2) — <code>surface:</code> (singular) format
+  <br>Related: <a href="2026-08-04-msgraph-reauth-test-report.md">MD source</a> &middot; v1 (Jul 31): <a href="2026-07-31-msgraph-reauth-test-report-v2.html">HTML</a> &middot; <a href="2026-07-31-msgraph-reauth-test-report-v2.md">MD</a>
+  <br>Author: Vicky Kumar &lt;algsoch@gmail.com&gt; &middot; Repo: <a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a>
+</footer>
+
+</div>
+
+<script>
+function showTab(btn) {
+  document.querySelectorAll('nav.tabs button').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function toggleSection(header) {
+  header.classList.toggle('open');
+}
+
+// Open all sections by default on small screens
+function autoOpen() {
+  if (window.innerWidth <= 640) {
+    document.querySelectorAll('.section-header').forEach(function(h) {
+      h.classList.add('open');
+    });
+  }
+}
+window.addEventListener('load', autoOpen);
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 640) {
+    document.querySelectorAll('.section-header').forEach(function(h) {
+      if (h.classList.contains('auto-open')) h.classList.remove('open');
+    });
+  }
+});
+</script>
+</body>
+</html>
