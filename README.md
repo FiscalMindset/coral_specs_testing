@@ -48,7 +48,21 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Every report has a matching `.md` (raw) and `.html` (responsive) version.
 
-### 🆕 2026-08-04 — Spec-bug audit: 248 fixable, 30 not fixable in spec
+### 🆕 2026-08-04 — Business Premium licensed-tenant test: 23 tables unlocked
+
+| | |
+|---|---|
+| **Date** | 2026-08-04 |
+| **Tenant** | `algsoch762.onmicrosoft.com` (Business Premium) |
+| **Tables tested** | 733 (full battery + sweep, 0 timeouts) |
+| **Passing** | 70 (vs 109 on unlicensed tenant) |
+| **License unlocks** | 23 tables (10 license-blocked Teams/Chat/Drive/Site tables now pass) |
+
+First battery run against a **licensed** tenant. The license unlocked 23 tables (Teams list, chats, drives, sites, joined teams, insights, outlook settings, planner, deleted teams); the raw pass count is lower because the new tenant uses the default 9-scope token vs the old 36-scope grant, so ~34 directory/policy tables regress to `auth` on scope, not license. License win is real but masked by the narrower token.
+
+- **[Markdown](reports/2026-08-04-licensed-msgraph-test-report.md)** · **[HTML](reports/2026-08-04-licensed-msgraph-test-report.html)** — breakdown, transition matrix, all 23 unlocks, full 70-table pass list, re-run recommendation.
+
+### 2026-08-04 — Spec-bug audit: 248 fixable, 30 not fixable in spec
 
 | | |
 |---|---|

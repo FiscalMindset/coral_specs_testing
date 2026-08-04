@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Graph v4 Source — Business Premium Licensed-Tenant Test Report</title>
+<style>
+  :root {
+    --pass: #22c55e;
+    --pass-bg: #f0fdf4;
+    --fail: #ef4444;
+    --fail-bg: #fef2f2;
+    --warn: #f59e0b;
+    --warn-bg: #fffbeb;
+    --info: #3b82f6;
+    --info-bg: #eff6ff;
+    --muted: #6b7280;
+    --muted-bg: #f9fafb;
+    --err: #8b5cf6;
+    --err-bg: #f5f3ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 24px; }
+  .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; font-size: 0.85rem; color: #64748b; }
+  .meta code { background: #f1f5f9; padding: 1px 6px; border-radius: 3px; font-size: 0.8rem; }
+
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #e2e8f0; text-align: center; }
+  .card .num { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
+  .card .label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+  .card-pass .num { color: var(--pass); }
+  .card-auth .num { color: var(--warn); }
+  .card-err .num { color: var(--fail); }
+  .card-br .num { color: var(--info); }
+  .card-nf .num { color: var(--err); }
+  .card-uns .num { color: var(--muted); }
+
+  .bar-container { margin-bottom: 28px; }
+  .bar { display: flex; height: 32px; border-radius: 8px; overflow: hidden; font-size: 0.75rem; font-weight: 600; }
+  .bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; overflow: hidden; }
+  .bar-pass { background: var(--pass); }
+  .bar-auth { background: #f59e0b; }
+  .bar-br { background: #3b82f6; }
+  .bar-nf { background: #8b5cf6; }
+  .bar-err { background: #ef4444; }
+  .bar-uns { background: #64748b; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 0.8rem; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .section { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 16px; overflow: hidden; }
+  .section-header { padding: 12px 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .section-header:hover { background: #f8fafc; }
+  .section-header .arrow { transition: transform 0.2s; font-size: 0.8rem; }
+  .section-header.open .arrow { transform: rotate(90deg); }
+  .section-body { padding: 0 16px 16px; }
+  .section-body.hidden { display: none; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; padding: 8px 8px; border-bottom: 2px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  .scroll { overflow-x: auto; }
+
+  .pass-list { column-count: 2; column-gap: 24px; font-size: 0.8rem; }
+  .pass-list li { break-inside: avoid; padding: 2px 0; list-style: none; font-family: 'SF Mono', 'Cascadia Code', 'Menlo', monospace; font-size: 0.72rem; }
+  .pass-list li::before { content: '\2713'; color: var(--pass); margin-right: 4px; font-weight: 700; }
+
+  .unlock-table td:first-child { white-space: nowrap; }
+
+  .note-box { margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 0.85rem; }
+  .note-green { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .note-amber { background: #fffbeb; border: 1px solid #fde68a; }
+
+  footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 0.8rem; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.82em; }
+
+  @media (max-width: 640px) {
+    .container { padding: 16px; }
+    h1 { font-size: 1.35rem; }
+    .pass-list { column-count: 1; }
+    .summary-row { grid-template-columns: repeat(3, 1fr); }
+    .card .num { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Microsoft Graph v4 Source — Business Premium Licensed-Tenant Test Report</h1>
+  <div class="subtitle">Full 733-table battery against the licensed Business Premium tenant</div>
+  <div class="meta">
+    <span>📅 2026-08-04 (UTC) · 2026-08-04 23:08 IST</span>
+    <span>⏱️ ~1h 40m (fast battery + 60s sweep)</span>
+    <span>📊 733 tables · 0 timeouts</span>
+    <span>🏢 <code>algsoch762.onmicrosoft.com</code> · Business Premium</span>
+  </div>
+
+  <div class="summary-row">
+    <div class="card card-pass"><div class="num">70</div><div class="label">PASS</div></div>
+    <div class="card card-auth"><div class="num">280</div><div class="label">auth</div></div>
+    <div class="card card-err"><div class="num">155</div><div class="label">error</div></div>
+    <div class="card card-br"><div class="num">114</div><div class="label">bad_request</div></div>
+    <div class="card card-nf"><div class="num">74</div><div class="label">not_found</div></div>
+    <div class="card card-uns"><div class="num">40</div><div class="label">unsupported</div></div>
+  </div>
+
+  <div class="bar-container">
+    <div class="bar">
+      <div class="bar-seg bar-pass" style="width:9.5%">70</div>
+      <div class="bar-seg bar-auth" style="width:38.2%">280</div>
+      <div class="bar-seg bar-err" style="width:21.1%">155</div>
+      <div class="bar-seg bar-br" style="width:15.6%">114</div>
+      <div class="bar-seg bar-nf" style="width:10.1%">74</div>
+      <div class="bar-seg bar-uns" style="width:5.5%">40</div>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>pass</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>auth (403/401 scope)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>error (400/500)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>bad_request (MSA-only)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>not_found (404)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#64748b"></span>unsupported</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">📌 Bottom line <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <p>The Business Premium license <strong>unlocked 23 tables</strong> that failed on the unlicensed tenant
+      (10 previously <code>license</code>-blocked file/Teams/Chat tables now pass; plus 10 <code>auth</code>→pass and
+      2 <code>not_found</code>→pass). The raw pass count dropped 109 → 70 because the new tenant authenticates with the
+      <strong>default 9-scope Coral-app token</strong>, while the old tenant used the <strong>36-scope admin grant</strong> —
+      so ~34 directory/policy tables that used to pass now fail with <code>auth</code> (403 scope-denied), not because of
+      licensing. <strong>The license win is real; it is masked by the narrower token.</strong></p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">🎯 Why this run matters <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <p>This is the first battery run against a <strong>licensed</strong> tenant. The engagement's core blocker since
+      2026-07-14 was "no M365 license" — identity queries worked but file/SharePoint/Teams data queries failed with license
+      errors. Business Premium is now active on <code>algsoch762.onmicrosoft.com</code>, so this run answers: <em>which tables
+      stop failing once the tenant actually has the licenses Graph requires?</em></p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Change</th><th>Old run (baseline)</th><th>This run</th></tr></thead>
+        <tbody>
+          <tr><td>Tenant</td><td><code>algsochgmail.onmicrosoft.com</code> (unlicensed)</td><td><code>algsoch762.onmicrosoft.com</code> (<strong>Business Premium</strong>)</td></tr>
+          <tr><td>Token</td><td>36-scope keychain admin grant</td><td>default <strong>9-scope</strong> Coral-app consent</td></tr>
+          <tr><td>Pass</td><td><strong>109</strong></td><td><strong>70</strong></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="margin-top:8px">The token difference is the confounder: 62 tables that passed before now fail (34 <code>auth</code>,
+      26 <code>error</code>, 2 <code>bad_request</code>) — all scope failures, not license failures. A clean comparison needs the
+      wide-scope token re-granted on the new tenant.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">🔀 Transition matrix (old → new) <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Old \ New</th><th>pass</th><th>auth</th><th>bad_request</th><th>error</th><th>not_found</th><th>unsupported</th></tr></thead>
+        <tbody>
+          <tr><td>pass (109)</td><td><strong>47</strong></td><td>34</td><td>2</td><td>26</td><td>0</td><td>0</td></tr>
+          <tr><td>auth (282)</td><td><strong>10</strong></td><td>203</td><td>10</td><td>50</td><td>9</td><td>0</td></tr>
+          <tr><td>wrong_audience (131)</td><td>0</td><td>2</td><td><strong>82</strong></td><td>27</td><td>1</td><td>19</td></tr>
+          <tr><td>license (56)</td><td><strong>10</strong></td><td>28</td><td>3</td><td>11</td><td>0</td><td>4</td></tr>
+          <tr><td>not_found (58)</td><td><strong>2</strong></td><td>5</td><td>4</td><td>11</td><td><strong>36</strong></td><td>0</td></tr>
+          <tr><td>other (57)</td><td><strong>1</strong></td><td>8</td><td>10</td><td>21</td><td>5</td><td>12</td></tr>
+          <tr><td>wrong_url (19)</td><td>0</td><td>0</td><td>2</td><td>5</td><td><strong>12</strong></td><td>0</td></tr>
+          <tr><td>deprecated (15)</td><td>0</td><td>0</td><td>1</td><td>3</td><td><strong>11</strong></td><td>0</td></tr>
+          <tr><td>needs_entityId (3)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td><strong>3</strong></td></tr>
+          <tr><td>unsupported_query (3)</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td><strong>2</strong></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <ul style="margin:10px 0 0 18px; font-size:0.85rem;">
+        <li><strong>47 pass stayed pass</strong> — the stable core.</li>
+        <li><strong>23 tables improved to pass</strong> — the license + re-consent wins (next section).</li>
+        <li><strong>62 pass → auth/error/bad_request</strong> — the token-scope regression (directory, policy, role tables need scopes the 9-scope token lacks).</li>
+        <li><strong>82 wrong_audience → bad_request</strong> — consumer-audience endpoints re-labelled by the newer Coral build; same spec-gap class.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">✅ The 23 tables the license / re-consent unlocked <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <div class="scroll">
+      <table class="unlock-table">
+        <thead><tr><th>Old status</th><th>Table</th></tr></thead>
+        <tbody>
+          <tr><td>license</td><td><code>chats_chat_chats_chat_listchat</code></td></tr>
+          <tr><td>license</td><td><code>me_chat_me_listchats</code></td></tr>
+          <tr><td>license</td><td><code>me_drive_me_getdrive</code></td></tr>
+          <tr><td>license</td><td><code>me_drive_me_listdrives</code></td></tr>
+          <tr><td>license</td><td><code>me_site_me_listfollowedsites</code></td></tr>
+          <tr><td>license</td><td><code>me_team_me_listjoinedteams</code></td></tr>
+          <tr><td>license</td><td><code>me_userteamwork_me_teamwork_listassociatedteams</code></td></tr>
+          <tr><td>license</td><td><code>sites_site_sites_site_listsite</code></td></tr>
+          <tr><td>license</td><td><code>teams_team_teams_team_listteam</code></td></tr>
+          <tr><td>license</td><td><code>teamwork_deletedteam_teamwork_listdeletedteams</code></td></tr>
+          <tr><td>auth</td><td><code>me_iteminsights_me_getinsights</code></td></tr>
+          <tr><td>auth</td><td><code>me_iteminsights_me_insights_listshared</code></td></tr>
+          <tr><td>auth</td><td><code>me_iteminsights_me_insights_listused</code></td></tr>
+          <tr><td>auth</td><td><code>me_outlookuser_me_getoutlook</code></td></tr>
+          <tr><td>auth</td><td><code>me_outlookuser_me_outlook_supportedlanguages</code></td></tr>
+          <tr><td>auth</td><td><code>me_outlookuser_me_outlook_supportedtimezones_5c4f</code></td></tr>
+          <tr><td>auth</td><td><code>me_usersettings_me_getsettings</code></td></tr>
+          <tr><td>auth</td><td><code>me_usersettings_me_settings_getexchange</code></td></tr>
+          <tr><td>auth</td><td><code>tenantrelationships_delegatedadmincustomer_tenantrelationships_listdelegatedadmincustomers</code></td></tr>
+          <tr><td>auth</td><td><code>tenantrelationships_delegatedadminrelationship_tenantrelationships_listdelegatedadminrelationships</code></td></tr>
+          <tr><td>other</td><td><code>me_iteminsights_me_insights_listtrending</code></td></tr>
+          <tr><td>not_found</td><td><code>me_usersettings_me_settings_getiteminsights</code></td></tr>
+          <tr><td>not_found</td><td><code>planner_planner_planner_planner_getplanner</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="note-box note-green"><strong>The 10 <code>license</code>→pass tables are the headline result:</strong> Teams list, chats,
+      drives, sites, joined teams, followed sites, associated teamwork, and deleted teams all return data on the licensed tenant —
+      exactly the file/Teams/chat surface the connector exists for.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">📋 All 70 passing tables <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Prefix</th><th>Pass</th><th>Total</th><th>Old pass</th></tr></thead>
+        <tbody>
+          <tr><td><code>me_</code></td><td><strong>44</strong></td><td>147</td><td>35</td></tr>
+          <tr><td><code>tenantrelationships_</code></td><td><strong>3</strong></td><td>6</td><td>1</td></tr>
+          <tr><td><code>admin_</code></td><td>2</td><td>36</td><td>4</td></tr>
+          <tr><td><code>reports_</code></td><td>2</td><td>27</td><td>2</td></tr>
+          <tr><td><code>security_</code></td><td>2</td><td>64</td><td>3</td></tr>
+          <tr><td><code>chats_</code></td><td>1</td><td>3</td><td>0</td></tr>
+          <tr><td><code>planner_</code></td><td>1</td><td>4</td><td>0</td></tr>
+          <tr><td><code>sites_</code></td><td>1</td><td>3</td><td>0</td></tr>
+          <tr><td><code>teams_</code></td><td>1</td><td>2</td><td>0</td></tr>
+          <tr><td><code>teamwork_</code></td><td>1</td><td>6</td><td>0</td></tr>
+          <tr><td>others (12 prefixes, 1 each)</td><td>12</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="margin:10px 0 6px">Full table list:</p>
+      <ul class="pass-list">
+        <li>admin_exchangeadmin_admin_exchange_gettracing</li>
+        <li>admin_peopleadminsettings_admin_people_getiteminsights</li>
+        <li>applicationtemplates_applicationtemplate_applicationtemplates_applicationtemplate_listapplicationtemplate</li>
+        <li>auditlogs_auditlogroot_auditlogs_auditlogroot_getauditlogroot</li>
+        <li>chats_chat_chats_chat_listchat</li>
+        <li>compliance_compliance_compliance_compliance_getcompliance</li>
+        <li>copilot_copilotroot_copilot_copilotroot_getcopilotroot</li>
+        <li>directory_recovery_directory_getrecovery</li>
+        <li>identitygovernance_identitygovernance_identitygovernance_identitygovernance_getidentitygovernance</li>
+        <li>informationprotection_informationprotection_informationprotection_informationprotection_getinformationprotection</li>
+        <li>me_chat_me_listchats</li>
+        <li>me_directoryobject_me_listcreatedobjects_asserviceprincipal</li>
+        <li>me_directoryobject_me_listdirectreports</li>
+        <li>me_directoryobject_me_listdirectreports_asorgcontact</li>
+        <li>me_directoryobject_me_listdirectreports_asuser</li>
+        <li>me_directoryobject_me_listmemberof</li>
+        <li>me_directoryobject_me_listmemberof_asadministrativeunit</li>
+        <li>me_directoryobject_me_listmemberof_asdirectoryrole</li>
+        <li>me_directoryobject_me_listmemberof_asgroup</li>
+        <li>me_directoryobject_me_listowneddevices</li>
+        <li>me_directoryobject_me_listowneddevices_asapproleassignment</li>
+        <li>me_directoryobject_me_listownedobjects</li>
+        <li>me_directoryobject_me_listownedobjects_asapplication</li>
+        <li>me_directoryobject_me_listownedobjects_asgroup</li>
+        <li>me_directoryobject_me_listownedobjects_asserviceprincipal</li>
+        <li>me_directoryobject_me_listrefsponsors</li>
+        <li>me_directoryobject_me_listregistereddevices</li>
+        <li>me_directoryobject_me_listregistereddevices_asapproleassignment</li>
+        <li>me_directoryobject_me_listregistereddevices_asendpoint</li>
+        <li>me_directoryobject_me_listtransitivememberof</li>
+        <li>me_directoryobject_me_listtransitivememberof_asadministrativeunit</li>
+        <li>me_directoryobject_me_listtransitivememberof_asdirectoryrole</li>
+        <li>me_directoryobject_me_listtransitivememberof_asgroup</li>
+        <li>me_drive_me_getdrive</li>
+        <li>me_drive_me_listdrives</li>
+        <li>me_extension_me_listextensions</li>
+        <li>me_iteminsights_me_getinsights</li>
+        <li>me_iteminsights_me_insights_listshared</li>
+        <li>me_iteminsights_me_insights_listtrending</li>
+        <li>me_iteminsights_me_insights_listused</li>
+        <li>me_licensedetails_me_licensedetails_getteamslicensingdetails</li>
+        <li>me_licensedetails_me_listlicensedetails</li>
+        <li>me_oauth2permissiongrant_me_listoauth2permissiongrants</li>
+        <li>me_outlookuser_me_getoutlook</li>
+        <li>me_outlookuser_me_outlook_supportedlanguages</li>
+        <li>me_outlookuser_me_outlook_supportedtimezones_5c4f</li>
+        <li>me_serviceprovisioningerror_me_listserviceprovisioningerrors</li>
+        <li>me_site_me_listfollowedsites</li>
+        <li>me_team_me_listjoinedteams</li>
+        <li>me_user_me_user_getuser</li>
+        <li>me_usersettings_me_getsettings</li>
+        <li>me_usersettings_me_settings_getexchange</li>
+        <li>me_usersettings_me_settings_getiteminsights</li>
+        <li>me_userteamwork_me_teamwork_listassociatedteams</li>
+        <li>organization_organization_organization_organization_listorganization</li>
+        <li>planner_planner_planner_planner_getplanner</li>
+        <li>privacy_privacy_privacy_privacy_getprivacy</li>
+        <li>reports_authenticationmethodsroot_reports_getauthenticationmethods</li>
+        <li>reports_reportroot_reports_reportroot_getreportroot</li>
+        <li>schemaextensions_schemaextension_schemaextensions_schemaextension_listschemaextension</li>
+        <li>security_casesroot_security_getcases</li>
+        <li>security_threatintelligence_security_getthreatintelligence</li>
+        <li>sites_site_sites_site_listsite</li>
+        <li>solutions_solutionsroot_solutions_solutionsroot_getsolutionsroot</li>
+        <li>subscriptions_subscription_subscriptions_subscription_listsubscription</li>
+        <li>teams_team_teams_team_listteam</li>
+        <li>teamwork_deletedteam_teamwork_listdeletedteams</li>
+        <li>tenantrelationships_delegatedadmincustomer_tenantrelationships_listdelegatedadmincustomers</li>
+        <li>tenantrelationships_delegatedadminrelationship_tenantrelationships_listdelegatedadminrelationships</li>
+        <li>tenantrelationships_tenantrelationship_tenantrelationships_tenantrelationship_gettenantrelationship</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">⚠️ The 62 pass→fail regressions are token scope, not license <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <p>All 62 are directory / policy / role tables (users, groups, applications, devices, service principals, policies,
+      directory roles, conditional access, <code>me_directoryobject</code> sponsor/owned-device variants, deleted-items).
+      Each fails with a Graph <code>403</code>/<code>400</code> scope error because the <strong>9-scope</strong> default token
+      lacks delegated permissions (e.g. <code>Directory.Read.All</code>, <code>Policy.Read.All</code>,
+      <code>RoleManagement.Read.Directory</code>) that the old <strong>36-scope</strong> token carried.</p>
+      <div class="note-box note-amber"><strong>A wide-scope token on the licensed tenant is expected to restore most of these</strong> —
+      the license itself does not block them.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">🔑 What the license actually bought <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <ol style="margin:8px 0 0 18px; font-size:0.85rem;">
+        <li><strong>File/SharePoint/Teams/Chat data now works</strong> — teams list, chats list, me joinedTeams, me followedSites, drives, sites, deleted teams, and planner all return data. The connector's core surface and the engagement's original blocker.</li>
+        <li><strong>Insights + Outlook user settings unlocked</strong> — <code>me_iteminsights_*</code> (4), <code>me_outlookuser_*</code> (3), <code>me_usersettings_*</code> (3).</li>
+        <li><strong>Delegated-admin tenant relationships pass</strong> — 3 <code>tenantrelationships_*</code> tables.</li>
+        <li><strong>Stable core intact</strong> — 47 tables that passed before still pass.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">🛠️ Remaining work <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <ol style="margin:8px 0 0 18px; font-size:0.85rem;">
+        <li><strong>Re-run with the wide-scope token on the licensed tenant.</strong> Grant the same 36-scope admin consent / interactive re-auth, then re-run. Expected: ~62 pass→fail regressions mostly flip back to pass, lifting the licensed count well above the unlicensed 109.</li>
+        <li><strong><code>bad_request</code>/<code>unsupported</code> (154):</strong> the old <code>wrong_audience</code> class — consumer-MSA-only endpoints exposed in the manifest. Spec gap to report upstream; not fixable by scopes or license.</li>
+        <li><strong><code>not_found</code> (74):</strong> endpoint hygiene — remove or fix endpoints that no longer exist (12 wrong_url and 11 deprecated old rows land here).</li>
+        <li><strong><code>error</code> (155):</strong> mixed 400/500; worth one pass to separate transient 500s from genuine spec bugs.</li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <strong>Files:</strong> <code>/tmp/coral_sql_results_2026-08-04-licensed-sweep.json</code> (final results) ·
+    <code>/tmp/coral_sql_results_2026-08-04.json</code> (old unlicensed baseline) ·
+    <code>/tmp/run_battery_fast.py</code>, <code>/tmp/run_sweep.py</code> (battery + sweep)<br><br>
+    Generated 2026-08-04 by Coral Specs Testing.<br>
+    Author: Vicky Kumar &lt;algsoch@gmail.com&gt; · Repo: <a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a>
+  </footer>
+
+</div>
+<script>
+function toggle(el) {
+  el.classList.toggle('open');
+  const body = el.nextElementSibling;
+  if (body) body.classList.toggle('hidden');
+}
+</script>
+</body>
+</html>
