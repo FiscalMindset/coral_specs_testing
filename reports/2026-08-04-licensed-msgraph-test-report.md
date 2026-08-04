@@ -211,6 +211,106 @@ these** — the license itself does not block them.
 
 ---
 
+## 🧪 Live commands & real output (reproduce with Coral)
+
+Every command below was run against the live licensed tenant on 2026-08-04.
+Copy-paste any of them into a terminal with `coral` installed.
+
+### 1. Teams list — the headline license unlock
+
+```bash
+$ coral sql "SELECT * FROM microsoft_graph_v4.teams_team_teams_team_listteam LIMIT 2"
++-------------+----------------+--------------------------------------------------------------------------------------------+-------+--------+--------+------+-----+
+| odata_count | odata_nextlink | value                                                                                      | count | filter | search | skip | top |
++-------------+----------------+--------------------------------------------------------------------------------------------+-------+--------+--------+------+-----+
+| 1           |                | [{"id":"fd31e343-d9f4-471b-a821-bc5ed36b10f6","createdDateTime":null,"displayName":"algsoch",...}] |       |        |        |      |     |
++-------------+----------------+--------------------------------------------------------------------------------------------+-------+--------+--------+------+-----+
+```
+
+### 2. My joined teams
+
+```bash
+$ coral sql "SELECT value FROM microsoft_graph_v4.me_team_me_listjoinedteams LIMIT 1"
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| value                                                                                                                                                              |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [{"id":"fd31e343-d9f4-471b-a821-bc5ed36b10f6","createdDateTime":null,"displayName":"algsoch",...,"tenantId":"0aa3a51b-3716-44d7-9636-f85f3db072bf",...}] |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+```
+
+### 3. My drive (OneDrive) — flattened get-table
+
+```bash
+$ coral sql "SELECT microsoft_graph_v4.me_drive_me_getdrive.drivetype, microsoft_graph_v4.me_drive_me_getdrive.quota FROM microsoft_graph_v4.me_drive_me_getdrive LIMIT 1"
++-----------+----------------------------------------------------------------------------------------------+
+| drivetype | quota                                                                                        |
++-----------+----------------------------------------------------------------------------------------------+
+| business  | {"deleted":0,"remaining":1099511327630,"state":"normal","total":1099511627776,"used":300146} |
++-----------+----------------------------------------------------------------------------------------------+
+```
+
+> `quota` is a nested JSON object — the engine returns it raw; one of the
+> known limitations for list/get tables (no JSON functions to unnest yet).
+
+### 4. Chats list
+
+```bash
+$ coral sql "SELECT value FROM microsoft_graph_v4.chats_chat_chats_chat_listchat LIMIT 1"
++------------------------------------------------------------------------------------------------------------------------------------+
+| value                                                                                                                              |
++------------------------------------------------------------------------------------------------------------------------------------+
+| [{"id":"19:meeting_YWEwNzIyYjQtMTZkOS00NGE5LThlMGItOGYwMzQzODkyYjg2@thread.v2","topic":"New event",...,"chatType":"meeting","webUrl":"https://teams.microsoft.com/l/chat/...","tenantId":"0aa3a51b-3716-44d7-9636-f85f3db072bf",...}] |
++------------------------------------------------------------------------------------------------------------------------------------+
+```
+
+### 5. Sites list — passes but returns empty (no sites created yet)
+
+```bash
+$ coral sql "SELECT * FROM microsoft_graph_v4.sites_site_sites_site_listsite LIMIT 1"
++-------------+----------------+-------+-------+--------+--------+------+-----+
+| odata_count | odata_nextlink | value | count | filter | search | skip | top |
++-------------+----------------+-------+-------+--------+--------+------+-----+
+|             |                | []    |       |        |        |      |     |
++-------------+----------------+-------+-------+--------+--------+------+-----+
+```
+
+### 6. Planner — passes but returns empty (no plans yet)
+
+```bash
+$ coral sql "SELECT * FROM microsoft_graph_v4.planner_planner_planner_planner_getplanner LIMIT 1"
++------------+---------+----+-------+-------+
+| odata_type | buckets | id | plans | tasks |
++------------+---------+----+-------+-------+
+|            |         |    |       |       |
++------------+---------+----+-------+-------+
+```
+
+### 7. Me — identity baseline still works
+
+```bash
+$ coral sql "SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1"
++-------------+---------------------------------------+
+| displayname | userprincipalname                     |
++-------------+---------------------------------------+
+| vicky kumar | vickykumar@algsoch762.onmicrosoft.com |
++-------------+---------------------------------------+
+```
+
+### 8. The token-scope regression, live (not a license failure)
+
+```bash
+$ coral sql "SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1"
+Error: Source request was rejected (403)
+Detail: {"error":{"code":"Authorization_RequestDenied","message":"Insufficient privileges to complete the operation.","innerError":{"date":"2026-08-04T17:50:31","request-id":"a7af732f-ce18-4969-a0d5-57fcb8e2e582",...}}} [GET] https://graph.microsoft.com/v1.0/users
+Hint: Check the configured credentials and whether they have access to this resource.
+```
+
+> This is the same endpoint that passed with the 36-scope token on the
+> unlicensed tenant — proving the pass→auth regression is a **token scope**
+> issue, not a licensing one.
+
+---
+
 ## 📁 Files
 
 - `/tmp/coral_sql_results_2026-08-04-licensed-sweep.json` — final licensed-run results (733 rows)

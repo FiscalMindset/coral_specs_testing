@@ -364,6 +364,70 @@
     </div>
   </div>
 
+  <div class="section">
+    <div class="section-header" onclick="toggle(this)">🧪 Live commands & real output (reproduce with Coral) <span class="arrow">▶</span></div>
+    <div class="section-body hidden">
+      <p style="font-size:0.85rem; margin-bottom:10px">Every command below was run against the live licensed tenant on 2026-08-04. Copy-paste any into a terminal with <code>coral</code> installed.</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>Command</th><th>Live output</th><th>What it proves</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><code>SELECT * FROM microsoft_graph_v4.teams_team_teams_team_listteam LIMIT 2</code></td>
+            <td><code>1 row: team "algsoch" (fd31e343-d9f4-471b-a821-bc5ed36b10f6)</code></td>
+            <td>Teams list — headline license unlock</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><code>SELECT value FROM microsoft_graph_v4.me_team_me_listjoinedteams LIMIT 1</code></td>
+            <td><code>[{"displayName":"algsoch","tenantId":"0aa3a51b-..."}]</code></td>
+            <td>My joined teams returns data</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><code>SELECT ...me_drive_me_getdrive.drivetype, ...quota FROM microsoft_graph_v4.me_drive_me_getdrive LIMIT 1</code></td>
+            <td><code>business · {"deleted":0,"remaining":1099511327630,"total":1099511627776,"used":300146}</code></td>
+            <td>OneDrive drive + quota — flattened get-table</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><code>SELECT value FROM microsoft_graph_v4.chats_chat_chats_chat_listchat LIMIT 1</code></td>
+            <td><code>[{"id":"19:meeting_...","topic":"New event","chatType":"meeting"}]</code></td>
+            <td>Chats list — license unlock</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><code>SELECT * FROM microsoft_graph_v4.sites_site_sites_site_listsite LIMIT 1</code></td>
+            <td><code>value = []</code></td>
+            <td>Sites passes; empty (none created yet)</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td><code>SELECT * FROM microsoft_graph_v4.planner_planner_planner_planner_getplanner LIMIT 1</code></td>
+            <td><code>all NULL</code></td>
+            <td>Planner passes; empty (no plans yet)</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td><code>SELECT displayname, userprincipalname FROM microsoft_graph_v4.me_user_me_user_getuser LIMIT 1</code></td>
+            <td><code>vicky kumar · vickykumar@algsoch762.onmicrosoft.com</code></td>
+            <td>Identity baseline still works</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td><code>SELECT * FROM microsoft_graph_v4.users_user_users_user_listuser LIMIT 1</code></td>
+            <td><code>403 Authorization_RequestDenied "Insufficient privileges"</code></td>
+            <td>Token-scope regression — same endpoint passed with 36-scope token</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="note-box note-green"><strong>Full verbatim terminal output for all 8 commands is in the
+      <a href="2026-08-04-licensed-msgraph-test-report.md">Markdown version</a></strong> (exact <code>coral sql</code> invocation + raw output + error JSON).</div>
+    </div>
+  </div>
+
   <footer>
     <strong>Files:</strong> <code>/tmp/coral_sql_results_2026-08-04-licensed-sweep.json</code> (final results) ·
     <code>/tmp/coral_sql_results_2026-08-04.json</code> (old unlicensed baseline) ·
