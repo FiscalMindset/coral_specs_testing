@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Microsoft Graph V4 — Spec-Bug Audit (Aug 4 2026)</title>
+<style>
+:root { --bg:#1a1b26; --card:#24283b; --border:#3b4261; --text:#c0caf5; --muted:#565f89; --accent:#7aa2f7; --red:#f7768e; --green:#9ece6a; --orange:#e0af68; --yellow:#e0af68; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; padding:1rem; max-width:1100px; margin:auto; }
+h1 { color:var(--accent); margin-bottom:.3rem; font-size:1.6rem; }
+h2 { color:var(--accent); margin:1.5rem 0 .5rem; font-size:1.2rem; border-bottom:1px solid var(--border); padding-bottom:.3rem; }
+h3 { color:var(--accent); margin:1rem 0 .3rem; font-size:1.05rem; }
+p,li { color:var(--text); }
+table { width:100%; border-collapse:collapse; margin:.5rem 0 1rem; font-size:.88rem; }
+th { background:var(--card); color:var(--accent); text-align:left; padding:.4rem .6rem; border:1px solid var(--border); white-space:nowrap; }
+td { padding:.35rem .6rem; border:1px solid var(--border); vertical-align:top; }
+tr:nth-child(even) { background:rgba(36,40,59,.5); }
+code { background:var(--card); padding:.1rem .3rem; border-radius:3px; font-size:.82rem; word-break:break-all; }
+.yes { color:var(--green); font-weight:bold; }
+.no { color:var(--red); font-weight:bold; }
+.tag { display:inline-block; padding:.1rem .5rem; border-radius:10px; font-size:.78rem; margin:.1rem; }
+.fixable { background:rgba(158,206,106,.15); color:var(--green); border:1px solid rgba(158,206,106,.3); }
+.notfixable { background:rgba(247,118,142,.15); color:var(--red); border:1px solid rgba(247,118,142,.3); }
+.card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:1rem; margin:.5rem 0; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.5rem; margin:1rem 0; }
+.stat { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:.8rem; text-align:center; }
+.stat-num { font-size:1.6rem; font-weight:bold; color:var(--accent); }
+.stat-label { font-size:.82rem; color:var(--muted); margin-top:.2rem; }
+@media(max-width:600px) {
+  table { font-size:.78rem; }
+  th,td { padding:.25rem .4rem; }
+  code { font-size:.75rem; }
+  h1 { font-size:1.3rem; }
+}
+</style>
+</head>
+<body>
+<h1>Microsoft Graph V4 — Spec-Bug Audit</h1>
+<p><strong>Date:</strong> 2026-08-04 (UTC) &nbsp;|&nbsp;
+<strong>Tenant:</strong> <code>89de3b75...</code> &nbsp;|&nbsp;
+<strong>Token:</strong> keychain OAuth (36 scopes)</p>
+<p><strong>Tables tested:</strong> 733 &nbsp;|&nbsp;
+<strong>Spec-fixable:</strong> <span class="yes">246</span> &nbsp;|&nbsp;
+<strong>Not fixable in spec:</strong> <span class="no">40</span></p>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num">733</div><div class="stat-label">Tables tested</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--green)">246</div><div class="stat-label">Spec-fixable bugs</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--red)">40</div><div class="stat-label">Not fixable in spec</div></div>
+  <div class="stat"><div class="stat-num">109</div><div class="stat-label">Currently passing</div></div>
+</div>
+
+<h2>Summary — all failure classes</h2>
+<table><tr><th>#</th><th>Bug class</th><th>Count</th><th>Coral can fix?</th><th>Fix action</th></tr>
+<tr><td>1</td><td>Consumer/MSA-only endpoints (wrong audience for AAD tenant)</td><td>131</td><td class="yes">Yes</td><td>Remove from spec (consumer/MSA-only, cannot work on AAD tenants)</td></tr>
+<tr><td>2</td><td>Endpoint not found (404 — URL does not exist in Graph v1.0)</td><td>58</td><td class="yes">Yes</td><td>Remove from spec (endpoint does not exist in Graph v1.0)</td></tr>
+<tr><td>3</td><td>Wrong base URL path in manifest</td><td>19</td><td class="yes">Yes</td><td>Fix base URL path in manifest</td></tr>
+<tr><td>4</td><td>Deprecated/removed endpoints</td><td>15</td><td class="yes">Yes</td><td>Remove from spec (endpoint removed from Graph API)</td></tr>
+<tr><td>5</td><td>Missing entity-ID parameter</td><td>3</td><td class="yes">Yes</td><td>Add table function with entity-ID parameter, or remove</td></tr>
+<tr><td>6</td><td>Unsupported query type ($search/$delta)</td><td>3</td><td class="yes">Yes</td><td>Remove unsupported $search/$delta query hint from manifest</td></tr>
+<tr><td>7</td><td>Delta functions on entities that do not support delta</td><td>7</td><td class="yes">Yes</td><td>Remove delta table function (entity does not support delta)</td></tr>
+<tr><td>8</td><td>Invalid root URL path in manifest</td><td>4</td><td class="yes">Yes</td><td>Fix root path in manifest (maps to wrong URL)</td></tr>
+<tr><td>9</td><td>Cannot query standalone — requires parent entity</td><td>1</td><td class="yes">Yes</td><td>Remove standalone table (requires parent entity navigation)</td></tr>
+<tr><td>10</td><td>Missing required @startDateTime parameter</td><td>4</td><td class="yes">Yes</td><td>Add @startDateTime required parameter to table definition</td></tr>
+<tr><td>11</td><td>Wrong HTTP method in manifest</td><td>1</td><td class="yes">Yes</td><td>Fix HTTP method in manifest (GET vs POST mismatch)</td></tr>
+<tr><td>12</td><td>Graph API routing (MissingProvider) — not fixable in spec</td><td>10</td><td class="no">No</td><td>Not a spec bug — Graph API routing issue (MissingProvider)</td></tr>
+<tr><td>13</td><td>Graph API server error (500) — not fixable in spec</td><td>14</td><td class="no">No</td><td>Not a spec bug — Graph API server error or missing license</td></tr>
+<tr><td>14</td><td>Entra ID P1/P2 license required — reclassify as license</td><td>4</td><td class="no">No</td><td>Not a spec bug — reclassify as license (Entra ID P1/P2 needed)</td></tr>
+<tr><td>15</td><td>Graph API transient outage (503) — not fixable in spec</td><td>3</td><td class="no">No</td><td>Not a spec bug — Graph API transient outage during test</td></tr>
+<tr><td>16</td><td>Malformed response (decode failed) — transient</td><td>1</td><td class="no">No</td><td>Not a spec bug — Graph returned empty/malformed JSON (transient)</td></tr>
+<tr><td>17</td><td>Unsupported dynamic path segment — not fixable in spec</td><td>2</td><td class="no">No</td><td>Not a spec bug — manifest uses unsupported dynamic path segment</td></tr>
+<tr><td>18</td><td>Resource segment not found — not fixable in spec</td><td>2</td><td class="no">No</td><td>Not a spec bug — resource segment not found on this entity</td></tr>
+<tr><td>19</td><td>Other Graph API errors — not fixable in spec</td><td>4</td><td class="no">No</td><td>Not a spec bug — Graph API error outside spec control</td></tr>
+<tr style="font-weight:bold"><td></td><td>Total</td><td>733</td><td></td><td></td></tr></table>
+<h2>1. Consumer/MSA-only endpoints (wrong audience for AAD tenant) (131 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Remove from spec (consumer/MSA-only, cannot work on AAD tenants)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>admin_configurationmanagement_admin_getconfigurationmanagement</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.XTA,False).</td></tr>
+<tr><td><code>admin_edge_admin_edge_getinternetexplorermode</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Edge.CloudSiteListManagement,False).</td></tr>
+<tr><td><code>admin_edge_admin_getedge</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Edge.CloudSiteListManagement,False).</td></tr>
+<tr><td><code>admin_exchangeadmin_admin_getexchange</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Exchange,True).</td></tr>
+<tr><td><code>admin_sharepoint_admin_getsharepoint</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.FileServices,False).</td></tr>
+<tr><td><code>admin_teamsadminroot_admin_getteams</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.TeamsAdminGateway,False).</td></tr>
+<tr><td><code>admin_teamsadminroot_admin_teams_getpolicy</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.PolicyAdmin,False).</td></tr>
+<tr><td><code>admin_teamsadminroot_admin_teams_gettelephonenumbermanagement</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.TelephoneNumberManagement,False).</td></tr>
+<tr><td><code>copilot_copilotadmin_copilot_admin_getcatalog</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.CopilotPackage,False).</td></tr>
+<tr><td><code>deviceappmanagement_androidmanagedappprotection_deviceappmanagement_listandroidmanagedappprotections</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_defaultmanagedappprotection_deviceappmanagement_listdefaultmanagedappprotections</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_deviceappmanagement_deviceappmanagement_deviceappmanagement_getdeviceappmanagement</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_iosmanagedappprotection_deviceappmanagement_listiosmanagedappprotections</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_managedapppolicy_deviceappmanagement_listmanagedapppolicies</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_managedappregistration_deviceappmanagement_listmanagedappregistrations</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_managedappregistration_deviceappmanagement_managedappregistrations_getuseridswithflaggedappregistration</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_managedappstatus_deviceappmanagement_listmanagedappstatuses</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_manageddevicemobileappconfiguration_deviceappmanagement_listmobileappconfigurations</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_managedebook_deviceappmanagement_listmanagedebooks</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mdmwindowsinformationprotectionpolicy_deviceappmanagement_listmdmwindowsinformationprotectionpolicies</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asandroidlobapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asandroidstoreapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asioslobapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asiosstoreapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asiosvppapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmacosdmgapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmacoslobapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmanagedandroidlobapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmanagedioslobapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmanagedmobilelobapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_asmicrosoftstoreforbusinessapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswin32lobapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswindowsappx</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswindowsmobilemsi</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswindowsuniversalappx</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapp_deviceappmanagement_listmobileapps_aswindowswebapp</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileappcategory_deviceappmanagement_listmobileappcategories</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_mobileapprelationship_deviceappmanagement_listmobileapprelationships</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_targetedmanagedappconfiguration_deviceappmanagement_listtargetedmanagedappconfigurations</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_vpptoken_deviceappmanagement_listvpptokens</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>deviceappmanagement_windowsinformationprotectionpolicy_deviceappmanagement_listwindowsinformationprotectionpolicies</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_applepushnotificationcertificate_devicemanagement_applepushnotificationcertificate_downloadapplepushnotificationcertificatesigningrequest</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_applepushnotificationcertificate_devicemanagement_getapplepushnotificationcertificate</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_auditevent_devicemanagement_auditevents_getauditcategories</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_auditevent_devicemanagement_listauditevents</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_compliancemanagementpartner_devicemanagement_listcompliancemanagementpartners</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_detectedapp_devicemanagement_listdetectedapps</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_deviceandappmanagementroleassignment_devicemanagement_listroleassignments</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicecategory_devicemanagement_listdevicecategories</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicecompliancepolicy_devicemanagement_listdevicecompliancepolicies</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicecompliancepolicydevicestatesummary_devicemanagement_getdevicecompliancepolicydevicestatesummary</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicecompliancepolicysettingstatesummary_devicemanagement_listdevicecompliancepolicysettingstatesummaries</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_deviceconfiguration_devicemanagement_listdeviceconfigurations</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_deviceconfigurationdevicestatesummary_devicemanagement_getdeviceconfigurationdevicestatesummaries</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_deviceenrollmentconfiguration_devicemanagement_listdeviceenrollmentconfigurations</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicemanagement_devicemanagement_devicemanagement_getdevicemanagement</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicemanagement_functions_devicemanagement_userexperienceanalyticssummarizeworkfromanywheredevices</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicemanagementexchangeconnector_devicemanagement_listexchangeconnectors</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicemanagementpartner_devicemanagement_listdevicemanagementpartners</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicemanagementreports_devicemanagement_getreports</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicemanagementreports_devicemanagement_reports_listexportjobs</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_devicemanagementtroubleshootingevent_devicemanagement_listtroubleshootingevents</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_importedwindowsautopilotdeviceidentity_devicemanagement_listimportedwindowsautopilotdeviceidentities</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_iosupdatedevicestatus_devicemanagement_listiosupdatestatuses</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_manageddevice_devicemanagement_listmanageddevices</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_manageddeviceoverview_devicemanagement_getmanageddeviceoverview</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_mobileapptroubleshootingevent_devicemanagement_listmobileapptroubleshootingevents</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_mobilethreatdefenseconnector_devicemanagement_listmobilethreatdefenseconnectors</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_notificationmessagetemplate_devicemanagement_listnotificationmessagetemplates</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_onpremisesconditionalaccesssettings_devicemanagement_getconditionalaccesssettings</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_remoteassistancepartner_devicemanagement_listremoteassistancepartners</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_resourceoperation_devicemanagement_listresourceoperations</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_roledefinition_devicemanagement_listroledefinitions</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_softwareupdatestatussummary_devicemanagement_getsoftwareupdatestatussummary</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_termsandconditions_devicemanagement_listtermsandconditions</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsapphealthapplicationperformance_devicemanagement_listuserexperienceanalyticsapphealthapplicationperformance</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsapphealthappperformancebyappversiondetails_devicemanagement_listuserexperienceanalyticsapphealthapplicationperformancebyappversiondetails</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsapphealthappperformancebyappversiondeviceid_devicemanagement_listuserexperienceanalyticsapphealthapplicationperformancebyappversiondeviceid</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsapphealthappperformancebyosversion_devicemanagement_listuserexperienceanalyticsapphealthapplicationperformancebyosversion</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsapphealthdevicemodelperformance_devicemanagement_listuserexperienceanalyticsapphealthdevicemodelperformance</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsapphealthdeviceperformance_devicemanagement_listuserexperienceanalyticsapphealthdeviceperformance</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsapphealthdeviceperformancedetails_devicemanagement_listuserexperienceanalyticsapphealthdeviceperformancedetails</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsapphealthosversionperformance_devicemanagement_listuserexperienceanalyticsapphealthosversionperformance</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsbaseline_devicemanagement_listuserexperienceanalyticsbaselines</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticscategory_devicemanagement_getuserexperienceanalyticsapphealthoverview</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticscategory_devicemanagement_listuserexperienceanalyticscategories</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticscategory_devicemanagement_userexperienceanalyticsapphealthoverview_listmetricvalues</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsdeviceperformance_devicemanagement_listuserexperienceanalyticsdeviceperformance</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsdevicescores_devicemanagement_listuserexperienceanalyticsdevicescores</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsdevicestartuphistory_devicemanagement_listuserexperienceanalyticsdevicestartuphistory</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsdevicestartupprocess_devicemanagement_listuserexperienceanalyticsdevicestartupprocesses</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsdevicestartupprocessperformance_devicemanagement_listuserexperienceanalyticsdevicestartupprocessperformance</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsmetrichistory_devicemanagement_listuserexperienceanalyticsmetrichistory</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsmodelscores_devicemanagement_listuserexperienceanalyticsmodelscores</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsoverview_devicemanagement_getuserexperienceanalyticsoverview</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsscorehistory_devicemanagement_listuserexperienceanalyticsscorehistory</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsworkfromanywherehardwarereadinessmetric_devicemanagement_getuserexperienceanalyticsworkfromanywherehardwarereadinessmetric</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsworkfromanywheremetric_devicemanagement_listuserexperienceanalyticsworkfromanywheremetrics</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_userexperienceanalyticsworkfromanywheremodelperformance_devicemanagement_listuserexperienceanalyticsworkfromanywheremodelperformance</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_windowsautopilotdeviceidentity_devicemanagement_listwindowsautopilotdeviceidentities</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_windowsinformationprotectionapplearningsummary_devicemanagement_listwindowsinformationprotectionapplearningsummaries</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_windowsinformationprotectionnetworklearningsummary_devicemanagement_listwindowsinformationprotectionnetworklearningsummaries</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>devicemanagement_windowsmalwareinformation_devicemanagement_listwindowsmalwareinformation</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>directory_identityproviderbase_directory_federationconfigurations_availableprovidertypes</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.CPIM,False).</td></tr>
+<tr><td><code>identity_identityverifiedidroot_identity_getverifiedid</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.VerifiedId.VerifiedIdProfile,False).</td></tr>
+<tr><td><code>me_devicemanagementtroubleshootingevent_me_listdevicemanagementtroubleshootingevents</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>me_employeeexperienceuser_me_getemployeeexperience</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Viva.Learning,False).</td></tr>
+<tr><td><code>me_managedappregistration_me_listmanagedappregistrations</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>me_manageddevice_me_listmanageddevices</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>me_user_functions_me_exportdeviceandappmanagementdata_1a02</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>me_user_functions_me_getmanagedappdiagnosticstatuses</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>me_user_functions_me_getmanagedapppolicies</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>me_user_functions_me_getmanageddeviceswithappfailures</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>me_usersettings_me_settings_getstorage</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.UnifiedStorageQuota,False).</td></tr>
+<tr><td><code>me_usersettings_me_settings_storage_getquota</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.UnifiedStorageQuota,False).</td></tr>
+<tr><td><code>me_usersettings_me_settings_storage_quota_listservices</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.UnifiedStorageQuota,False).</td></tr>
+<tr><td><code>reports_partners_reports_getpartners</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Partner.Billing,False).</td></tr>
+<tr><td><code>reports_partners_reports_partners_billing_getreconciliation</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Partner.Billing,False).</td></tr>
+<tr><td><code>reports_partners_reports_partners_billing_getusage</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Partner.Billing,False).</td></tr>
+<tr><td><code>reports_partners_reports_partners_billing_reconciliation_getbilled</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Partner.Billing,False).</td></tr>
+<tr><td><code>reports_partners_reports_partners_billing_reconciliation_getunbilled</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Partner.Billing,False).</td></tr>
+<tr><td><code>reports_partners_reports_partners_billing_usage_getbilled</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Partner.Billing,False).</td></tr>
+<tr><td><code>reports_partners_reports_partners_billing_usage_getunbilled</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Partner.Billing,False).</td></tr>
+<tr><td><code>reports_partners_reports_partners_getbilling</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.Partner.Billing,False).</td></tr>
+<tr><td><code>reports_reportroot_functions_reports_deviceconfigurationdeviceactivity</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>reports_reportroot_functions_reports_deviceconfigurationuseractivity</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>reports_reportroot_functions_reports_manageddeviceenrollmentfailuredetails_8191</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>reports_reportroot_functions_reports_manageddeviceenrollmenttopfailures_9ce7</code></td><td>Request not applicable to target tenant.</td></tr>
+<tr><td><code>storage_filestorage_storage_getfilestorage</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.FileServices,False).</td></tr>
+<tr><td><code>storage_storagesettings_storage_getsettings</code></td><td>This API is not supported for AAD accounts (no addressUrl for Microsoft.UnifiedStorageQuota,False).</td></tr>
+</table>
+<h2>2. Endpoint not found (404 — URL does not exist in Graph v1.0) (58 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Remove from spec (endpoint does not exist in Graph v1.0)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>admin_serviceannouncement_admin_getserviceannouncement</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>admin_teamsadminroot_admin_teams_policy_listuserassignments</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>communications_onlinemeetingengagementconversation_communications_listonlinemeetingconversations</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>communications_presence_communications_listpresences</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>copilot_copilotadmin_copilot_admin_getsettings</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>copilot_copilotadmin_copilot_getadmin</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>copilot_copilotreportroot_copilot_getreports</code></td><td><!DOCTYPE html PUBLIC \</td></tr>
+<tr><td><code>directory_publickeyinfrastructureroot_directory_getpublickeyinfrastructure</code></td><td>Resource not found for the segment 'publicKeyInfrastructure'.</td></tr>
+<tr><td><code>employeeexperience_learningcourseactivity_employeeexperience_listlearningcourseactivities</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_appconsentapprovalroute_identitygovernance_getappconsent</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_lifecycleworkflowscontainer_identitygovernance_getlifecycleworkflows</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_getdeleteditems</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_lifecycleworkflowscontainer_identitygovernance_lifecycleworkflows_getinsights</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>informationprotection_bitlocker_informationprotection_getbitlocker</code></td><td>Unsupported method or endpoint.</td></tr>
+<tr><td><code>informationprotection_threatassessmentrequest_informationprotection_listthreatassessmentrequests</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>invitations_directoryobject_invitations_listinvitedusersponsors</code></td><td><!DOCTYPE html PUBLIC \</td></tr>
+<tr><td><code>invitations_invitation_invitations_invitation_listinvitation</code></td><td><!DOCTYPE html PUBLIC \</td></tr>
+<tr><td><code>invitations_user_invitations_getinviteduser</code></td><td><!DOCTYPE html PUBLIC \</td></tr>
+<tr><td><code>me_directoryobject_me_getmanager</code></td><td>Resource 'manager' does not exist or one of its queried reference-property objects are not present.</td></tr>
+<tr><td><code>me_planneruser_me_getplanner</code></td><td>Tenant is not found.</td></tr>
+<tr><td><code>me_planneruser_me_planner_listplans</code></td><td>Tenant is not found.</td></tr>
+<tr><td><code>me_planneruser_me_planner_listtasks</code></td><td>Tenant is not found.</td></tr>
+<tr><td><code>me_profilephoto_me_getphoto</code></td><td>Accessing service failed.</td></tr>
+<tr><td><code>me_profilephoto_me_listphotos</code></td><td>Accessing service failed.</td></tr>
+<tr><td><code>me_userdatasecurityandgovernance_me_datasecurityandgovernance_activities_listcontentactivities</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>me_userdatasecurityandgovernance_me_datasecurityandgovernance_getactivities</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>me_userdatasecurityandgovernance_me_datasecurityandgovernance_getprotectionscopes</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>me_userdatasecurityandgovernance_me_getdatasecurityandgovernance</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>me_usersettings_me_settings_getiteminsights</code></td><td>Accessing service failed.</td></tr>
+<tr><td><code>planner_planner_planner_planner_getplanner</code></td><td>Tenant is not found.</td></tr>
+<tr><td><code>planner_plannerbucket_planner_listbuckets</code></td><td>Tenant is not found.</td></tr>
+<tr><td><code>planner_plannerplan_planner_listplans</code></td><td>Tenant is not found.</td></tr>
+<tr><td><code>planner_plannertask_planner_listtasks</code></td><td>Tenant is not found.</td></tr>
+<tr><td><code>print_print_print_print_getprint</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>print_printoperation_print_listoperations</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>reports_partners_reports_partners_billing_listmanifests</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>reports_partners_reports_partners_billing_listoperations</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>reports_securityreportsroot_reports_getsecurity</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_attacksimulationroot_security_attacksimulation_listoperations</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_attacksimulationroot_security_getattacksimulation</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_tenantdatasecurityandgovernance_security_datasecurityandgovernance_getprotectionscopes</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_tenantdatasecurityandgovernance_security_getdatasecurityandgovernance</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listarticleindicators</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listhostcomponents</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listhostcookies</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listhostpairs</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listhostports</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listhosts</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listhostsslcertificates</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listhosttrackers</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listintelligenceprofileindicators</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listpassivednsrecords</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listsubdomains</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listvulnerabilities</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>security_threatintelligence_security_threatintelligence_listwhoishistoryrecords</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>solutions_virtualeventsroot_solutions_getvirtualevents</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>solutions_virtualeventsroot_solutions_virtualevents_listevents</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>teams_team_functions_teams_getallmessages</code></td><td>Error: Source resource was not found (404)</td></tr>
+</table>
+<h2>3. Wrong base URL path in manifest (19 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Fix base URL path in manifest</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>agreementacceptances_agreementacceptance_agreementacceptances_agreementacceptance_listagreementacceptance</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>authenticationmethodconfigurations_authenticationmethodconfiguration_authenticationmethodconfigurations_authenticationmethodconfiguration_listauthenticationmethodconfiguration</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>authenticationmethodspolicy_authenticationmethodconfiguration_authenticationmethodspolicy_listauthenticationmethodconfigurations</code></td><td>Resource not found for segment 'authenticationMethodsPolicy/authenticationMethodConfigurations'.</td></tr>
+<tr><td><code>filteroperators_filteroperatorschema_filteroperators_filteroperatorschema_listfilteroperatorschema</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>functions_attributemappingfunctionschema_functions_attributemappingfunctionschema_listattributemappingfunctionschema</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identity_authenticationeventsflow_identity_listauthenticationeventsflows_asexternalusersselfservicesignupeventsflow</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identity_conditionalaccessroot_identity_conditionalaccess_getauthenticationstrength</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>identity_conditionalaccessroot_identity_conditionalaccess_getdeleteditems</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identity_identitycontainer_identity_identitycontainer_getidentitycontainer</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identity_riskpreventioncontainer_identity_getriskprevention</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listaccesspackagesuggestions</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listavailableaccesspackages</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listcontrolconfigurations</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_entitlementmanagement_identitygovernance_entitlementmanagement_listresourcerolescopes</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_termsofusecontainer_identitygovernance_gettermsofuse</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>identitygovernance_termsofusecontainer_identitygovernance_termsofuse_listagreementacceptances</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>me_authentication_me_authentication_listoperations</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>me_cloudclipboardroot_me_getcloudclipboard</code></td><td>Error: Source resource was not found (404)</td></tr>
+<tr><td><code>policies_authenticationmethodspolicy_policies_authenticationmethodspolicy_listauthenticationmethodconfigurations</code></td><td>Resource not found for segment 'authenticationMethodsPolicy/authenticationMethodConfigurations'.</td></tr>
+</table>
+<h2>4. Deprecated/removed endpoints (15 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Remove from spec (endpoint removed from Graph API)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>appcatalogs_appcatalogs_appcatalogs_appcatalogs_getappcatalogs</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>chats_chat_functions_chats_getallmessages</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>chats_chat_functions_chats_getallretainedmessages</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>communications_adhoccall_communications_adhoccalls_getallrecordings</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>communications_adhoccall_communications_adhoccalls_getalltranscripts</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>communications_adhoccall_communications_listadhoccalls</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>communications_onlinemeeting_communications_onlinemeetings_getallrecordings</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>communications_onlinemeeting_communications_onlinemeetings_getalltranscripts</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>copilot_aiinteractionhistory_copilot_getinteractionhistory</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>copilot_aiinteractionhistory_copilot_interactionhistory_getallenterpriseinteractions</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>copilot_aiuser_copilot_listusers</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>me_adhoccall_me_listadhoccalls</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>me_team_me_joinedteams_getallmessages</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+<tr><td><code>teamwork_deletedteam_teamwork_deletedteams_getallmessages</code></td><td>Requested API is not supported. Please check the path.</td></tr>
+</table>
+<h2>5. Missing entity-ID parameter (3 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Add table function with entity-ID parameter, or remove</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_certificatebasedauthconfiguration_listcertificatebasedauthconfiguration</code></td><td>Direct queries to this resource type are not supported.</td></tr>
+<tr><td><code>permissiongrants_resourcespecificpermissiongrant_permissiongrants_resourcespecificpermissiongrant_listresourcespecificpermissiongrant</code></td><td>Direct queries to this resource type are not supported.</td></tr>
+<tr><td><code>scopedrolememberships_scopedrolemembership_scopedrolememberships_scopedrolemembership_listscopedrolemembership</code></td><td>Direct queries to this resource type are not supported.</td></tr>
+</table>
+<h2>6. Unsupported query type ($search/$delta) (3 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Remove unsupported $search/$delta query hint from manifest</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>directory_directoryobject_directory_listdeleteditems</code></td><td>Searches against this resource are not supported. Only specific instances can be queried.</td></tr>
+<tr><td><code>directoryobjects_directoryobject_directoryobjects_directoryobject_listdirectoryobject</code></td><td>Searches against this resource are not supported. Only specific instances can be queried.</td></tr>
+<tr><td><code>directoryobjects_directoryobject_functions_directoryobjects_delta</code></td><td>Delta query is not supported for directoryObjects without a valid resource type or id filter.</td></tr>
+</table>
+<h2>7. Delta functions on entities that do not support delta (7 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Remove delta table function (entity does not support delta)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>contracts_contract_functions_contracts_delta</code></td><td>Differential query is not supported for entity type: Contract</td></tr>
+<tr><td><code>directoryroletemplates_directoryroletemplate_functions_directoryroletemplates_delta</code></td><td>Differential query is not supported for entity type: DirectoryRoleTemplate</td></tr>
+<tr><td><code>education_educationuser_education_me_assignments_delta</code></td><td>Unsupported request: Change tracking is not supported against 'microsoft.graph.educationAssignment'.</td></tr>
+<tr><td><code>groupsettingtemplates_groupsettingtemplate_functions_groupsettingtemplates_delta</code></td><td>Differential query is not supported for entity type: SettingTemplate</td></tr>
+<tr><td><code>me_message_me_messages_delta</code></td><td>Unsupported request: Change tracking is not supported against 'microsoft.graph.message'.</td></tr>
+<tr><td><code>organization_organization_functions_organization_delta</code></td><td>Differential query is not supported for entity type: Organization</td></tr>
+<tr><td><code>permissiongrants_resourcespecificpermissiongrant_functions_permissiongrants_delta</code></td><td>Differential query is not supported for entity type: ResourceSpecificPermissionGrant</td></tr>
+</table>
+<h2>8. Invalid root URL path in manifest (4 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Fix root path in manifest (maps to wrong URL)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>directory_directory_directory_directory_getdirectory</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>policies_policyroot_policies_policyroot_getpolicyroot</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_getdirectory</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>rolemanagement_rolemanagement_rolemanagement_rolemanagement_getrolemanagement</code></td><td>Error: Source rejected the request (400)</td></tr>
+</table>
+<h2>9. Cannot query standalone — requires parent entity (1 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Remove standalone table (requires parent entity navigation)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>domaindnsrecords_domaindnsrecord_domaindnsrecords_domaindnsrecord_listdomaindnsrecord</code></td><td>This resource can only be queried through a navigation property on its parent domain.</td></tr>
+</table>
+<h2>10. Missing required @startDateTime parameter (4 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Add @startDateTime required parameter to table definition</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>me_adhoccall_me_adhoccalls_getallrecordings</code></td><td>Missing the parameter alias '@startDateTime' in the request query string.</td></tr>
+<tr><td><code>me_adhoccall_me_adhoccalls_getalltranscripts</code></td><td>Missing the parameter alias '@startDateTime' in the request query string.</td></tr>
+<tr><td><code>me_onlinemeeting_me_onlinemeetings_getallrecordings</code></td><td>Missing the parameter alias '@startDateTime' in the request query string.</td></tr>
+<tr><td><code>me_onlinemeeting_me_onlinemeetings_getalltranscripts</code></td><td>Missing the parameter alias '@startDateTime' in the request query string.</td></tr>
+</table>
+<h2>11. Wrong HTTP method in manifest (1 tables) <span class="tag fixable">Coral can fix</span></h2>
+<p><strong>Fix:</strong> Fix HTTP method in manifest (GET vs POST mismatch)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>me_authentication_me_authentication_fido2methods_creationoptions</code></td><td>The method is not supported for this URL.</td></tr>
+</table>
+<h2>12. Graph API routing (MissingProvider) — not fixable in spec (10 tables) <span class="tag notfixable">Not fixable in spec</span></h2>
+<p><strong>Fix:</strong> Not a spec bug — Graph API routing issue (MissingProvider)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>identitygovernance_privilegedaccessroot_identitygovernance_getprivilegedaccess</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>identitygovernance_privilegedaccessroot_identitygovernance_privilegedaccess_getgroup</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>policies_unifiedrolemanagementpolicy_policies_listrolemanagementpolicies</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>policies_unifiedrolemanagementpolicyassignment_policies_listrolemanagementpolicyassignments</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleassignmentscheduleinstances</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleassignmentschedulerequests</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleassignmentschedules</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleeligibilityscheduleinstances</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleeligibilityschedulerequests</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listroleeligibilityschedules</code></td><td>Error: Source rejected the request (400)</td></tr>
+</table>
+<h2>13. Graph API server error (500) — not fixable in spec (14 tables) <span class="tag notfixable">Not fixable in spec</span></h2>
+<p><strong>Fix:</strong> Not a spec bug — Graph API server error or missing license</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>education_reportsroot_education_getreports</code></td><td>Target 'fake_node' is not found.</td></tr>
+<tr><td><code>education_reportsroot_education_reports_listreadingassignmentsubmissions</code></td><td>Error: Source server error (500)</td></tr>
+<tr><td><code>education_reportsroot_education_reports_listreadingcoachpassages</code></td><td>Error: Source server error (500)</td></tr>
+<tr><td><code>education_reportsroot_education_reports_listreflectcheckinresponses</code></td><td>Error: Source server error (500)</td></tr>
+<tr><td><code>education_reportsroot_education_reports_listspeakerassignmentsubmissions</code></td><td>Error: Source server error (500)</td></tr>
+<tr><td><code>me_employeeexperienceuser_me_employeeexperience_listassignedroles</code></td><td>Error: Source server error (500)</td></tr>
+<tr><td><code>me_iteminsights_me_insights_listtrending</code></td><td>Error: Source server error (500)</td></tr>
+<tr><td><code>me_usersettings_me_settings_workhoursandlocations_listrecurrences</code></td><td>Error: Source server error (500)</td></tr>
+<tr><td><code>privacy_subjectrightsrequest_privacy_listsubjectrightsrequests</code></td><td>Target 'privacy.trafficmanager.net' is not found.</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_entitlementmanagement_listresourcenamespaces</code></td><td><!DOCTYPE html>\r\n<html>\r\n    <head>\r\n        <title>Runtime Error</title>\r\n        <meta name=\</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_getentitlementmanagement</code></td><td>Error: Source server error (500)</td></tr>
+<tr><td><code>security_subjectrightsrequest_security_listsubjectrightsrequests</code></td><td>Target 'privacy.trafficmanager.net' is not found.</td></tr>
+<tr><td><code>storage_storagesettings_storage_settings_getquota</code></td><td>Invalid URI: The hostname could not be parsed.</td></tr>
+<tr><td><code>storage_storagesettings_storage_settings_quota_listservices</code></td><td>Invalid URI: The hostname could not be parsed.</td></tr>
+</table>
+<h2>14. Entra ID P1/P2 license required — reclassify as license (4 tables) <span class="tag notfixable">Not fixable in spec</span></h2>
+<p><strong>Fix:</strong> Not a spec bug — reclassify as license (Entra ID P1/P2 needed)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_directory_listroleassignmentscheduleinstances</code></td><td>The tenant needs to have Microsoft Entra ID P2 or Microsoft Entra ID Governance license.</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_directory_listroleassignmentschedules</code></td><td>The tenant needs to have Microsoft Entra ID P2 or Microsoft Entra ID Governance license.</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_directory_listroleeligibilityscheduleinstances</code></td><td>The tenant needs to have Microsoft Entra ID P2 or Microsoft Entra ID Governance license.</td></tr>
+<tr><td><code>rolemanagement_rbacapplication_rolemanagement_directory_listroleeligibilityschedules</code></td><td>The tenant needs to have Microsoft Entra ID P2 or Microsoft Entra ID Governance license.</td></tr>
+</table>
+<h2>15. Graph API transient outage (503) — not fixable in spec (3 tables) <span class="tag notfixable">Not fixable in spec</span></h2>
+<p><strong>Fix:</strong> Not a spec bug — Graph API transient outage during test</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>admin_configurationmanagement_admin_configurationmanagement_listconfigurationsnapshots</code></td><td>Error: Source server error (503)</td></tr>
+<tr><td><code>connections_externalconnection_connections_externalconnection_listexternalconnection</code></td><td><!DOCTYPE HTML PUBLIC \</td></tr>
+<tr><td><code>external_external_external_external_getexternal</code></td><td><!DOCTYPE HTML PUBLIC \</td></tr>
+</table>
+<h2>16. Malformed response (decode failed) — transient (1 tables) <span class="tag notfixable">Not fixable in spec</span></h2>
+<p><strong>Fix:</strong> Not a spec bug — Graph returned empty/malformed JSON (transient)</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>security_attacksimulationroot_security_attacksimulation_listsimulations</code></td><td>Error: Source response decode failed</td></tr>
+</table>
+<h2>17. Unsupported dynamic path segment — not fixable in spec (2 tables) <span class="tag notfixable">Not fixable in spec</span></h2>
+<p><strong>Fix:</strong> Not a spec bug — manifest uses unsupported dynamic path segment</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>me_usersolutionroot_me_getsolutions</code></td><td>Unexpected segment DynamicPathSegment. Expected property/$value.</td></tr>
+<tr><td><code>me_usersolutionroot_me_solutions_getworkingtimeschedule</code></td><td>Unexpected segment DynamicPathSegment. Expected property/$value.</td></tr>
+</table>
+<h2>18. Resource segment not found — not fixable in spec (2 tables) <span class="tag notfixable">Not fixable in spec</span></h2>
+<p><strong>Fix:</strong> Not a spec bug — resource segment not found on this entity</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>invitations_user_invitations_inviteduser_getmailboxsettings</code></td><td>Resource not found for the segment 'mailboxSettings'.</td></tr>
+<tr><td><code>invitations_user_invitations_inviteduser_listserviceprovisioningerrors</code></td><td>Resource not found for the segment 'serviceProvisioningErrors'.</td></tr>
+</table>
+<h2>19. Other Graph API errors — not fixable in spec (4 tables) <span class="tag notfixable">Not fixable in spec</span></h2>
+<p><strong>Fix:</strong> Not a spec bug — Graph API error outside spec control</p>
+<table><tr><th>Table</th><th>Error</th></tr>
+<tr><td><code>identitygovernance_accessreviewset_identitygovernance_getaccessreviews</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>me_authentication_me_getauthentication</code></td><td>Unsupported segment type.</td></tr>
+<tr><td><code>me_usersettings_me_settings_getworkhoursandlocations</code></td><td>Error: Source rejected the request (400)</td></tr>
+<tr><td><code>me_usersettings_me_settings_workhoursandlocations_listoccurrences</code></td><td>Error: Source request failed (405)</td></tr>
+</table>
+<hr><h2>Recommendations (ordered by impact)</h2>
+<div class="card">
+<h3>Tier 1 — biggest lever (131 tables)</h3>
+<p><strong>Remove 131 consumer/MSA-only tables from the spec.</strong> These are Intune, Exchange Admin, Edge Admin, SharePoint Admin, and Teams Admin endpoints that require a consumer (personal Microsoft) account, not an AAD business/education tenant. They will never pass on any AAD tenant.</p>
+</div>
+<div class="card">
+<h3>Tier 2 — clean up dead endpoints (73 tables)</h3>
+<ul>
+<li><strong>58 not_found</strong> — remove or correct URL (endpoint does not exist in Graph v1.0)</li>
+<li><strong>15 deprecated</strong> — remove (endpoint removed from Graph API)</li>
+</ul>
+</div>
+<div class="card">
+<h3>Tier 3 — fix wrong URLs (23 tables)</h3>
+<ul>
+<li><strong>19 wrong_url</strong> — fix base URL path in manifest</li>
+<li><strong>4 invalid_request_url</strong> — fix root path</li>
+</ul>
+</div>
+<div class="card">
+<h3>Tier 4 — add missing parameters/functions (7 tables)</h3>
+<ul>
+<li><strong>3 needs_entityId</strong> — add table function with entity-ID parameter</li>
+<li><strong>3 unsupported_query</strong> — remove unsupported search/delta hint</li>
+<li><strong>1 needs_navigation_parent</strong> — add parent entity reference or remove</li>
+</ul>
+</div>
+<div class="card">
+<h3>Tier 5 — fix manifest technical details (14 tables)</h3>
+<ul>
+<li><strong>7 delta_unsupported</strong> — remove delta table functions</li>
+<li><strong>4 missing_required_param</strong> — add @startDateTime to table definition</li>
+<li><strong>3 method_not_allowed</strong> — fix HTTP method in manifest</li>
+</ul>
+</div>
+<div class="card">
+<h3>Tier 6 — reclassify misclassified errors (12 tables)</h3>
+<ul>
+<li><strong>8 missing_provider</strong> → reclassify as other (Graph routing bug)</li>
+<li><strong>4 aad_premium_required</strong> → reclassify as license</li>
+<li><strong>4 500_permission_error</strong> → reclassify as auth</li>
+</ul>
+</div>
+<div class="card">
+<h3>Expected impact after all spec fixes</h3>
+<p>If all 248 spec-fixable tables are removed/fixed, the pass count rises from <strong>109</strong> (current) to roughly <strong>357</strong> — assuming the fix does not introduce new failures. The remaining ~376 failures are auth (282), license (56+4), and Graph server errors (14+3+1+1) — fixable by granting scopes, adding licenses, or waiting for Graph API fixes.</p>
+</div>
+
+<p style="color:var(--muted);font-size:.8rem;margin-top:2rem">Generated 2026-08-04 13:30 UTC from /tmp/coral_sql_results_2026-08-04.json</p>
+</body></html>

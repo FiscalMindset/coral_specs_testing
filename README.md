@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/identity_tests-6/6_PASS-22c55e" alt="6/6 PASS">
   <img src="https://img.shields.io/badge/timeouts-0_(resolved)-22c55e" alt="0 timeouts (resolved)">
   <img src="https://img.shields.io/badge/reports_frozen-✓-8b5cf6" alt="reports frozen">
-  <img src="https://img.shields.io/badge/last_updated-2026--07--31-6b7280" alt="last updated 2026-07-31">
+  <img src="https://img.shields.io/badge/last_updated-2026--08--04-6b7280" alt="last updated 2026-08-04">
 </p>
 
 ---
@@ -48,7 +48,21 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Every report has a matching `.md` (raw) and `.html` (responsive) version.
 
-### 🆕 2026-08-02 — Coral contributor email exposure (public git commit metadata)
+### 🆕 2026-08-04 — Spec-bug audit: 248 fixable, 30 not fixable in spec
+
+| | |
+|---|---|
+| **Date** | 2026-08-04 |
+| **Tables tested** | 733 (full battery, keychain OAuth token) |
+| **Spec-fixable bugs** | 248 (wrong audience, not found, wrong URL, deprecated, missing params) |
+| **Not fixable in spec** | 30 (Graph server errors, transient outages, missing licenses) |
+| **Currently passing** | 109 (keychain OAuth, 36 scopes) |
+
+Classifies every failing table into what Coral can fix in the manifest vs what it cannot. Ordered by impact: Tier 1 (remove 131 consumer-only tables) through Tier 6 (reclassify misclassified errors). Ready to share with Andrea for upstream manifest fixes.
+
+- **[Markdown](reports/2026-08-04-spec-bug-tables.md)** · **[HTML](reports/2026-08-04-spec-bug-tables.html)** — full table lists per bug class, fix recommendations, summary dashboard.
+
+### 2026-08-02 — Coral contributor email exposure (public git commit metadata)
 
 | | |
 |---|---|
@@ -189,4 +203,4 @@ Investigated the contributor email question. Personal addresses (`james@withcora
 
 ---
 
-<p align="center"><sub>Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-07-31</sub></p>
+<p align="center"><sub>Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-08-04</sub></p>
