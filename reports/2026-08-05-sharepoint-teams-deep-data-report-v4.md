@@ -89,6 +89,37 @@ Below, we extract the real IDs from the live top-level responses and call the de
 - **Site structure**: Viva Home site with 3 lists (CompanyList, Events, Shared Documents) + site drive metadata (25 TiB quota)
 - **Licence reality**: tenant has **O365_BUSINESS_PREMIUM** (25-unit seat, 1 consumed) with 46 service plans — full Teams, SharePoint, Exchange Online, Forms, Bookings, Loop, Viva — so every deep table tested is within licence reach
 
+## 🧯 Failure triage — what is on us vs what is Microsoft
+
+All **58** non-pass calls triaged: **3 Coral source bugs** (ours — fixable in the `microsoft_graph_v4` source), **2 Microsoft spec bugs fixable on our side** by supplying an input, and **53 genuine Microsoft Graph bugs/limitations** where no consent or input fix exists.
+
+### 🔴 3 × Coral source bugs (ours — fixable in the microsoft_graph_v4 source)
+
+| Call / group | Status | Triage |
+|---|---|---|
+| `shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem` | `bad_request` | Coral dropped the required `{shareIdOrEncodedSharingUrl}` path parameter from the projection → a parameterless call is sent to `GET /shares` → Graph rejects ("malformed request"). All 15 inputs are exposed as optional; the required path segment is missing from the published function. |
+| `teams_channel_teams_getchannel` | `error` | The get-by-id channel function (`GET /teams/{team-id}/channels/{channel-id}`) exists in the MS OpenAPI + semantic IR but is **not published in the coral catalog** → "unknown source table function" (deep call E2). |
+| `teams_channel_teams_channels_getallmessages` | `error` | Channels **getAllMessages** (`GET /teams/{team-id}/channels/getAllMessages`) exists in the spec but is not published → "unknown source table function" (deep call E3). |
+
+### 🟡 2 × Microsoft spec bug — fixable on our side by supplying the input
+
+| Call / group | Status | Triage |
+|---|---|---|
+| `storage_filestorage_storage_filestorage_listcontainers` | `bad_request` | MS OpenAPI **description** says a `containerTypeId` `$filter` is REQUIRED but the **schema marks the filter optional** → coral passes it through as written → Graph: "failed to parse filter parameter". Rerun with `filter => containerTypeId eq …` to fix. |
+| `storage_filestorage_storage_filestorage_listdeletedcontainers` | `bad_request` | Same MS description-vs-schema bug (`$filter=containerTypeId …` required at runtime, optional in schema). |
+
+### 🔵 53 × genuine Microsoft Graph bugs / limitations (no consent or input fix)
+
+| Call / group | Status | Triage |
+|---|---|---|
+| `28 × solutions/backupRestore (19 auth + 9 not_found/empty)` | `auth` | `BackupRestore.Read.All` not grantable + empty `UnknownError` → the **M365 Backup feature is not provisioned** in this tenant, so the whole backup-restore API surface is dead. |
+| `10 × unsupported` | `unsupported` | 6× "not supported for AAD accounts (no addressUrl / …)" — legacy Teams admin services; 4× **export APIs "not supported in delegated context"** (app-only only). |
+| `9 × NotFound "Requested API is not supported"` | `not_found` | `chats/getAllMessages`, `chats/getAllRetainedMessages`, `me/joinedTeams/getAllMessages` (a **phantom route** — not in Graph docs), `teams/getAllMessages`, `teamsTemplates`, `teamwork/deletedChats`, `deletedTeams/getAllMessages`. Routes are verbatim from the MS v1.0 OpenAPI but **rejected at runtime**. |
+| `3 × NotFound UnknownError` | `not_found` | `policy/userAssignments`, telephony `listOperations`, `teams/getAllMessages`. |
+| `2 × sites (delta / getAllSites)` | `auth` | `sites/delta` (tenant-wide) and `sites/getAllSites` → `accessDenied` — **app-only** permissions. |
+| `2 × storage/filestorage containerTypeRegistrations` | `auth` | "caller does not have required permissions" — **app-permission** API. |
+| `2 × storage/settings/quota` | `error` | HTTP 500 "Invalid URI: The hostname could not be parsed" — **Graph backend bug** in the FileServices family. |
+
 ## 📜 Command log — all 92 calls, real inputs, real outputs
 
 ### Deep-data battery (15 calls)
@@ -305,91 +336,91 @@ Query request is invalid: unknown source table function microsoft_graph_v4.teams
 
 ### Top-level 77-table battery (summary)
 
-| # | status | table | latency |
-|---|---|---|--:|
-| 1 | unsupported | `admin_sharepoint_admin_getsharepoint` | 13267 ms |
-| 2 | pass | `admin_sharepoint_admin_sharepoint_getsettings` | 13322 ms |
-| 3 | unsupported | `admin_teamsadminroot_admin_getteams` | 13262 ms |
-| 4 | unsupported | `admin_teamsadminroot_admin_teams_getpolicy` | 9115 ms |
-| 5 | unsupported | `admin_teamsadminroot_admin_teams_gettelephonenumbermanagement` | 9097 ms |
-| 6 | pass | `admin_teamsadminroot_admin_teams_listuserconfigurations` | 16448 ms |
-| 7 | not_found | `admin_teamsadminroot_admin_teams_policy_listuserassignments` | 16471 ms |
-| 8 | pass | `admin_teamsadminroot_admin_teams_telephonenumbermanagement_listnumberassignments` | 16850 ms |
-| 9 | not_found | `admin_teamsadminroot_admin_teams_telephonenumbermanagement_listoperations` | 16109 ms |
-| 10 | pass | `appcatalogs_teamsapp_appcatalogs_listteamsapps` | 24169 ms |
-| 11 | pass | `chats_chat_chats_chat_listchat` | 17206 ms |
-| 12 | not_found | `chats_chat_functions_chats_getallmessages` | 18743 ms |
-| 13 | not_found | `chats_chat_functions_chats_getallretainedmessages` | 18359 ms |
-| 14 | pass | `drives_drive_drives_drive_listdrive` | 11875 ms |
-| 15 | unsupported | `me_chat_me_chats_getallmessages` | 17909 ms |
-| 16 | unsupported | `me_chat_me_chats_getallretainedmessages` | 18193 ms |
-| 17 | pass | `me_chat_me_listchats` | 18782 ms |
-| 18 | pass | `me_drive_me_getdrive` | 18666 ms |
-| 19 | pass | `me_drive_me_listdrives` | 19603 ms |
-| 20 | pass | `me_site_me_listfollowedsites` | 20160 ms |
-| 21 | not_found | `me_team_me_joinedteams_getallmessages` | 23580 ms |
-| 22 | pass | `me_team_me_listjoinedteams` | 24765 ms |
-| 23 | pass | `me_userteamwork_me_getteamwork` | 22916 ms |
-| 24 | unsupported | `me_userteamwork_me_teamwork_getallretainedtargetedmessages` | 20992 ms |
-| 25 | unsupported | `me_userteamwork_me_teamwork_getalltargetedmessages` | 20467 ms |
-| 26 | pass | `me_userteamwork_me_teamwork_listassociatedteams` | 20382 ms |
-| 27 | pass | `me_userteamwork_me_teamwork_listinstalledapps` | 18603 ms |
-| 28 | bad_request | `shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem` | 16275 ms |
-| 29 | auth | `sites_site_functions_sites_delta` | 15794 ms |
-| 30 | auth | `sites_site_functions_sites_getallsites` | 15986 ms |
-| 31 | pass | `sites_site_sites_site_listsite` | 16324 ms |
-| 32 | auth | `solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting` | 16300 ms |
-| 33 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions` | 16822 ms |
-| 34 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listdriveinclusionrules` | 19462 ms |
-| 35 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunits` | 19199 ms |
-| 36 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunitsbulkadditionjobs` | 22584 ms |
-| 37 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listexchangeprotectionpolicies` | 27551 ms |
-| 38 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listexchangerestoresessions` | 27327 ms |
-| 39 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listmailboxinclusionrules` | 26202 ms |
-| 40 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunits` | 22765 ms |
-| 41 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunitsbulkadditionjobs` | 22885 ms |
-| 42 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessbrowsesessions` | 25108 ms |
-| 43 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessprotectionpolicies` | 24288 ms |
-| 44 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessrestoresessions` | 24114 ms |
-| 45 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionpolicies` | 22316 ms |
-| 46 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits` | 23838 ms |
-| 47 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asdriveprotectionunit` | 23748 ms |
-| 48 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asmailboxprotectionunit` | 25871 ms |
-| 49 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_assiteprotectionunit` | 29192 ms |
-| 50 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listrestorepoints` | 29147 ms |
-| 51 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listrestoresessions` | 26240 ms |
-| 52 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listserviceapps` | 24075 ms |
-| 53 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listsharepointbrowsesessions` | 24197 ms |
-| 54 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listsharepointprotectionpolicies` | 24090 ms |
-| 55 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listsharepointrestoresessions` | 20503 ms |
-| 56 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listsiteinclusionrules` | 20477 ms |
-| 57 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunits` | 21838 ms |
-| 58 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunitsbulkadditionjobs` | 21007 ms |
-| 59 | auth | `solutions_backuprestoreroot_solutions_getbackuprestore` | 20496 ms |
-| 60 | bad_request | `storage_filestorage_storage_filestorage_listcontainers` | 17372 ms |
-| 61 | auth | `storage_filestorage_storage_filestorage_listcontainertyperegistrations` | 18161 ms |
-| 62 | auth | `storage_filestorage_storage_filestorage_listcontainertypes` | 17781 ms |
-| 63 | bad_request | `storage_filestorage_storage_filestorage_listdeletedcontainers` | 19146 ms |
-| 64 | unsupported | `storage_filestorage_storage_getfilestorage` | 22064 ms |
-| 65 | pass | `storage_storage_storage_storage_getstorage` | 21881 ms |
-| 66 | unsupported | `storage_storagesettings_storage_getsettings` | 22019 ms |
-| 67 | error | `storage_storagesettings_storage_settings_getquota` | 26034 ms |
-| 68 | error | `storage_storagesettings_storage_settings_quota_listservices` | 24942 ms |
-| 69 | not_found | `teams_team_functions_teams_getallmessages` | 24371 ms |
-| 70 | pass | `teams_team_teams_team_listteam` | 20080 ms |
-| 71 | not_found | `teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate` | 18615 ms |
-| 72 | not_found | `teamwork_deletedchat_teamwork_listdeletedchats` | 22613 ms |
-| 73 | not_found | `teamwork_deletedteam_teamwork_deletedteams_getallmessages` | 21460 ms |
-| 74 | pass | `teamwork_deletedteam_teamwork_listdeletedteams` | 21209 ms |
-| 75 | pass | `teamwork_teamsappsettings_teamwork_getteamsappsettings` | 17546 ms |
-| 76 | pass | `teamwork_teamwork_teamwork_teamwork_getteamwork` | 16157 ms |
-| 77 | pass | `teamwork_workforceintegration_teamwork_listworkforceintegrations` | 16513 ms |
+| # | status | table | area | latency |
+|---|---|---|---|--:|
+| 1 | unsupported | `admin_sharepoint_admin_getsharepoint` | SharePoint Admin | 13267 ms |
+| 2 | pass | `admin_sharepoint_admin_sharepoint_getsettings` | SharePoint Admin | 13322 ms |
+| 3 | unsupported | `admin_teamsadminroot_admin_getteams` | Teams Admin | 13262 ms |
+| 4 | unsupported | `admin_teamsadminroot_admin_teams_getpolicy` | Teams Admin | 9115 ms |
+| 5 | unsupported | `admin_teamsadminroot_admin_teams_gettelephonenumbermanagement` | Teams Admin | 9097 ms |
+| 6 | pass | `admin_teamsadminroot_admin_teams_listuserconfigurations` | Teams Admin | 16448 ms |
+| 7 | not_found | `admin_teamsadminroot_admin_teams_policy_listuserassignments` | Teams Admin | 16471 ms |
+| 8 | pass | `admin_teamsadminroot_admin_teams_telephonenumbermanagement_listnumberassignments` | Teams Admin | 16850 ms |
+| 9 | not_found | `admin_teamsadminroot_admin_teams_telephonenumbermanagement_listoperations` | Teams Admin | 16109 ms |
+| 10 | pass | `appcatalogs_teamsapp_appcatalogs_listteamsapps` | Apps | 24169 ms |
+| 11 | pass | `chats_chat_chats_chat_listchat` | Chats | 17206 ms |
+| 12 | not_found | `chats_chat_functions_chats_getallmessages` | Chats | 18743 ms |
+| 13 | not_found | `chats_chat_functions_chats_getallretainedmessages` | Chats | 18359 ms |
+| 14 | pass | `drives_drive_drives_drive_listdrive` | Drives | 11875 ms |
+| 15 | unsupported | `me_chat_me_chats_getallmessages` | Chats | 17909 ms |
+| 16 | unsupported | `me_chat_me_chats_getallretainedmessages` | Chats | 18193 ms |
+| 17 | pass | `me_chat_me_listchats` | Chats | 18782 ms |
+| 18 | pass | `me_drive_me_getdrive` | Drives | 18666 ms |
+| 19 | pass | `me_drive_me_listdrives` | Drives | 19603 ms |
+| 20 | pass | `me_site_me_listfollowedsites` | Sites | 20160 ms |
+| 21 | not_found | `me_team_me_joinedteams_getallmessages` | Teams | 23580 ms |
+| 22 | pass | `me_team_me_listjoinedteams` | Teams | 24765 ms |
+| 23 | pass | `me_userteamwork_me_getteamwork` | Teamwork | 22916 ms |
+| 24 | unsupported | `me_userteamwork_me_teamwork_getallretainedtargetedmessages` | Teamwork | 20992 ms |
+| 25 | unsupported | `me_userteamwork_me_teamwork_getalltargetedmessages` | Teamwork | 20467 ms |
+| 26 | pass | `me_userteamwork_me_teamwork_listassociatedteams` | Teamwork | 20382 ms |
+| 27 | pass | `me_userteamwork_me_teamwork_listinstalledapps` | Teamwork | 18603 ms |
+| 28 | bad_request | `shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem` | Shares | 16275 ms |
+| 29 | auth | `sites_site_functions_sites_delta` | Sites | 15794 ms |
+| 30 | auth | `sites_site_functions_sites_getallsites` | Sites | 15986 ms |
+| 31 | pass | `sites_site_sites_site_listsite` | Sites | 16324 ms |
+| 32 | auth | `solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting` | Backup Restore | 16300 ms |
+| 33 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions` | Backup Restore | 16822 ms |
+| 34 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listdriveinclusionrules` | Backup Restore | 19462 ms |
+| 35 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunits` | Backup Restore | 19199 ms |
+| 36 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunitsbulkadditionjobs` | Backup Restore | 22584 ms |
+| 37 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listexchangeprotectionpolicies` | Backup Restore | 27551 ms |
+| 38 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listexchangerestoresessions` | Backup Restore | 27327 ms |
+| 39 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listmailboxinclusionrules` | Backup Restore | 26202 ms |
+| 40 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunits` | Backup Restore | 22765 ms |
+| 41 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunitsbulkadditionjobs` | Backup Restore | 22885 ms |
+| 42 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessbrowsesessions` | Backup Restore | 25108 ms |
+| 43 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessprotectionpolicies` | Backup Restore | 24288 ms |
+| 44 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessrestoresessions` | Backup Restore | 24114 ms |
+| 45 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionpolicies` | Backup Restore | 22316 ms |
+| 46 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits` | Backup Restore | 23838 ms |
+| 47 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asdriveprotectionunit` | Backup Restore | 23748 ms |
+| 48 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asmailboxprotectionunit` | Backup Restore | 25871 ms |
+| 49 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_assiteprotectionunit` | Backup Restore | 29192 ms |
+| 50 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listrestorepoints` | Backup Restore | 29147 ms |
+| 51 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listrestoresessions` | Backup Restore | 26240 ms |
+| 52 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listserviceapps` | Backup Restore | 24075 ms |
+| 53 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listsharepointbrowsesessions` | Backup Restore | 24197 ms |
+| 54 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listsharepointprotectionpolicies` | Backup Restore | 24090 ms |
+| 55 | auth | `solutions_backuprestoreroot_solutions_backuprestore_listsharepointrestoresessions` | Backup Restore | 20503 ms |
+| 56 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listsiteinclusionrules` | Backup Restore | 20477 ms |
+| 57 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunits` | Backup Restore | 21838 ms |
+| 58 | not_found | `solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunitsbulkadditionjobs` | Backup Restore | 21007 ms |
+| 59 | auth | `solutions_backuprestoreroot_solutions_getbackuprestore` | Backup Restore | 20496 ms |
+| 60 | bad_request | `storage_filestorage_storage_filestorage_listcontainers` | Storage | 17372 ms |
+| 61 | auth | `storage_filestorage_storage_filestorage_listcontainertyperegistrations` | Storage | 18161 ms |
+| 62 | auth | `storage_filestorage_storage_filestorage_listcontainertypes` | Storage | 17781 ms |
+| 63 | bad_request | `storage_filestorage_storage_filestorage_listdeletedcontainers` | Storage | 19146 ms |
+| 64 | unsupported | `storage_filestorage_storage_getfilestorage` | Storage | 22064 ms |
+| 65 | pass | `storage_storage_storage_storage_getstorage` | Storage | 21881 ms |
+| 66 | unsupported | `storage_storagesettings_storage_getsettings` | Storage | 22019 ms |
+| 67 | error | `storage_storagesettings_storage_settings_getquota` | Storage | 26034 ms |
+| 68 | error | `storage_storagesettings_storage_settings_quota_listservices` | Storage | 24942 ms |
+| 69 | not_found | `teams_team_functions_teams_getallmessages` | Teams | 24371 ms |
+| 70 | pass | `teams_team_teams_team_listteam` | Teams | 20080 ms |
+| 71 | not_found | `teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate` | Teams | 18615 ms |
+| 72 | not_found | `teamwork_deletedchat_teamwork_listdeletedchats` | Chats | 22613 ms |
+| 73 | not_found | `teamwork_deletedteam_teamwork_deletedteams_getallmessages` | Teamwork | 21460 ms |
+| 74 | pass | `teamwork_deletedteam_teamwork_listdeletedteams` | Teamwork | 21209 ms |
+| 75 | pass | `teamwork_teamsappsettings_teamwork_getteamsappsettings` | Teamwork | 17546 ms |
+| 76 | pass | `teamwork_teamwork_teamwork_teamwork_getteamwork` | Teamwork | 16157 ms |
+| 77 | pass | `teamwork_workforceintegration_teamwork_listworkforceintegrations` | Teamwork | 16513 ms |
 
 ### Full real outputs — 77 top-level calls
 
 Each call below is the exact SQL sent to Coral plus the verbatim response from Microsoft Graph (truncated only where noted).
 
-#### T01 — `admin_sharepoint_admin_getsharepoint` — `unsupported` — 13267 ms
+#### T01 — Get SharePoint admin root (SharePoint Admin) — `admin_sharepoint_admin_getsharepoint` — `unsupported` — 13267 ms
 
 **Command (input):**
 
@@ -406,7 +437,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T02 — `admin_sharepoint_admin_sharepoint_getsettings` — `pass` — 13322 ms
+#### T02 — Get settings (SharePoint Admin) — `admin_sharepoint_admin_sharepoint_getsettings` — `pass` — 13322 ms
 
 **Command (input):**
 
@@ -425,7 +456,7 @@ SELECT * FROM microsoft_graph_v4."admin_sharepoint_admin_sharepoint_getsettings"
 
 ```
 
-#### T03 — `admin_teamsadminroot_admin_getteams` — `unsupported` — 13262 ms
+#### T03 — Get Teams admin root (Teams Admin) — `admin_teamsadminroot_admin_getteams` — `unsupported` — 13262 ms
 
 **Command (input):**
 
@@ -442,7 +473,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T04 — `admin_teamsadminroot_admin_teams_getpolicy` — `unsupported` — 9115 ms
+#### T04 — Get policy (Teams Admin) — `admin_teamsadminroot_admin_teams_getpolicy` — `unsupported` — 9115 ms
 
 **Command (input):**
 
@@ -459,7 +490,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T05 — `admin_teamsadminroot_admin_teams_gettelephonenumbermanagement` — `unsupported` — 9097 ms
+#### T05 — Get telephony admin (Teams Admin) — `admin_teamsadminroot_admin_teams_gettelephonenumbermanagement` — `unsupported` — 9097 ms
 
 **Command (input):**
 
@@ -476,7 +507,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T06 — `admin_teamsadminroot_admin_teams_listuserconfigurations` — `pass` — 16448 ms
+#### T06 — List user configurations (Teams Admin) — `admin_teamsadminroot_admin_teams_listuserconfigurations` — `pass` — 16448 ms
 
 **Command (input):**
 
@@ -495,7 +526,7 @@ SELECT * FROM microsoft_graph_v4."admin_teamsadminroot_admin_teams_listuserconfi
 
 ```
 
-#### T07 — `admin_teamsadminroot_admin_teams_policy_listuserassignments` — `not_found` — 16471 ms
+#### T07 — policy · List user assignments (Teams Admin) — `admin_teamsadminroot_admin_teams_policy_listuserassignments` — `not_found` — 16471 ms
 
 **Command (input):**
 
@@ -512,7 +543,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T08 — `admin_teamsadminroot_admin_teams_telephonenumbermanagement_listnumberassignments` — `pass` — 16850 ms
+#### T08 — List number assignments (Teams Admin) — `admin_teamsadminroot_admin_teams_telephonenumbermanagement_listnumberassignments` — `pass` — 16850 ms
 
 **Command (input):**
 
@@ -531,7 +562,7 @@ SELECT * FROM microsoft_graph_v4."admin_teamsadminroot_admin_teams_telephonenumb
 
 ```
 
-#### T09 — `admin_teamsadminroot_admin_teams_telephonenumbermanagement_listoperations` — `not_found` — 16109 ms
+#### T09 — List operations (Teams Admin) — `admin_teamsadminroot_admin_teams_telephonenumbermanagement_listoperations` — `not_found` — 16109 ms
 
 **Command (input):**
 
@@ -548,7 +579,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T10 — `appcatalogs_teamsapp_appcatalogs_listteamsapps` — `pass` — 24169 ms
+#### T10 — List Teams apps (Apps) — `appcatalogs_teamsapp_appcatalogs_listteamsapps` — `pass` — 24169 ms
 
 **Command (input):**
 
@@ -565,7 +596,7 @@ SELECT * FROM microsoft_graph_v4."appcatalogs_teamsapp_appcatalogs_listteamsapps
 |             |                | [{"id":"4046041d-19bb-4afe-a8d6-f464d894f139","externalId":null,"displayName":"Copilot","distributionMethod":"store"},{"id":"14d6962d-6eeb-4f48-8890-de55454bb136","externalId":null,"displayName":"Activity","distributionMethod":"store"},{"id":"20c3440d-c67e-4420-9f80-0e50c39693df","externalId":null,"displayName":"Calling","distributionMethod":"store"},{"id":"2a84919f-59d8-4441-a975-2a8c2643b741","externalId":null,"displayName":"Teams","distributionMethod":"store"},{"id":"34b01851-c13d-4604-bb3b-5de1ecbf0288","externalId":null,"displayName":"Saved","distributionMethod":"store"},{"id":"3b64df9d-7e97-4d9c-ac5c-2e0a5d8e6f40","externalId":null,"displayName":"Chat and Channels","distributionMethod":"store"},{"id":"5ae80e49-7ada-461a-a6bd-c5df2e0cdb06","externalId":null,"displayName":"Channel Pages","distributionMethod":"store"},{"id":"7831feaf-c4c4-4669-ba64-ce4ea0b56d31","externalId":null,"displayName":"People","distributionMethod":"store"},{"id":"86fcd49b-61a2-4701-b771-54728cd291fb","externalId":null,"displayName":"Chat","distributionMethod":"store"},{"id":"a2da8768-95d5-419e-9441-3b539865b118","externalId":null,"displayName":"Search","distributionMethod":"store"},{"id":"a63f7012-8cc9-42d5-99c3-e35f526fab17","externalId":null,"displayName":"Meet","distributionMethod":"store"},{"id":"ef56c0de-36fc-4ef8-b417-3d82ba9d073c","externalId":null,"displayName":"Calendar","distributionMethod":"store"},{"id":"00001016-de05-492e-9106-4828fc8a8687","externalId":null,"displayName":"Power Automate Actions","distributionMethod":"store"},{"id":"03386cc1-d424-4eaa-95a8-4a8ec605190e","externalId":null,"displayName":"Idea Coach","distributionMethod":"store"},{"id":"040880f4-0c68-4c38-8821-d5efd2b6ddbe","externalId":null,"displayName":"Milestones","distributionMethod":"store"},{"id":"051ab055-bb65-4d90-b422-d775c639d69f","externalId":null,"displayName":"GenUX-Shell","distributionMethod":"store"},{"id":"067a22bc-d175-4e7d-a134-c0f48c5051f7","externalId":null,"displayName":"App Builder (Frontier)","distributionMethod":"store"},{"id":"082f87f8-f496-4c5f-bfa0-4f199a260e7c","externalId":null,"displayName":"Copilot with GPT5.1 (Web)","distributionMethod":"store"},{"id":"085a554f-ff8c-4b4a-9ba4-76f81fc1a6c8","externalId":null,"displayName":"Sales Development (Frontier)","distributionMethod":"store"},{"id":"0a1db42b-1524-4fce-b0e3-414cc7e6a6a5","externalId":null,"displayName":"Agent Management","distributionMethod":"store"},{"id":"0a84c346-4dd7-498a-a8b8-e5d78dc4b0f7","externalId":null,"displayName":"Copilot with Claude","distributionMethod":"store"},{"id":"0ae35b36-0fd7-422e-805b-d53af1579093","externalId":null,"displayName":"SharePoint Pages","distributionMethod":"store"},{"id":"0cca78c7-fa3e-4277-8e25-ca38a9f9d6cd","externalId":null,"displayName":"Customer Connect AI","distributionMethod":"store"},{"id":"0d820ecd-def2-4297-adad-78056cde7c78","externalId":null,"displayName":"OneNote","distributionMethod":"store"},{"id":"0e3bedea-4720-48b5-9e13-5a1ce1387d45","externalId":null,"displayName":"Polls","distributionMethod":"store"},{"id":"100e3882-b881-4b6e-8dba-2cc8884af5d3","externalId":null,"displayName":"Agent","dist
 ```
 
-#### T11 — `chats_chat_chats_chat_listchat` — `pass` — 17206 ms
+#### T11 — List chats (Chats) — `chats_chat_chats_chat_listchat` — `pass` — 17206 ms
 
 **Command (input):**
 
@@ -584,7 +615,7 @@ SELECT * FROM microsoft_graph_v4."chats_chat_chats_chat_listchat" LIMIT 5
 
 ```
 
-#### T12 — `chats_chat_functions_chats_getallmessages` — `not_found` — 18743 ms
+#### T12 — Get all messages (Chats) — `chats_chat_functions_chats_getallmessages` — `not_found` — 18743 ms
 
 **Command (input):**
 
@@ -601,7 +632,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T13 — `chats_chat_functions_chats_getallretainedmessages` — `not_found` — 18359 ms
+#### T13 — Get all retained messages (Chats) — `chats_chat_functions_chats_getallretainedmessages` — `not_found` — 18359 ms
 
 **Command (input):**
 
@@ -618,7 +649,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T14 — `drives_drive_drives_drive_listdrive` — `pass` — 11875 ms
+#### T14 — List drives (Drives) — `drives_drive_drives_drive_listdrive` — `pass` — 11875 ms
 
 **Command (input):**
 
@@ -637,7 +668,7 @@ SELECT * FROM microsoft_graph_v4."drives_drive_drives_drive_listdrive" LIMIT 5
 
 ```
 
-#### T15 — `me_chat_me_chats_getallmessages` — `unsupported` — 17909 ms
+#### T15 — Get all messages (Chats) — `me_chat_me_chats_getallmessages` — `unsupported` — 17909 ms
 
 **Command (input):**
 
@@ -653,7 +684,7 @@ Detail: {"error":{"code":"PreconditionFailed","message":"Requested API is not su
 
 ```
 
-#### T16 — `me_chat_me_chats_getallretainedmessages` — `unsupported` — 18193 ms
+#### T16 — Get all retained messages (Chats) — `me_chat_me_chats_getallretainedmessages` — `unsupported` — 18193 ms
 
 **Command (input):**
 
@@ -669,7 +700,7 @@ Detail: {"error":{"code":"PreconditionFailed","message":"Requested API is not su
 
 ```
 
-#### T17 — `me_chat_me_listchats` — `pass` — 18782 ms
+#### T17 — List chats (Chats) — `me_chat_me_listchats` — `pass` — 18782 ms
 
 **Command (input):**
 
@@ -688,7 +719,7 @@ SELECT * FROM microsoft_graph_v4."me_chat_me_listchats" LIMIT 5
 
 ```
 
-#### T18 — `me_drive_me_getdrive` — `pass` — 18666 ms
+#### T18 — Get drive (Drives) — `me_drive_me_getdrive` — `pass` — 18666 ms
 
 **Command (input):**
 
@@ -707,7 +738,7 @@ SELECT * FROM microsoft_graph_v4."me_drive_me_getdrive" LIMIT 5
 
 ```
 
-#### T19 — `me_drive_me_listdrives` — `pass` — 19603 ms
+#### T19 — List drives (Drives) — `me_drive_me_listdrives` — `pass` — 19603 ms
 
 **Command (input):**
 
@@ -726,7 +757,7 @@ SELECT * FROM microsoft_graph_v4."me_drive_me_listdrives" LIMIT 5
 
 ```
 
-#### T20 — `me_site_me_listfollowedsites` — `pass` — 20160 ms
+#### T20 — List followed sites (Sites) — `me_site_me_listfollowedsites` — `pass` — 20160 ms
 
 **Command (input):**
 
@@ -745,7 +776,7 @@ SELECT * FROM microsoft_graph_v4."me_site_me_listfollowedsites" LIMIT 5
 
 ```
 
-#### T21 — `me_team_me_joinedteams_getallmessages` — `not_found` — 23580 ms
+#### T21 — Get all messages (Teams) — `me_team_me_joinedteams_getallmessages` — `not_found` — 23580 ms
 
 **Command (input):**
 
@@ -762,7 +793,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T22 — `me_team_me_listjoinedteams` — `pass` — 24765 ms
+#### T22 — List joined teams (Teams) — `me_team_me_listjoinedteams` — `pass` — 24765 ms
 
 **Command (input):**
 
@@ -781,7 +812,7 @@ SELECT * FROM microsoft_graph_v4."me_team_me_listjoinedteams" LIMIT 5
 
 ```
 
-#### T23 — `me_userteamwork_me_getteamwork` — `pass` — 22916 ms
+#### T23 — Get teamwork (Teamwork) — `me_userteamwork_me_getteamwork` — `pass` — 22916 ms
 
 **Command (input):**
 
@@ -800,7 +831,7 @@ SELECT * FROM microsoft_graph_v4."me_userteamwork_me_getteamwork" LIMIT 5
 
 ```
 
-#### T24 — `me_userteamwork_me_teamwork_getallretainedtargetedmessages` — `unsupported` — 20992 ms
+#### T24 — Get all retained targeted messages (Teamwork) — `me_userteamwork_me_teamwork_getallretainedtargetedmessages` — `unsupported` — 20992 ms
 
 **Command (input):**
 
@@ -816,7 +847,7 @@ Detail: {"error":{"code":"PreconditionFailed","message":"Requested API is not su
 
 ```
 
-#### T25 — `me_userteamwork_me_teamwork_getalltargetedmessages` — `unsupported` — 20467 ms
+#### T25 — Get all targeted messages (Teamwork) — `me_userteamwork_me_teamwork_getalltargetedmessages` — `unsupported` — 20467 ms
 
 **Command (input):**
 
@@ -832,7 +863,7 @@ Detail: {"error":{"code":"PreconditionFailed","message":"Requested API is not su
 
 ```
 
-#### T26 — `me_userteamwork_me_teamwork_listassociatedteams` — `pass` — 20382 ms
+#### T26 — List associated teams (Teamwork) — `me_userteamwork_me_teamwork_listassociatedteams` — `pass` — 20382 ms
 
 **Command (input):**
 
@@ -851,7 +882,7 @@ SELECT * FROM microsoft_graph_v4."me_userteamwork_me_teamwork_listassociatedteam
 
 ```
 
-#### T27 — `me_userteamwork_me_teamwork_listinstalledapps` — `pass` — 18603 ms
+#### T27 — List installed apps (Teamwork) — `me_userteamwork_me_teamwork_listinstalledapps` — `pass` — 18603 ms
 
 **Command (input):**
 
@@ -870,7 +901,7 @@ SELECT * FROM microsoft_graph_v4."me_userteamwork_me_teamwork_listinstalledapps"
 
 ```
 
-#### T28 — `shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem` — `bad_request` — 16275 ms
+#### T28 — List shared drive item (Shares) — `shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem` — `bad_request` — 16275 ms
 
 **Command (input):**
 
@@ -887,7 +918,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T29 — `sites_site_functions_sites_delta` — `auth` — 15794 ms
+#### T29 — Delta changes (Sites) — `sites_site_functions_sites_delta` — `auth` — 15794 ms
 
 **Command (input):**
 
@@ -904,7 +935,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T30 — `sites_site_functions_sites_getallsites` — `auth` — 15986 ms
+#### T30 — Get all sites (Sites) — `sites_site_functions_sites_getallsites` — `auth` — 15986 ms
 
 **Command (input):**
 
@@ -921,7 +952,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T31 — `sites_site_sites_site_listsite` — `pass` — 16324 ms
+#### T31 — List sites (Sites) — `sites_site_sites_site_listsite` — `pass` — 16324 ms
 
 **Command (input):**
 
@@ -940,7 +971,7 @@ SELECT * FROM microsoft_graph_v4."sites_site_sites_site_listsite" LIMIT 5
 
 ```
 
-#### T32 — `solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting` — `auth` — 16300 ms
+#### T32 — Get email notifications setting (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting` — `auth` — 16300 ms
 
 **Command (input):**
 
@@ -957,7 +988,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T33 — `solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions` — `auth` — 16822 ms
+#### T33 — List browse sessions (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions` — `auth` — 16822 ms
 
 **Command (input):**
 
@@ -974,7 +1005,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T34 — `solutions_backuprestoreroot_solutions_backuprestore_listdriveinclusionrules` — `not_found` — 19462 ms
+#### T34 — List drive inclusion rules (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listdriveinclusionrules` — `not_found` — 19462 ms
 
 **Command (input):**
 
@@ -991,7 +1022,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T35 — `solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunits` — `not_found` — 19199 ms
+#### T35 — List drive protection units (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunits` — `not_found` — 19199 ms
 
 **Command (input):**
 
@@ -1008,7 +1039,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T36 — `solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunitsbulkadditionjobs` — `not_found` — 22584 ms
+#### T36 — List drive protection bulk addition jobs (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunitsbulkadditionjobs` — `not_found` — 22584 ms
 
 **Command (input):**
 
@@ -1025,7 +1056,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T37 — `solutions_backuprestoreroot_solutions_backuprestore_listexchangeprotectionpolicies` — `auth` — 27551 ms
+#### T37 — List Exchange protection policies (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listexchangeprotectionpolicies` — `auth` — 27551 ms
 
 **Command (input):**
 
@@ -1042,7 +1073,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T38 — `solutions_backuprestoreroot_solutions_backuprestore_listexchangerestoresessions` — `auth` — 27327 ms
+#### T38 — List Exchange restore sessions (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listexchangerestoresessions` — `auth` — 27327 ms
 
 **Command (input):**
 
@@ -1059,7 +1090,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T39 — `solutions_backuprestoreroot_solutions_backuprestore_listmailboxinclusionrules` — `not_found` — 26202 ms
+#### T39 — List mailbox inclusion rules (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listmailboxinclusionrules` — `not_found` — 26202 ms
 
 **Command (input):**
 
@@ -1076,7 +1107,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T40 — `solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunits` — `not_found` — 22765 ms
+#### T40 — List mailbox protection units (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunits` — `not_found` — 22765 ms
 
 **Command (input):**
 
@@ -1093,7 +1124,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T41 — `solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunitsbulkadditionjobs` — `not_found` — 22885 ms
+#### T41 — List mailbox protection bulk addition jobs (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunitsbulkadditionjobs` — `not_found` — 22885 ms
 
 **Command (input):**
 
@@ -1110,7 +1141,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T42 — `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessbrowsesessions` — `auth` — 25108 ms
+#### T42 — List OneDrive browse sessions (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessbrowsesessions` — `auth` — 25108 ms
 
 **Command (input):**
 
@@ -1127,7 +1158,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T43 — `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessprotectionpolicies` — `auth` — 24288 ms
+#### T43 — List OneDrive protection policies (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessprotectionpolicies` — `auth` — 24288 ms
 
 **Command (input):**
 
@@ -1144,7 +1175,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T44 — `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessrestoresessions` — `auth` — 24114 ms
+#### T44 — List OneDrive restore sessions (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessrestoresessions` — `auth` — 24114 ms
 
 **Command (input):**
 
@@ -1161,7 +1192,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T45 — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionpolicies` — `auth` — 22316 ms
+#### T45 — List protection policies (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionpolicies` — `auth` — 22316 ms
 
 **Command (input):**
 
@@ -1178,7 +1209,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T46 — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits` — `auth` — 23838 ms
+#### T46 — List protection units (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits` — `auth` — 23838 ms
 
 **Command (input):**
 
@@ -1195,7 +1226,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T47 — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asdriveprotectionunit` — `auth` — 23748 ms
+#### T47 — List protection units (drive) (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asdriveprotectionunit` — `auth` — 23748 ms
 
 **Command (input):**
 
@@ -1212,7 +1243,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T48 — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asmailboxprotectionunit` — `auth` — 25871 ms
+#### T48 — List protection units (mailbox) (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asmailboxprotectionunit` — `auth` — 25871 ms
 
 **Command (input):**
 
@@ -1229,7 +1260,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T49 — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_assiteprotectionunit` — `auth` — 29192 ms
+#### T49 — List protection units (site) (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_assiteprotectionunit` — `auth` — 29192 ms
 
 **Command (input):**
 
@@ -1246,7 +1277,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T50 — `solutions_backuprestoreroot_solutions_backuprestore_listrestorepoints` — `auth` — 29147 ms
+#### T50 — List restore points (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listrestorepoints` — `auth` — 29147 ms
 
 **Command (input):**
 
@@ -1263,7 +1294,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T51 — `solutions_backuprestoreroot_solutions_backuprestore_listrestoresessions` — `auth` — 26240 ms
+#### T51 — List restore sessions (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listrestoresessions` — `auth` — 26240 ms
 
 **Command (input):**
 
@@ -1280,7 +1311,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T52 — `solutions_backuprestoreroot_solutions_backuprestore_listserviceapps` — `auth` — 24075 ms
+#### T52 — List service apps (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listserviceapps` — `auth` — 24075 ms
 
 **Command (input):**
 
@@ -1297,7 +1328,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T53 — `solutions_backuprestoreroot_solutions_backuprestore_listsharepointbrowsesessions` — `auth` — 24197 ms
+#### T53 — List SharePoint browse sessions (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listsharepointbrowsesessions` — `auth` — 24197 ms
 
 **Command (input):**
 
@@ -1314,7 +1345,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T54 — `solutions_backuprestoreroot_solutions_backuprestore_listsharepointprotectionpolicies` — `auth` — 24090 ms
+#### T54 — List SharePoint protection policies (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listsharepointprotectionpolicies` — `auth` — 24090 ms
 
 **Command (input):**
 
@@ -1331,7 +1362,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T55 — `solutions_backuprestoreroot_solutions_backuprestore_listsharepointrestoresessions` — `auth` — 20503 ms
+#### T55 — List SharePoint restore sessions (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listsharepointrestoresessions` — `auth` — 20503 ms
 
 **Command (input):**
 
@@ -1348,7 +1379,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T56 — `solutions_backuprestoreroot_solutions_backuprestore_listsiteinclusionrules` — `not_found` — 20477 ms
+#### T56 — List site inclusion rules (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listsiteinclusionrules` — `not_found` — 20477 ms
 
 **Command (input):**
 
@@ -1365,7 +1396,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T57 — `solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunits` — `not_found` — 21838 ms
+#### T57 — List site protection units (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunits` — `not_found` — 21838 ms
 
 **Command (input):**
 
@@ -1382,7 +1413,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T58 — `solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunitsbulkadditionjobs` — `not_found` — 21007 ms
+#### T58 — List site protection bulk addition jobs (Backup Restore) — `solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunitsbulkadditionjobs` — `not_found` — 21007 ms
 
 **Command (input):**
 
@@ -1399,7 +1430,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T59 — `solutions_backuprestoreroot_solutions_getbackuprestore` — `auth` — 20496 ms
+#### T59 — Backup restore root (Backup Restore) — `solutions_backuprestoreroot_solutions_getbackuprestore` — `auth` — 20496 ms
 
 **Command (input):**
 
@@ -1416,7 +1447,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T60 — `storage_filestorage_storage_filestorage_listcontainers` — `bad_request` — 17372 ms
+#### T60 — List file-storage containers (Storage) — `storage_filestorage_storage_filestorage_listcontainers` — `bad_request` — 17372 ms
 
 **Command (input):**
 
@@ -1433,7 +1464,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T61 — `storage_filestorage_storage_filestorage_listcontainertyperegistrations` — `auth` — 18161 ms
+#### T61 — List container type registrations (Storage) — `storage_filestorage_storage_filestorage_listcontainertyperegistrations` — `auth` — 18161 ms
 
 **Command (input):**
 
@@ -1450,7 +1481,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T62 — `storage_filestorage_storage_filestorage_listcontainertypes` — `auth` — 17781 ms
+#### T62 — List container types (Storage) — `storage_filestorage_storage_filestorage_listcontainertypes` — `auth` — 17781 ms
 
 **Command (input):**
 
@@ -1467,7 +1498,7 @@ Hint: Check the configured credentials and whether they have access to this reso
 
 ```
 
-#### T63 — `storage_filestorage_storage_filestorage_listdeletedcontainers` — `bad_request` — 19146 ms
+#### T63 — List deleted containers (Storage) — `storage_filestorage_storage_filestorage_listdeletedcontainers` — `bad_request` — 19146 ms
 
 **Command (input):**
 
@@ -1484,7 +1515,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T64 — `storage_filestorage_storage_getfilestorage` — `unsupported` — 22064 ms
+#### T64 — Get file storage root (Storage) — `storage_filestorage_storage_getfilestorage` — `unsupported` — 22064 ms
 
 **Command (input):**
 
@@ -1501,7 +1532,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T65 — `storage_storage_storage_storage_getstorage` — `pass` — 21881 ms
+#### T65 — Get storage settings root (Storage) — `storage_storage_storage_storage_getstorage` — `pass` — 21881 ms
 
 **Command (input):**
 
@@ -1520,7 +1551,7 @@ SELECT * FROM microsoft_graph_v4."storage_storage_storage_storage_getstorage" LI
 
 ```
 
-#### T66 — `storage_storagesettings_storage_getsettings` — `unsupported` — 22019 ms
+#### T66 — Get settings (Storage) — `storage_storagesettings_storage_getsettings` — `unsupported` — 22019 ms
 
 **Command (input):**
 
@@ -1537,7 +1568,7 @@ Hint: Adjust the query filters or shape to match the target table's supported in
 
 ```
 
-#### T67 — `storage_storagesettings_storage_settings_getquota` — `error` — 26034 ms
+#### T67 — Get storage quota (Storage) — `storage_storagesettings_storage_settings_getquota` — `error` — 26034 ms
 
 **Command (input):**
 
@@ -1554,7 +1585,7 @@ Hint: The upstream API returned a server error. This may be transient — retry 
 
 ```
 
-#### T68 — `storage_storagesettings_storage_settings_quota_listservices` — `error` — 24942 ms
+#### T68 — List file-storage services (Storage) — `storage_storagesettings_storage_settings_quota_listservices` — `error` — 24942 ms
 
 **Command (input):**
 
@@ -1571,7 +1602,7 @@ Hint: The upstream API returned a server error. This may be transient — retry 
 
 ```
 
-#### T69 — `teams_team_functions_teams_getallmessages` — `not_found` — 24371 ms
+#### T69 — Get all messages (Teams) — `teams_team_functions_teams_getallmessages` — `not_found` — 24371 ms
 
 **Command (input):**
 
@@ -1588,7 +1619,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T70 — `teams_team_teams_team_listteam` — `pass` — 20080 ms
+#### T70 — List teams (Teams) — `teams_team_teams_team_listteam` — `pass` — 20080 ms
 
 **Command (input):**
 
@@ -1607,7 +1638,7 @@ SELECT * FROM microsoft_graph_v4."teams_team_teams_team_listteam" LIMIT 5
 
 ```
 
-#### T71 — `teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate` — `not_found` — 18615 ms
+#### T71 — List Teams templates (Teams) — `teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate` — `not_found` — 18615 ms
 
 **Command (input):**
 
@@ -1624,7 +1655,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T72 — `teamwork_deletedchat_teamwork_listdeletedchats` — `not_found` — 22613 ms
+#### T72 — List deleted chats (Chats) — `teamwork_deletedchat_teamwork_listdeletedchats` — `not_found` — 22613 ms
 
 **Command (input):**
 
@@ -1641,7 +1672,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T73 — `teamwork_deletedteam_teamwork_deletedteams_getallmessages` — `not_found` — 21460 ms
+#### T73 — Get all messages (Teamwork) — `teamwork_deletedteam_teamwork_deletedteams_getallmessages` — `not_found` — 21460 ms
 
 **Command (input):**
 
@@ -1658,7 +1689,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 
 ```
 
-#### T74 — `teamwork_deletedteam_teamwork_listdeletedteams` — `pass` — 21209 ms
+#### T74 — List deleted teams (Teamwork) — `teamwork_deletedteam_teamwork_listdeletedteams` — `pass` — 21209 ms
 
 **Command (input):**
 
@@ -1677,7 +1708,7 @@ SELECT * FROM microsoft_graph_v4."teamwork_deletedteam_teamwork_listdeletedteams
 
 ```
 
-#### T75 — `teamwork_teamsappsettings_teamwork_getteamsappsettings` — `pass` — 17546 ms
+#### T75 — Get Teams app settings (Teamwork) — `teamwork_teamsappsettings_teamwork_getteamsappsettings` — `pass` — 17546 ms
 
 **Command (input):**
 
@@ -1696,7 +1727,7 @@ SELECT * FROM microsoft_graph_v4."teamwork_teamsappsettings_teamwork_getteamsapp
 
 ```
 
-#### T76 — `teamwork_teamwork_teamwork_teamwork_getteamwork` — `pass` — 16157 ms
+#### T76 — Get teamwork (Teamwork) — `teamwork_teamwork_teamwork_teamwork_getteamwork` — `pass` — 16157 ms
 
 **Command (input):**
 
@@ -1715,7 +1746,7 @@ SELECT * FROM microsoft_graph_v4."teamwork_teamwork_teamwork_teamwork_getteamwor
 
 ```
 
-#### T77 — `teamwork_workforceintegration_teamwork_listworkforceintegrations` — `pass` — 16513 ms
+#### T77 — List workforce integrations (Teamwork) — `teamwork_workforceintegration_teamwork_listworkforceintegrations` — `pass` — 16513 ms
 
 **Command (input):**
 
