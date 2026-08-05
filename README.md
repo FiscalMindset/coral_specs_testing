@@ -48,7 +48,21 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Every report has a matching `.md` (raw) and `.html` (responsive) version.
 
-### 🆕 2026-08-05 — Auth-classified calls re-run: 0/23 pass (permanent, not transient)
+### 🆕 2026-08-05 — SharePoint + Teams deep-data drill-down v4.5 (corrected triage): 0 Coral bugs
+
+| | |
+|---|---|
+| **Date** | 2026-08-05 |
+| **Calls** | 92 (15 deep-data battery + 77 top-level tables) |
+| **Deep battery** | **14 pass (93.3%) / 1 error (6.7%)** — the single error is `getAllMessages` → 412 app-only |
+| **Combined** | **35 pass / 23 auth / 3 bad_request / 18 not_found / 10 unsupported / 3 error** |
+| **Triage** | **0 Coral bugs · 0 MS-spec bugs · 57 genuine Microsoft** — all 57 failures reproduced against live Graph |
+
+v4.5 is the **corrected triage** of the canonical deep-data report: re-examination with the Microsoft Graph OpenAPI proved **0 of the 57 failing calls are Coral bugs**. Two v4.3-era suspicions retracted: the `GET /shares` 400 is a **phantom route** in MS's OpenAPI (the path has zero parameters — Coral faithfully forwards the filter; MS rejects it) and Teams `channel getChannel` **IS published** by Microsoft Graph, so the earlier "catalog gap" claim was wrong. Verified by the live re-run: `channels getChannel` returns real rows (`General`, membershipType=standard, created 2026-07-25) → **pass**.
+
+- **[Markdown](reports/2026-08-05-sharepoint-teams-deep-data-report-v4.5.md)** · **[HTML](reports/2026-08-05-sharepoint-teams-deep-data-report-v4.5.html)** — corrected triage with the full 92-call log, per-area stats, and verbatim outputs for every failing call.
+
+### 2026-08-05 — Auth-classified calls re-run: 0/23 pass (permanent, not transient)
 
 | | |
 |---|---|
