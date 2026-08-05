@@ -48,7 +48,20 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Every report has a matching `.md` (raw) and `.html` (responsive) version.
 
-### 🆕 2026-08-05 — Full-scope (az admin token) re-test: pass 70 → 146
+### 🆕 2026-08-05 — Auth-classified calls re-run: 0/23 pass (permanent, not transient)
+
+| | |
+|---|---|
+| **Date** | 2026-08-05 (run 06:56–07:00 UTC) |
+| **Token** | fresh valid 128-scope delegated token (iat 06:40:45Z · exp 08:02:10Z) |
+| **Calls** | all 23 `auth`-classified from v4.3 + 2 storage container filter probes = 25 |
+| **Result** | **0/23 pass** — all 23 still 403 (`accessDenied` / `UnknownError`) with a valid token; **0 transient flakes** |
+
+Re-running every v4.3 `auth` failure with a freshly-validated token proved the `auth` bucket is **permanent MS-side blocking**, not expired-token noise: `sites/delta`/`getAllSites` + containerTypes/Registrations are app-only permissions (delegated can never pass), and the entire `solutions/backupRestore` surface (18 calls) 403s `UnknownError` because M365 Backup isn't provisioned in the tenant. T60/T63 reproduce their 400 exactly (coral forwards the `containerTypeId` filter verbatim; MS rejects empty/zero). Confirms the v4.3 triage (34/92 pass ceiling).
+
+- **[Markdown](reports/2026-08-05-auth-rerun-confirmed.md)** · **[HTML](reports/2026-08-05-auth-rerun-confirmed.html)** — result matrix for all 25 calls, root-cause classification, verbatim outputs, what would make each pass.
+
+### 2026-08-05 — Full-scope (az admin token) re-test: pass 70 → 146
 
 | | |
 |---|---|

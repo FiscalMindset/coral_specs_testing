@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auth-classified calls re-run — confirmed permanence — microsoft_graph_v4</title>
+<style>
+ body{font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:1280px;margin:24px auto;padding:0 14px;color:#1a1a1a;background:#fff}
+ h1{font-size:22px;border-bottom:2px solid #0364ab;padding-bottom:8px}
+ h2{font-size:17px;margin:22px 0 8px;color:#0d2b45}
+ table{border-collapse:collapse;width:100%;margin:8px 0;font-size:12.5px}
+ th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}
+ th{background:#f0f6fb;font-weight:600}
+ code{font-family:SF Mono,Menlo,Consolas,monospace;font-size:11.5px;background:#f6f8fa;padding:1px 4px;border-radius:3px}
+ pre{background:#f6f8fa;border:1px solid #e1e4e8;border-radius:6px;padding:10px;overflow-x:auto;font-family:SF Mono,Menlo,Consolas,monospace;font-size:11.5px}
+ .badge{display:inline-block;color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;vertical-align:middle}
+ .b-red{background:#cf222e}.b-green{background:#1a7f37}.b-amber{background:#9a6700}
+ .hero{background:linear-gradient(135deg,#0d2b45,#0364ab);color:#fff;border-radius:10px;padding:16px 18px;margin:14px 0}
+ .hero-title{font-size:15px;font-weight:700;margin-bottom:10px}
+ .hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+ .hero-card{background:rgba(255,255,255,.09);border-radius:8px;padding:8px 10px}
+ .hero-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;opacity:.85}
+ .hero-value{font-size:13.5px;font-weight:600;margin-top:2px;word-break:break-all}
+ .hero-sub{font-size:11.5px;opacity:.85;word-break:break-all}
+ .hero code{background:rgba(0,0,0,.25);color:#fff}
+ .stat-grid{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}
+ .stat-card{flex:1 1 150px;min-width:130px;border:1px solid #ddd;border-radius:8px;padding:12px;text-align:center;background:#fafbfc}
+ .stat-card.red{background:#fff5f5;border-color:#f5c2c2}
+ .stat-card.green{background:#eef7ee;border-color:#bfe6bf}
+ .stat-num{font-size:26px;font-weight:700}
+ .stat-label{font-size:11.5px;color:#57606a;margin-top:3px}
+ blockquote{border-left:4px solid #0364ab;margin:10px 0;padding:8px 14px;background:#f0f6fb;border-radius:0 6px 6px 0}
+ .callout{border:1px solid #bcd4f0;background:#f0f6fb;border-radius:6px;padding:10px 14px;margin:10px 0}
+</style></head><body>
+
+<h1>microsoft_graph_v4 — Auth-classified calls re-run (fresh 128-scope token) — confirmed permanence</h1>
+
+<div class="hero">
+<div class="hero-title">Re-run of all 23 <b>auth</b>-classified calls + 2 storage filter probes with a freshly-validated delegated token</div>
+<div class="hero-grid">
+ <div class="hero-card"><div class="hero-label">Date</div><div class="hero-value">2026-08-05</div><div class="hero-sub">run window 06:56–07:00 UTC</div></div>
+ <div class="hero-card"><div class="hero-label">Token</div><div class="hero-value">128 scopes</div><div class="hero-sub">iat 06:40:45Z · exp 08:02:10Z · aud graph.microsoft.com</div></div>
+ <div class="hero-card"><div class="hero-label">Calls</div><div class="hero-value">25</div><div class="hero-sub">23 auth + 2 filter probes · 0 timeouts</div></div>
+ <div class="hero-card"><div class="hero-label">Result</div><div class="hero-value">0 / 23 pass</div><div class="hero-sub">0 transient · all permanent</div></div>
+</div></div>
+
+<h2>Bottom line</h2>
+<blockquote>Every one of the 23 <code>auth</code>-classified calls from the v4.3 report was re-run with a <b>fresh, valid, 128-scope delegated token</b> and <b>all 23 failed identically</b> to the original run (403 <code>accessDenied</code> / 403 <code>UnknownError</code>). <b>Zero transient token-expiry flakes.</b> The v4.3 triage is confirmed: the <code>auth</code> bucket is <b>permanent</b> — app-only Graph permissions or an unprovisioned M365 Backup feature — none can pass under delegated auth. The 2 storage-container filter probes (T60/T63) reproduce their 400 <code>invalidRequest</code> exactly (coral forwards the <code>$filter</code> faithfully; MS rejects an empty/zero containerTypeId).</blockquote>
+
+<div class="stat-grid">
+ <div class="stat-card red"><div class="stat-num">0/23</div><div class="stat-label">auth calls passing</div></div>
+ <div class="stat-card red"><div class="stat-num">0</div><div class="stat-label">transient flakes</div></div>
+ <div class="stat-card red"><div class="stat-num">23</div><div class="stat-label">confirmed permanent</div></div>
+ <div class="stat-card green"><div class="stat-num">25</div><div class="stat-label">verbatim outputs captured</div></div>
+</div>
+
+<h2>Result matrix (25 calls, 2026-08-05 06:56–07:00 UTC)</h2>
+<table>
+<tr><th>Call</th><th>Endpoint (GET via coral)</th><th>v4.3 status</th><th>Re-run</th><th>Error code</th></tr>
+<tr><td>T29</td><td><code>sites/delta()</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>accessDenied</code> "Access denied"</td></tr>
+<tr><td>T30</td><td><code>sites/getAllSites()</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>accessDenied</code> "Access denied"</td></tr>
+<tr><td>T32</td><td><code>solutions/backupRestore/emailNotificationsSetting</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T33</td><td><code>solutions/backupRestore/browseSessions</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T37</td><td><code>solutions/backupRestore/exchangeProtectionPolicies</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T38</td><td><code>solutions/backupRestore/exchangeRestoreSessions</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T42</td><td><code>solutions/backupRestore/oneDriveForBusinessBrowseSessions</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T43</td><td><code>solutions/backupRestore/oneDriveForBusinessProtectionPolicies</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T44</td><td><code>solutions/backupRestore/oneDriveForBusinessRestoreSessions</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T45</td><td><code>solutions/backupRestore/protectionPolicies</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T46</td><td><code>solutions/backupRestore/protectionUnits</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T47</td><td><code>solutions/backupRestore/protectionUnits/graph.driveProtectionUnit</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T48</td><td><code>solutions/backupRestore/protectionUnits/graph.mailboxProtectionUnit</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T49</td><td><code>solutions/backupRestore/protectionUnits/graph.siteProtectionUnit</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T50</td><td><code>solutions/backupRestore/restorePoints</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T51</td><td><code>solutions/backupRestore/restoreSessions</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T52</td><td><code>solutions/backupRestore/serviceApps</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T53</td><td><code>solutions/backupRestore/sharePointBrowseSessions</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T54</td><td><code>solutions/backupRestore/sharePointProtectionPolicies</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T55</td><td><code>solutions/backupRestore/sharePointRestoreSessions</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T59</td><td><code>solutions/backupRestore</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>UnknownError</code> (empty)</td></tr>
+<tr><td>T61</td><td><code>storage/fileStorage/containerTypeRegistrations</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>accessDenied</code> "Caller does not have required permissions for this API"</td></tr>
+<tr><td>T62</td><td><code>storage/fileStorage/containerTypes</code></td><td><span class="badge b-red">auth</span></td><td><b>403</b></td><td><code>accessDenied</code> "Caller does not have required permissions for this API"</td></tr>
+<tr><td>T60</td><td><code>storage/fileStorage/containers</code> (filter probe)</td><td><span class="badge b-amber">bad_request</span></td><td><b>400</b></td><td><code>invalidRequest</code> "containerTypeId filter parameter cannot be empty."</td></tr>
+<tr><td>T63</td><td><code>storage/fileStorage/deletedContainers</code> (filter probe)</td><td><span class="badge b-amber">bad_request</span></td><td><b>400</b></td><td><code>invalidRequest</code> "containerTypeId filter parameter cannot be empty."</td></tr>
+</table>
+
+<h2>Classification of the 23 confirmed-permanent failures</h2>
+<table>
+<tr><th>Root cause</th><th>Calls</th><th>Evidence</th></tr>
+<tr><td><b>App-only Graph permission</b> — API requires application (non-delegated) permission; delegated token can never satisfy it</td><td>T29, T30, T61, T62</td><td><code>403 accessDenied</code>; MS docs list <code>Site.Read.All</code>/<code>Sites.FullControl.All</code> (app-only) for <code>sites/delta</code> &amp; <code>getAllSites</code>; <code>FileStorageContainer.Selected</code> (app-only) for containerTypes</td></tr>
+<tr><td><b>M365 Backup not provisioned</b> in tenant — entire <code>solutions/backupRestore</code> surface 403s as a unit, incl. the root singleton</td><td>T32, T33, T37, T38, T42–T55, T59 (18 calls)</td><td><code>403 UnknownError</code> (empty message)</td></tr>
+</table>
+
+<div class="callout"><b>Zero calls were flaky.</b> Re-running with a valid token changed <b>0</b> outcomes. There is no "wait for token refresh and retry" fix for any of these 23.</div>
+
+<h2>What the re-run proves</h2>
+<ul>
+<li><b>v4.3 triage is stable</b> — the <code>auth</code> bucket is real Graph-side blocking, not credential staleness.</li>
+<li><b>Coral forwarding is correct</b> — the <code>containerTypeId</code> <code>$filter</code> is passed through verbatim (MS answers <code>invalidRequest</code> for an empty/zero value); T60/T63 stay 400, and the 403 app-only wall behind the filter is unreachable without an app-only token.</li>
+<li><b>Delegated-mode ceiling</b> — with the current app (client id <code>4eedabf0-b27e-4c98-ac7b-4c7f5d504bee</code>) and 128 delegated scopes, <b>34 of 92 v4.3 calls pass</b> and no auth-classified call can be fixed by input change or consent addition.</li>
+</ul>
+
+<h2>Appendix — verbatim output (all 25 captured to files)</h2>
+
+<h3>T29 — sites/delta (valid token, still 403)</h3>
+<pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"accessDenied","message":"Access denied","innerError":{"date":"2026-08-05T06:58:08","request-id":"b015050f-bd98-435d-9127-b5ecebf296b6","client-request-id":"b015050f-bd98-435d-9127-b5ecebf296b6"}}} [GET] https://graph.microsoft.com/v1.0/sites/delta()
+Hint: Check the configured credentials and whether they have access to this resource.</pre>
+
+<h3>T61 — storage containerTypeRegistrations (app-permission API)</h3>
+<pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"accessDenied","message":"Caller does not have required permissions for this API","innerError":{"date":"2026-08-05T06:59:57","request-id":"f4adaa94-cd5d-4c12-85df-9cdc9280e332","client-request-id":"f4adaa94-cd5d-4c12-85df-9cdc9280e332"}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/containerTypeRegistrations
+Hint: Check the configured credentials and whether they have access to this resource.</pre>
+
+<h3>T59 — solutions/backupRestore root (unprovisioned feature)</h3>
+<pre>Error: Source request was rejected (403)
+Detail: {"error":{"code":"UnknownError","message":"","innerError":{"date":"2026-08-05T06:59:52","request-id":"1500f79c-b852-424e-b4ac-9923a7341ce6","client-request-id":"1500f79c-b852-424e-b4ac-9923a7341ce6"}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore
+Hint: Check the configured credentials and whether they have access to this resource.</pre>
+
+<h3>T60 — storage containers, filter <code>containerTypeId eq 00000000-0000-0000-0000-000000000000</code> (coral forwards; MS treats zero-guid as empty)</h3>
+<pre>Error: Source rejected the request (400)
+Detail: {"error":{"code":"invalidRequest","message":"containerTypeId filter parameter cannot be empty.","innerError":{"date":"2026-08-05T07:00:07","request-id":"00a1ea31-3caf-4f33-9986-5e6b68e8571a","client-request-id":"00a1ea31-3caf-4f33-9986-5e6b68e8571a"}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/containers
+Hint: Adjust the query filters or shape to match the target table's supported inputs.</pre>
+
+<p><small>All 25 verbatim outputs: <code>/tmp/reauth23/full/T{29,30,32,33,37,38,42–55,59–63}.out</code> (superseded by this report; not committed).</small></p>
+
+<h2>What would make these pass (for the record)</h2>
+<ul>
+<li><b>T29/T30, T61/T62:</b> requires an <b>app-only</b> (client-credential) Graph token with <code>Site.Read.All</code> / <code>FileStorageContainer.Selected</code> granted to the app — impossible under the current delegated-flow source install.</li>
+<li><b>T32–T55, T59:</b> requires the tenant's <b>M365 Backup</b> to be enabled/provisioned (serviceApps populated); then the same endpoints would return data with existing delegated scopes.</li>
+<li><b>T60/T63:</b> needs a <b>real containerTypeId</b> (a registered container type in the tenant) — cannot be synthesized, and enumeration is itself blocked by T61's app-only 403.</li>
+</ul>
+
+</body></html>
