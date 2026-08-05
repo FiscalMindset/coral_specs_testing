@@ -1314,7 +1314,7 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
      c.classList.toggle('hidden', !(okF&&okQ));
     });
    });
-  }));
+  });
   document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
    const el=document.getElementById(b.dataset.copy);
    navigator.clipboard.writeText(el.textContent).then(()=>{
