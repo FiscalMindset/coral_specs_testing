@@ -54,6 +54,17 @@
  .log-card[data-status="unsupported"] .log-sql{border-left:4px solid #8957e5}
  .log-card[data-status="bad_request"] .log-sql{border-left:4px solid #f85149}
  .log-card.hidden{display:none}
+ .bucket{display:inline-block;font-size:10.5px;padding:1px 8px;border-radius:9px;margin-left:8px;color:#fff;font-weight:700;vertical-align:middle}
+ .bucket.coral{background:#cf222e}
+ .bucket.msspec{background:#9a6700}
+ .bucket.ms{background:#0969da}
+ .triage-group{font-size:11px;font-weight:600;color:#0364ab;padding:5px 10px;background:#f0f6fb;border-bottom:1px solid #e1e4e8}
+ .triage-why{font-size:12px;color:#57606a;padding:7px 10px;background:#fff8e6;border-top:1px solid #eee}
+ .log-sql-wrap{position:relative}
+ .copy{position:absolute;top:7px;right:8px;z-index:3;font-size:11px;padding:2px 10px;border:1px solid #30363d;border-radius:5px;background:#21262d;color:#c9d1d9;cursor:pointer;font-family:inherit}
+ .copy:hover{background:#30363d}
+ .triage-out summary{padding:6px 10px;font-size:12px;cursor:pointer;color:#0364ab;background:#f6f8fa;border-top:1px solid #e1e4e8;user-select:none}
+ .triage-out .log-out{border-top:1px solid #e1e4e8}
  @media(max-width:700px){.hero-grid{grid-template-columns:1fr 1fr} .stat-card{min-width:44%} .log-out{max-height:240px}}
 </style></head><body>
 <h1>microsoft_graph_v4 — SharePoint + Teams DEEP-DATA drill-down</h1>
@@ -95,7 +106,530 @@
 <table><thead><tr><th>Status</th><th>Count</th><th>%</th></tr></thead><tbody><tr><td>✅ pass</td><td class="num">21</td><td class="num">27.3%</td></tr><tr><td>🔒 auth</td><td class="num">23</td><td class="num">29.9%</td></tr><tr><td>⚠️ bad_request</td><td class="num">3</td><td class="num">3.9%</td></tr><tr><td>🔍 not_found</td><td class="num">18</td><td class="num">23.4%</td></tr><tr><td>🚫 unsupported</td><td class="num">10</td><td class="num">13.0%</td></tr><tr><td>💥 error</td><td class="num">2</td><td class="num">2.6%</td></tr><tr class="total"><td><b>Total</b></td><td class="num"><b>77</b></td><td class="num">100%</td></tr></tbody></table>
 <h3>Combined with deep battery</h3>
 <table><thead><tr><th>Status</th><th>Count</th><th>%</th></tr></thead><tbody><tr><td>✅ pass</td><td class="num">34</td><td class="num">37.0%</td></tr><tr><td>🔒 auth</td><td class="num">23</td><td class="num">25.0%</td></tr><tr><td>⚠️ bad_request</td><td class="num">3</td><td class="num">3.3%</td></tr><tr><td>🔍 not_found</td><td class="num">18</td><td class="num">19.6%</td></tr><tr><td>🚫 unsupported</td><td class="num">10</td><td class="num">10.9%</td></tr><tr><td>💥 error</td><td class="num">4</td><td class="num">4.3%</td></tr><tr class="total"><td><b>Total</b></td><td class="num"><b>92</b></td><td class="num">100%</td></tr></tbody></table>
-</div><div class="panel" id="triage"><h3>Failure triage — ours vs Microsoft</h3><p>All <b>58</b> non-pass calls triaged: <b style="color:#cf222e">3 Coral source bugs</b> (ours — fixable in the <code>microsoft_graph_v4</code> source), <b style="color:#9a6700">2 Microsoft spec bugs fixable on our side</b> by supplying an input, and <b style="color:#0969da">53 genuine Microsoft Graph bugs / limitations</b> (no consent or input fix exists).</p><h3>🔴 3 × Coral source bugs (ours — fixable in the microsoft_graph_v4 source)</h3><table><thead><tr><th>Call / group</th><th>status</th><th>Triage</th></tr></thead><tbody><tr><td><code>shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem</code></td><td><span class="badge" style="background:#cf222e">bad_request</span></td><td>Coral dropped the required `{shareIdOrEncodedSharingUrl}` path parameter from the projection → a parameterless call is sent to `GET /shares` → Graph rejects (&quot;malformed request&quot;). All 15 inputs are exposed as optional; the required path segment is missing from the published function.</td></tr><tr><td><code>teams_channel_teams_getchannel</code></td><td><span class="badge" style="background:#cf222e">error</span></td><td>The get-by-id channel function (`GET /teams/{team-id}/channels/{channel-id}`) exists in the MS OpenAPI + semantic IR but is **not published in the coral catalog** → &quot;unknown source table function&quot; (deep call E2).</td></tr><tr><td><code>teams_channel_teams_channels_getallmessages</code></td><td><span class="badge" style="background:#cf222e">error</span></td><td>Channels **getAllMessages** (`GET /teams/{team-id}/channels/getAllMessages`) exists in the spec but is not published → &quot;unknown source table function&quot; (deep call E3).</td></tr></tbody></table><h3>🟡 2 × Microsoft spec bug — fixable on our side by supplying the input</h3><table><thead><tr><th>Call / group</th><th>status</th><th>Triage</th></tr></thead><tbody><tr><td><code>storage_filestorage_storage_filestorage_listcontainers</code></td><td><span class="badge" style="background:#cf222e">bad_request</span></td><td>MS OpenAPI **description** says a `containerTypeId` `$filter` is REQUIRED but the **schema marks the filter optional** → coral passes it through as written → Graph: &quot;failed to parse filter parameter&quot;. Rerun with `filter =&gt; containerTypeId eq …` to fix.</td></tr><tr><td><code>storage_filestorage_storage_filestorage_listdeletedcontainers</code></td><td><span class="badge" style="background:#cf222e">bad_request</span></td><td>Same MS description-vs-schema bug (`$filter=containerTypeId …` required at runtime, optional in schema).</td></tr></tbody></table><h3>🔵 53 × genuine Microsoft Graph bugs / limitations (no consent or input fix)</h3><table><thead><tr><th>Call / group</th><th>status</th><th>Triage</th></tr></thead><tbody><tr><td>28 × solutions/backupRestore (19 auth + 9 not_found/empty)</td><td><span class="badge" style="background:#9a6700">auth</span></td><td>`BackupRestore.Read.All` not grantable + empty `UnknownError` → the **M365 Backup feature is not provisioned** in this tenant, so the whole backup-restore API surface is dead.</td></tr><tr><td>10 × unsupported</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td>6× &quot;not supported for AAD accounts (no addressUrl / …)&quot; — legacy Teams admin services; 4× **export APIs &quot;not supported in delegated context&quot;** (app-only only).</td></tr><tr><td>9 × NotFound &quot;Requested API is not supported&quot;</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td>`chats/getAllMessages`, `chats/getAllRetainedMessages`, `me/joinedTeams/getAllMessages` (a **phantom route** — not in Graph docs), `teams/getAllMessages`, `teamsTemplates`, `teamwork/deletedChats`, `deletedTeams/getAllMessages`. Routes are verbatim from the MS v1.0 OpenAPI but **rejected at runtime**.</td></tr><tr><td>3 × NotFound UnknownError</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td>`policy/userAssignments`, telephony `listOperations`, `teams/getAllMessages`.</td></tr><tr><td>2 × sites (delta / getAllSites)</td><td><span class="badge" style="background:#9a6700">auth</span></td><td>`sites/delta` (tenant-wide) and `sites/getAllSites` → `accessDenied` — **app-only** permissions.</td></tr><tr><td>2 × storage/filestorage containerTypeRegistrations</td><td><span class="badge" style="background:#9a6700">auth</span></td><td>&quot;caller does not have required permissions&quot; — **app-permission** API.</td></tr><tr><td>2 × storage/settings/quota</td><td><span class="badge" style="background:#cf222e">error</span></td><td>HTTP 500 &quot;Invalid URI: The hostname could not be parsed&quot; — **Graph backend bug** in the FileServices family.</td></tr></tbody></table></div><div class="panel" id="data">
+</div><div class="panel" id="triage"><h3>Failure triage — ours vs Microsoft <small>(58 failing calls · exact SQL + real Graph output for each)</small></h3>
+<p>Triaged into <b style="color:#cf222e">3 Coral source bugs</b> (ours — fixable in the <code>microsoft_graph_v4</code> source),
+<b style="color:#9a6700">2 Microsoft spec bugs fixable on our side</b> by supplying an input,
+and <b style="color:#0969da">53 genuine Microsoft Graph bugs / limitations</b> (no consent or input fix exists).
+Every card shows the exact SQL coral sent plus the real Graph output — hit <b>⧉ copy SQL</b> to re-run any failing call yourself.</p>
+
+<div class="log-toolbar">
+ <div class="filters"><button class="fbtn active" data-b="all">All (58)</button><button class="fbtn" data-b="coral">🔴 Coral (3)</button><button class="fbtn" data-b="msspec">🟡 MS spec (2)</button><button class="fbtn" data-b="ms">🔵 Microsoft (53)</button></div>
+ <input class="search" type="text" placeholder="Search failing calls… (table, id, error code, triage group)">
+</div>
+<div id="triage-list"><div class="log-card" data-status="error" data-bucket="coral">
+  <div class="log-head"><span class="log-code">E2</span> <b>getchannel — catalog has no teams_channel get-by-id function</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Blocked</span> <span class="lat">⏱ 0 ms</span> <span class="bucket coral">🔴 coral bug</span></div>
+  <div class="triage-group">Coral catalog gap — route in OpenAPI + semantic IR, not published</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-E2">⧉ copy SQL</button><div class="log-sql" id="sql-E2">SELECT * FROM microsoft_graph_v4.teams_channel_teams_getchannel(team_id =&gt; &#x27;3060ff24-37d9-4dd6-9197-ec864a7672cf&#x27;, channel_id =&gt; &#x27;19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2&#x27;)</div></div>
+  <div class="triage-why">The route exists in the MS OpenAPI + semantic IR but coral never publishes it → &quot;unknown source table function&quot;.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_getchannel; available functions: …, teams_channel_teams_channels_messages_listhostedcontents, …, admin_teamsadminroot_… (get-by-id channel function not exposed in the coral microsoft_graph_v4 catalog)</div></details>
+</div><div class="log-card" data-status="error" data-bucket="coral">
+  <div class="log-head"><span class="log-code">E3</span> <b>getAllMessages — catalog gap</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Blocked</span> <span class="lat">⏱ 0 ms</span> <span class="bucket coral">🔴 coral bug</span></div>
+  <div class="triage-group">Coral catalog gap — route in OpenAPI + semantic IR, not published</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-E3">⧉ copy SQL</button><div class="log-sql" id="sql-E3">SELECT * FROM microsoft_graph_v4.teams_channel_teams_channels_getallmessages(team_id =&gt; &#x27;3060ff24-37d9-4dd6-9197-ec864a7672cf&#x27;, channel_id =&gt; &#x27;19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2&#x27;) LIMIT 5</div></div>
+  <div class="triage-why">The route exists in the MS OpenAPI + semantic IR but coral never publishes it → &quot;unknown source table function&quot;.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_channels_getallmessages; available functions: …, teams_channel_teams_channels_messages_getreplies(chatmessage_id, chatmessage_id1, channel_id, team_id), … (getAllMessages not exposed in the coral microsoft_graph_v4 catalog)</div></details>
+</div><div class="log-card" data-status="bad_request" data-bucket="coral">
+  <div class="log-head"><span class="log-code">TSH28</span> <b>List shared drive item</b> <span class="badge" style="background:#cf222e">bad_request</span> <span class="area">Shares</span> <span class="lat">⏱ 16275 ms</span> <span class="bucket coral">🔴 coral bug</span></div>
+  <div class="triage-group">Coral dropped the required {shareIdOrEncodedSharingUrl} path param</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSH28">⧉ copy SQL</button><div class="log-sql" id="sql-TSH28">SELECT * FROM microsoft_graph_v4.&quot;shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem&quot; LIMIT 5</div></div>
+  <div class="triage-why">Coral projection drops the required `{shareIdOrEncodedSharingUrl}` path parameter → a parameterless call goes to `GET /shares` → Graph: &quot;The request is malformed or incorrect.&quot; All 15 inputs are exposed as optional; the required path segment is missing from the published function.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;invalidRequest&quot;,&quot;message&quot;:&quot;The request is malformed or incorrect.&quot;}} [GET] https://graph.microsoft.com/v1.0/shares
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="bad_request" data-bucket="msspec">
+  <div class="log-head"><span class="log-code">TST60</span> <b>List file-storage containers</b> <span class="badge" style="background:#cf222e">bad_request</span> <span class="area">Storage</span> <span class="lat">⏱ 17372 ms</span> <span class="bucket msspec">🟡 MS spec fixable</span></div>
+  <div class="triage-group">MS spec bug: containerTypeId filter required, schema says optional</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST60">⧉ copy SQL</button><div class="log-sql" id="sql-TST60">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_filestorage_listcontainers&quot; LIMIT 5</div></div>
+  <div class="triage-why">MS OpenAPI description says a `containerTypeId` `$filter` is REQUIRED but the schema marks it optional → coral passes it through as written → Graph: &quot;failed to parse filter parameter&quot;. Rerun with `filter =&gt; containerTypeId eq …` to fix.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;invalidRequest&quot;,&quot;message&quot;:&quot;failed to parse filter parameter.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:21&quot;,&quot;request-id&quot;:&quot;7525da70-124c-437e-b110-a555b1f09384&quot;,&quot;client-request-id&quot;:&quot;7525da70-124c-437e-b110-a555b1f09384&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/containers
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="bad_request" data-bucket="msspec">
+  <div class="log-head"><span class="log-code">TST63</span> <b>List deleted containers</b> <span class="badge" style="background:#cf222e">bad_request</span> <span class="area">Storage</span> <span class="lat">⏱ 19146 ms</span> <span class="bucket msspec">🟡 MS spec fixable</span></div>
+  <div class="triage-group">MS spec bug: containerTypeId filter required, schema says optional</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST63">⧉ copy SQL</button><div class="log-sql" id="sql-TST63">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_filestorage_listdeletedcontainers&quot; LIMIT 5</div></div>
+  <div class="triage-why">MS OpenAPI description says a `containerTypeId` `$filter` is REQUIRED but the schema marks it optional → coral passes it through as written → Graph: &quot;failed to parse filter parameter&quot;. Rerun with `filter =&gt; containerTypeId eq …` to fix.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;invalidRequest&quot;,&quot;message&quot;:&quot;failed to parse filter parameter.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:40&quot;,&quot;request-id&quot;:&quot;8db2d7bc-8f67-4d04-ba52-51c5df9625a2&quot;,&quot;client-request-id&quot;:&quot;8db2d7bc-8f67-4d04-ba52-51c5df9625a2&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/deletedContainers
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TAD01</span> <b>Get SharePoint admin root</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">SharePoint Admin</span> <span class="lat">⏱ 13267 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TAD01">⧉ copy SQL</button><div class="log-sql" id="sql-TAD01">SELECT * FROM microsoft_graph_v4.&quot;admin_sharepoint_admin_getsharepoint&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.FileServices,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:30:46&quot;,&quot;request-id&quot;:&quot;d3fa1d8b-b4bd-4803-9412-0c4cecff08d0&quot;,&quot;client-request-id&quot;:&quot;d3fa1d8b-b4bd-4803-9412-0c4cecff08d0&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/sharepoint
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TAD03</span> <b>Get Teams admin root</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Teams Admin</span> <span class="lat">⏱ 13262 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TAD03">⧉ copy SQL</button><div class="log-sql" id="sql-TAD03">SELECT * FROM microsoft_graph_v4.&quot;admin_teamsadminroot_admin_getteams&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.TeamsAdminGateway,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:30:46&quot;,&quot;request-id&quot;:&quot;af30fa59-c55a-42a0-ae5d-765dde5ae555&quot;,&quot;client-request-id&quot;:&quot;af30fa59-c55a-42a0-ae5d-765dde5ae555&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/teams
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TAD04</span> <b>Get policy</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Teams Admin</span> <span class="lat">⏱ 9115 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TAD04">⧉ copy SQL</button><div class="log-sql" id="sql-TAD04">SELECT * FROM microsoft_graph_v4.&quot;admin_teamsadminroot_admin_teams_getpolicy&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.PolicyAdmin,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:30:55&quot;,&quot;request-id&quot;:&quot;f7ab6d5f-1d53-42a0-bdb0-1a579ab4d70d&quot;,&quot;client-request-id&quot;:&quot;f7ab6d5f-1d53-42a0-bdb0-1a579ab4d70d&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/teams/policy
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TAD05</span> <b>Get telephony admin</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Teams Admin</span> <span class="lat">⏱ 9097 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TAD05">⧉ copy SQL</button><div class="log-sql" id="sql-TAD05">SELECT * FROM microsoft_graph_v4.&quot;admin_teamsadminroot_admin_teams_gettelephonenumbermanagement&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.IC3.TelephoneNumberManagement,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:30:55&quot;,&quot;request-id&quot;:&quot;e04c5467-1c34-4153-8ed9-823948202098&quot;,&quot;client-request-id&quot;:&quot;e04c5467-1c34-4153-8ed9-823948202098&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/teams/telephoneNumberManagement
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TAD07</span> <b>policy · List user assignments</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Teams Admin</span> <span class="lat">⏱ 16471 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">NotFound UnknownError</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TAD07">⧉ copy SQL</button><div class="log-sql" id="sql-TAD07">SELECT * FROM microsoft_graph_v4.&quot;admin_teamsadminroot_admin_teams_policy_listuserassignments&quot; LIMIT 5</div></div>
+  <div class="triage-why">404 `UnknownError` — `policy/userAssignments`, telephony `listOperations`, `teams/getAllMessages`.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;{\&quot;code\&quot;:\&quot;NotFound\&quot;,\&quot;message\&quot;:\&quot;Resource not found.\&quot;,\&quot;action\&quot;:\&quot;Specify valid resource.\&quot;}&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:31:11&quot;,&quot;request-id&quot;:&quot;3cae426d-ae49-4959-a90e-1e030c7feb94&quot;,&quot;client-request-id&quot;:&quot;3cae426d-ae49-4959-a90e-1e030c7feb94&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/teams/policy/userAssignments
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TAD09</span> <b>List operations</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Teams Admin</span> <span class="lat">⏱ 16109 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">NotFound UnknownError</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TAD09">⧉ copy SQL</button><div class="log-sql" id="sql-TAD09">SELECT * FROM microsoft_graph_v4.&quot;admin_teamsadminroot_admin_teams_telephonenumbermanagement_listoperations&quot; LIMIT 5</div></div>
+  <div class="triage-why">404 `UnknownError` — `policy/userAssignments`, telephony `listOperations`, `teams/getAllMessages`.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:31:18&quot;,&quot;request-id&quot;:&quot;dcc8e293-18d8-47d1-9291-fd931b9dd3b7&quot;,&quot;client-request-id&quot;:&quot;dcc8e293-18d8-47d1-9291-fd931b9dd3b7&quot;}}} [GET] https://graph.microsoft.com/v1.0/admin/teams/telephoneNumberManagement/operations
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TCH12</span> <b>Get all messages</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Chats</span> <span class="lat">⏱ 18743 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">phantom route — &quot;Requested API is not supported&quot;</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TCH12">⧉ copy SQL</button><div class="log-sql" id="sql-TCH12">SELECT * FROM microsoft_graph_v4.&quot;chats_chat_functions_chats_getallmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">Route is verbatim from the MS v1.0 OpenAPI but rejected at runtime (&quot;Requested API is not supported&quot; / &quot;Request path is not supported&quot;).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:31:37&quot;,&quot;request-id&quot;:&quot;aa29b3be-c8b3-492e-aa60-658c6e6a99fe&quot;,&quot;client-request-id&quot;:&quot;aa29b3be-c8b3-492e-aa60-658c6e6a99fe&quot;}}} [GET] https://graph.microsoft.com/v1.0/chats/getAllMessages()
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TCH13</span> <b>Get all retained messages</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Chats</span> <span class="lat">⏱ 18359 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">phantom route — &quot;Requested API is not supported&quot;</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TCH13">⧉ copy SQL</button><div class="log-sql" id="sql-TCH13">SELECT * FROM microsoft_graph_v4.&quot;chats_chat_functions_chats_getallretainedmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">Route is verbatim from the MS v1.0 OpenAPI but rejected at runtime (&quot;Requested API is not supported&quot; / &quot;Request path is not supported&quot;).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:31:47&quot;,&quot;request-id&quot;:&quot;66756a10-15e9-4f35-af0b-5446f84975b6&quot;,&quot;client-request-id&quot;:&quot;66756a10-15e9-4f35-af0b-5446f84975b6&quot;}}} [GET] https://graph.microsoft.com/v1.0/chats/getAllRetainedMessages()
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TME15</span> <b>Get all messages</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Chats</span> <span class="lat">⏱ 17909 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TME15">⧉ copy SQL</button><div class="log-sql" id="sql-TME15">SELECT * FROM microsoft_graph_v4.&quot;me_chat_me_chats_getallmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request failed (412)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;PreconditionFailed&quot;,&quot;message&quot;:&quot;Requested API is not supported in delegated context&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:31:55&quot;,&quot;request-id&quot;:&quot;0bb5a223-5f61-47e2-b623-ec86359a83be&quot;,&quot;client-request-id&quot;:&quot;0bb5a223-5f61-47e2-b623-ec86359a83be&quot;}}} [GET] https://graph.microsoft.com/v1.0/me/chats/getAllMessages()
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TME16</span> <b>Get all retained messages</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Chats</span> <span class="lat">⏱ 18193 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TME16">⧉ copy SQL</button><div class="log-sql" id="sql-TME16">SELECT * FROM microsoft_graph_v4.&quot;me_chat_me_chats_getallretainedmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request failed (412)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;PreconditionFailed&quot;,&quot;message&quot;:&quot;Requested API is not supported in delegated context&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:32:06&quot;,&quot;request-id&quot;:&quot;31c971a8-9823-4d14-98fc-3866da822344&quot;,&quot;client-request-id&quot;:&quot;31c971a8-9823-4d14-98fc-3866da822344&quot;}}} [GET] https://graph.microsoft.com/v1.0/me/chats/getAllRetainedMessages()
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TME21</span> <b>Get all messages</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Teams</span> <span class="lat">⏱ 23580 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">phantom route — &quot;Requested API is not supported&quot;</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TME21">⧉ copy SQL</button><div class="log-sql" id="sql-TME21">SELECT * FROM microsoft_graph_v4.&quot;me_team_me_joinedteams_getallmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">Route is verbatim from the MS v1.0 OpenAPI but rejected at runtime (&quot;Requested API is not supported&quot; / &quot;Request path is not supported&quot;).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:32:37&quot;,&quot;request-id&quot;:&quot;8f9405e0-c9ac-4d35-a9ad-0156b7c6ced6&quot;,&quot;client-request-id&quot;:&quot;8f9405e0-c9ac-4d35-a9ad-0156b7c6ced6&quot;}}} [GET] https://graph.microsoft.com/v1.0/me/joinedTeams/getAllMessages()
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TME24</span> <b>Get all retained targeted messages</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Teamwork</span> <span class="lat">⏱ 20992 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TME24">⧉ copy SQL</button><div class="log-sql" id="sql-TME24">SELECT * FROM microsoft_graph_v4.&quot;me_userteamwork_me_teamwork_getallretainedtargetedmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request failed (412)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;PreconditionFailed&quot;,&quot;message&quot;:&quot;Requested API is not supported in delegated context&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:32:58&quot;,&quot;request-id&quot;:&quot;230a1bb7-ab44-46ab-9f3b-0280ea925248&quot;,&quot;client-request-id&quot;:&quot;230a1bb7-ab44-46ab-9f3b-0280ea925248&quot;}}} [GET] https://graph.microsoft.com/v1.0/me/teamwork/getAllRetainedTargetedMessages()
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TME25</span> <b>Get all targeted messages</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Teamwork</span> <span class="lat">⏱ 20467 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TME25">⧉ copy SQL</button><div class="log-sql" id="sql-TME25">SELECT * FROM microsoft_graph_v4.&quot;me_userteamwork_me_teamwork_getalltargetedmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request failed (412)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;PreconditionFailed&quot;,&quot;message&quot;:&quot;Requested API is not supported in delegated context&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:33:10&quot;,&quot;request-id&quot;:&quot;f25948e7-60fa-4f91-a13e-01e1a5ede66b&quot;,&quot;client-request-id&quot;:&quot;f25948e7-60fa-4f91-a13e-01e1a5ede66b&quot;}}} [GET] https://graph.microsoft.com/v1.0/me/teamwork/getAllTargetedMessages()
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSI29</span> <b>Delta changes</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Sites</span> <span class="lat">⏱ 15794 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">sites — app-only permission</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSI29">⧉ copy SQL</button><div class="log-sql" id="sql-TSI29">SELECT * FROM microsoft_graph_v4.&quot;sites_site_functions_sites_delta&quot; LIMIT 5</div></div>
+  <div class="triage-why">`sites/delta` (tenant-wide) and `sites/getAllSites` → `accessDenied` — app-only permissions.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;accessDenied&quot;,&quot;message&quot;:&quot;Access denied&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:33:26&quot;,&quot;request-id&quot;:&quot;ab226b59-158a-4896-9de5-61488d2959b2&quot;,&quot;client-request-id&quot;:&quot;ab226b59-158a-4896-9de5-61488d2959b2&quot;}}} [GET] https://graph.microsoft.com/v1.0/sites/delta()
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSI30</span> <b>Get all sites</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Sites</span> <span class="lat">⏱ 15986 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">sites — app-only permission</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSI30">⧉ copy SQL</button><div class="log-sql" id="sql-TSI30">SELECT * FROM microsoft_graph_v4.&quot;sites_site_functions_sites_getallsites&quot; LIMIT 5</div></div>
+  <div class="triage-why">`sites/delta` (tenant-wide) and `sites/getAllSites` → `accessDenied` — app-only permissions.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;accessDenied&quot;,&quot;message&quot;:&quot;Access denied&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:33:33&quot;,&quot;request-id&quot;:&quot;555373a3-1c83-4547-9c6b-b3b3f28bbaf0&quot;,&quot;client-request-id&quot;:&quot;555373a3-1c83-4547-9c6b-b3b3f28bbaf0&quot;}}} [GET] https://graph.microsoft.com/v1.0/sites/getAllSites()
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO32</span> <b>Get email notifications setting</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 16300 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO32">⧉ copy SQL</button><div class="log-sql" id="sql-TSO32">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:33:42&quot;,&quot;request-id&quot;:&quot;86899865-53fe-444c-8d7d-4a1a627f3b57&quot;,&quot;client-request-id&quot;:&quot;86899865-53fe-444c-8d7d-4a1a627f3b57&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/emailNotificationsSetting
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO33</span> <b>List browse sessions</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 16822 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO33">⧉ copy SQL</button><div class="log-sql" id="sql-TSO33">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:33:50&quot;,&quot;request-id&quot;:&quot;8d9a7c41-8276-4d47-9278-2a066de9c01d&quot;,&quot;client-request-id&quot;:&quot;8d9a7c41-8276-4d47-9278-2a066de9c01d&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/browseSessions
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO34</span> <b>List drive inclusion rules</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 19462 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO34">⧉ copy SQL</button><div class="log-sql" id="sql-TSO34">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listdriveinclusionrules&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:34:02&quot;,&quot;request-id&quot;:&quot;d3834eac-236a-4818-aa20-c49204486fe6&quot;,&quot;client-request-id&quot;:&quot;d3834eac-236a-4818-aa20-c49204486fe6&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/driveInclusionRules
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO35</span> <b>List drive protection units</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 19199 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO35">⧉ copy SQL</button><div class="log-sql" id="sql-TSO35">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunits&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:34:02&quot;,&quot;request-id&quot;:&quot;7ed2d4b3-30b3-4561-9ea6-d41e8ed276e3&quot;,&quot;client-request-id&quot;:&quot;7ed2d4b3-30b3-4561-9ea6-d41e8ed276e3&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/driveProtectionUnits
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO36</span> <b>List drive protection bulk addition jobs</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 22584 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO36">⧉ copy SQL</button><div class="log-sql" id="sql-TSO36">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunitsbulkadditionjobs&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:34:12&quot;,&quot;request-id&quot;:&quot;f102d67c-b3f3-4efc-b8fb-ae41f5c8c6dd&quot;,&quot;client-request-id&quot;:&quot;f102d67c-b3f3-4efc-b8fb-ae41f5c8c6dd&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/driveProtectionUnitsBulkAdditionJobs
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO37</span> <b>List Exchange protection policies</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 27551 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO37">⧉ copy SQL</button><div class="log-sql" id="sql-TSO37">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listexchangeprotectionpolicies&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:34:29&quot;,&quot;request-id&quot;:&quot;bc3b5b43-ffe1-46b4-9d85-c2a895c00b69&quot;,&quot;client-request-id&quot;:&quot;bc3b5b43-ffe1-46b4-9d85-c2a895c00b69&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/exchangeProtectionPolicies
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO38</span> <b>List Exchange restore sessions</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 27327 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO38">⧉ copy SQL</button><div class="log-sql" id="sql-TSO38">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listexchangerestoresessions&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:34:29&quot;,&quot;request-id&quot;:&quot;a60c06fb-244b-4a9d-9d32-cb5cf1c13fb5&quot;,&quot;client-request-id&quot;:&quot;a60c06fb-244b-4a9d-9d32-cb5cf1c13fb5&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/exchangeRestoreSessions
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO39</span> <b>List mailbox inclusion rules</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 26202 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO39">⧉ copy SQL</button><div class="log-sql" id="sql-TSO39">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listmailboxinclusionrules&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:34:38&quot;,&quot;request-id&quot;:&quot;caa81603-f497-4047-9aa3-b3c843521289&quot;,&quot;client-request-id&quot;:&quot;caa81603-f497-4047-9aa3-b3c843521289&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/mailboxInclusionRules
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO40</span> <b>List mailbox protection units</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 22765 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO40">⧉ copy SQL</button><div class="log-sql" id="sql-TSO40">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunits&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:34:52&quot;,&quot;request-id&quot;:&quot;ff5ea541-0b8b-4289-9004-e1e35b2c7e29&quot;,&quot;client-request-id&quot;:&quot;ff5ea541-0b8b-4289-9004-e1e35b2c7e29&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/mailboxProtectionUnits
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO41</span> <b>List mailbox protection bulk addition jobs</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 22885 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO41">⧉ copy SQL</button><div class="log-sql" id="sql-TSO41">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunitsbulkadditionjobs&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:34:52&quot;,&quot;request-id&quot;:&quot;1bd62d71-c40c-45fd-872f-6e1ecfde0e75&quot;,&quot;client-request-id&quot;:&quot;1bd62d71-c40c-45fd-872f-6e1ecfde0e75&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/mailboxProtectionUnitsBulkAdditionJobs
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO42</span> <b>List OneDrive browse sessions</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 25108 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO42">⧉ copy SQL</button><div class="log-sql" id="sql-TSO42">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessbrowsesessions&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:35:04&quot;,&quot;request-id&quot;:&quot;dd97ac45-03c6-41ef-943b-3a032505b438&quot;,&quot;client-request-id&quot;:&quot;dd97ac45-03c6-41ef-943b-3a032505b438&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/oneDriveForBusinessBrowseSessions
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO43</span> <b>List OneDrive protection policies</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 24288 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO43">⧉ copy SQL</button><div class="log-sql" id="sql-TSO43">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessprotectionpolicies&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:35:16&quot;,&quot;request-id&quot;:&quot;692e3555-934c-41e9-ab50-02c9b6abee4f&quot;,&quot;client-request-id&quot;:&quot;692e3555-934c-41e9-ab50-02c9b6abee4f&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/oneDriveForBusinessProtectionPolicies
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO44</span> <b>List OneDrive restore sessions</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 24114 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO44">⧉ copy SQL</button><div class="log-sql" id="sql-TSO44">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessrestoresessions&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:35:16&quot;,&quot;request-id&quot;:&quot;a70dbb7a-bc40-49fc-bff4-b8ad0817cc5a&quot;,&quot;client-request-id&quot;:&quot;a70dbb7a-bc40-49fc-bff4-b8ad0817cc5a&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/oneDriveForBusinessRestoreSessions
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO45</span> <b>List protection policies</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 22316 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO45">⧉ copy SQL</button><div class="log-sql" id="sql-TSO45">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listprotectionpolicies&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:35:26&quot;,&quot;request-id&quot;:&quot;04f07aaa-c598-4004-bb08-4ebd74e3aa5f&quot;,&quot;client-request-id&quot;:&quot;04f07aaa-c598-4004-bb08-4ebd74e3aa5f&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/protectionPolicies
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO46</span> <b>List protection units</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 23838 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO46">⧉ copy SQL</button><div class="log-sql" id="sql-TSO46">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:35:40&quot;,&quot;request-id&quot;:&quot;cd28bb9e-a238-4445-b193-a43008674ce3&quot;,&quot;client-request-id&quot;:&quot;cd28bb9e-a238-4445-b193-a43008674ce3&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/protectionUnits
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO47</span> <b>List protection units (drive)</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 23748 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO47">⧉ copy SQL</button><div class="log-sql" id="sql-TSO47">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asdriveprotectionunit&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:35:40&quot;,&quot;request-id&quot;:&quot;1262b920-f9ba-4be5-a53b-011b5c5bdd0c&quot;,&quot;client-request-id&quot;:&quot;1262b920-f9ba-4be5-a53b-011b5c5bdd0c&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/protectionUnits/graph.driveProtectionUnit
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO48</span> <b>List protection units (mailbox)</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 25871 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO48">⧉ copy SQL</button><div class="log-sql" id="sql-TSO48">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asmailboxprotectionunit&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:35:51&quot;,&quot;request-id&quot;:&quot;ecb47c67-5ebf-4829-83c5-e69d28b8d3f0&quot;,&quot;client-request-id&quot;:&quot;ecb47c67-5ebf-4829-83c5-e69d28b8d3f0&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/protectionUnits/graph.mailboxProtectionUnit
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO49</span> <b>List protection units (site)</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 29192 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO49">⧉ copy SQL</button><div class="log-sql" id="sql-TSO49">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_assiteprotectionunit&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:36:09&quot;,&quot;request-id&quot;:&quot;c69d56fc-e107-47b6-b002-811fc656fb81&quot;,&quot;client-request-id&quot;:&quot;c69d56fc-e107-47b6-b002-811fc656fb81&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/protectionUnits/graph.siteProtectionUnit
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO50</span> <b>List restore points</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 29147 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO50">⧉ copy SQL</button><div class="log-sql" id="sql-TSO50">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listrestorepoints&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:36:09&quot;,&quot;request-id&quot;:&quot;10efd24a-c7fb-462a-9be7-ff7b2040a9a7&quot;,&quot;client-request-id&quot;:&quot;10efd24a-c7fb-462a-9be7-ff7b2040a9a7&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/restorePoints
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO51</span> <b>List restore sessions</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 26240 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO51">⧉ copy SQL</button><div class="log-sql" id="sql-TSO51">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listrestoresessions&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:36:18&quot;,&quot;request-id&quot;:&quot;01dcc56e-9af9-4381-be1a-98b1b884a614&quot;,&quot;client-request-id&quot;:&quot;01dcc56e-9af9-4381-be1a-98b1b884a614&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/restoreSessions
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO52</span> <b>List service apps</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 24075 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO52">⧉ copy SQL</button><div class="log-sql" id="sql-TSO52">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listserviceapps&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:36:32&quot;,&quot;request-id&quot;:&quot;9ebb0d41-a2e1-4f66-a1fe-08e4d8b3d36b&quot;,&quot;client-request-id&quot;:&quot;9ebb0d41-a2e1-4f66-a1fe-08e4d8b3d36b&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/serviceApps
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO53</span> <b>List SharePoint browse sessions</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 24197 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO53">⧉ copy SQL</button><div class="log-sql" id="sql-TSO53">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listsharepointbrowsesessions&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:36:33&quot;,&quot;request-id&quot;:&quot;e72fbb92-2f76-4b40-8870-cfec6d753a9f&quot;,&quot;client-request-id&quot;:&quot;e72fbb92-2f76-4b40-8870-cfec6d753a9f&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/sharePointBrowseSessions
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO54</span> <b>List SharePoint protection policies</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 24090 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO54">⧉ copy SQL</button><div class="log-sql" id="sql-TSO54">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listsharepointprotectionpolicies&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:36:42&quot;,&quot;request-id&quot;:&quot;6eb43883-34e2-440d-914f-20057428e64e&quot;,&quot;client-request-id&quot;:&quot;6eb43883-34e2-440d-914f-20057428e64e&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/sharePointProtectionPolicies
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO55</span> <b>List SharePoint restore sessions</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 20503 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO55">⧉ copy SQL</button><div class="log-sql" id="sql-TSO55">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listsharepointrestoresessions&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:36:54&quot;,&quot;request-id&quot;:&quot;bbfeccf8-ac14-4326-8400-7e6d235b7c41&quot;,&quot;client-request-id&quot;:&quot;bbfeccf8-ac14-4326-8400-7e6d235b7c41&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/sharePointRestoreSessions
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO56</span> <b>List site inclusion rules</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 20477 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO56">⧉ copy SQL</button><div class="log-sql" id="sql-TSO56">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listsiteinclusionrules&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:36:54&quot;,&quot;request-id&quot;:&quot;0cb51414-4557-4afa-87c7-db45db81b078&quot;,&quot;client-request-id&quot;:&quot;0cb51414-4557-4afa-87c7-db45db81b078&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/siteInclusionRules
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO57</span> <b>List site protection units</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 21838 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO57">⧉ copy SQL</button><div class="log-sql" id="sql-TSO57">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunits&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:04&quot;,&quot;request-id&quot;:&quot;02daa7dc-f0b8-4aed-8104-4d3144b7d55d&quot;,&quot;client-request-id&quot;:&quot;02daa7dc-f0b8-4aed-8104-4d3144b7d55d&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/siteProtectionUnits
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO58</span> <b>List site protection bulk addition jobs</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 21007 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO58">⧉ copy SQL</button><div class="log-sql" id="sql-TSO58">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunitsbulkadditionjobs&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Reads 404 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:15&quot;,&quot;request-id&quot;:&quot;0ac304cd-8415-4597-be90-33278163ea53&quot;,&quot;client-request-id&quot;:&quot;0ac304cd-8415-4597-be90-33278163ea53&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore/siteProtectionUnitsBulkAdditionJobs
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TSO59</span> <b>Backup restore root</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Backup Restore</span> <span class="lat">⏱ 20496 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">solutions/backupRestore — feature not provisioned</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TSO59">⧉ copy SQL</button><div class="log-sql" id="sql-TSO59">SELECT * FROM microsoft_graph_v4.&quot;solutions_backuprestoreroot_solutions_getbackuprestore&quot; LIMIT 5</div></div>
+  <div class="triage-why">M365 Backup feature not provisioned in this tenant — `BackupRestore.Read.All` not grantable. Writes/reads 403 UnknownError.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:14&quot;,&quot;request-id&quot;:&quot;8d973e7f-fde4-4fb1-96e6-e8f304ce734d&quot;,&quot;client-request-id&quot;:&quot;8d973e7f-fde4-4fb1-96e6-e8f304ce734d&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TST61</span> <b>List container type registrations</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Storage</span> <span class="lat">⏱ 18161 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">filestorage containerType — app permission</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST61">⧉ copy SQL</button><div class="log-sql" id="sql-TST61">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_filestorage_listcontainertyperegistrations&quot; LIMIT 5</div></div>
+  <div class="triage-why">&quot;Caller does not have required permissions for this API&quot; — app-permission API.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;accessDenied&quot;,&quot;message&quot;:&quot;Caller does not have required permissions for this API&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:32&quot;,&quot;request-id&quot;:&quot;0c1284ef-f4a1-4b60-ad92-70cc1f96ee77&quot;,&quot;client-request-id&quot;:&quot;0c1284ef-f4a1-4b60-ad92-70cc1f96ee77&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/containerTypeRegistrations
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="auth" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TST62</span> <b>List container types</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Storage</span> <span class="lat">⏱ 17781 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">filestorage containerType — app permission</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST62">⧉ copy SQL</button><div class="log-sql" id="sql-TST62">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_filestorage_listcontainertypes&quot; LIMIT 5</div></div>
+  <div class="triage-why">&quot;Caller does not have required permissions for this API&quot; — app-permission API.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;accessDenied&quot;,&quot;message&quot;:&quot;Caller does not have required permissions for this API&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:32&quot;,&quot;request-id&quot;:&quot;8c8ed994-4aed-42bc-8fc6-7aca36af1414&quot;,&quot;client-request-id&quot;:&quot;8c8ed994-4aed-42bc-8fc6-7aca36af1414&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/containerTypes
+Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TST64</span> <b>Get file storage root</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Storage</span> <span class="lat">⏱ 22064 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST64">⧉ copy SQL</button><div class="log-sql" id="sql-TST64">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_getfilestorage&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.FileServices,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:54&quot;,&quot;request-id&quot;:&quot;a12249e9-139f-4f16-bd93-c57b75181b6e&quot;,&quot;client-request-id&quot;:&quot;a12249e9-139f-4f16-bd93-c57b75181b6e&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="unsupported" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TST66</span> <b>Get settings</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Storage</span> <span class="lat">⏱ 22019 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST66">⧉ copy SQL</button><div class="log-sql" id="sql-TST66">SELECT * FROM microsoft_graph_v4.&quot;storage_storagesettings_storage_getsettings&quot; LIMIT 5</div></div>
+  <div class="triage-why">Legacy Teams admin services &quot;not supported for AAD accounts (no addressUrl…)&quot; and export APIs &quot;not supported in delegated context&quot; (app-only only).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;BadRequest&quot;,&quot;message&quot;:&quot;This API is not supported for AAD accounts (no addressUrl for Microsoft.UnifiedStorageQuota,False).&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:38:02&quot;,&quot;request-id&quot;:&quot;1c95a423-f0cf-4bf8-bf38-bc1546f73365&quot;,&quot;client-request-id&quot;:&quot;1c95a423-f0cf-4bf8-bf38-bc1546f73365&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/settings
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
+</div><div class="log-card" data-status="error" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TST67</span> <b>Get storage quota</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Storage</span> <span class="lat">⏱ 26034 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">storage/settings/quota — Graph backend 500</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST67">⧉ copy SQL</button><div class="log-sql" id="sql-TST67">SELECT * FROM microsoft_graph_v4.&quot;storage_storagesettings_storage_settings_getquota&quot; LIMIT 5</div></div>
+  <div class="triage-why">HTTP 500 &quot;Invalid URI: The hostname could not be parsed&quot; — Graph backend bug in the FileServices family.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source server error (500)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;InternalServerError&quot;,&quot;message&quot;:&quot;Invalid URI: The hostname could not be parsed.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:38:19&quot;,&quot;request-id&quot;:&quot;7fbd5633-bf55-4b47-91a9-54a0102f5816&quot;,&quot;client-request-id&quot;:&quot;7fbd5633-bf55-4b47-91a9-54a0102f5816&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/settings/quota
+Hint: The upstream API returned a server error. This may be transient — retry after a brief wait.
+</div></details>
+</div><div class="log-card" data-status="error" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TST68</span> <b>List file-storage services</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Storage</span> <span class="lat">⏱ 24942 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">storage/settings/quota — Graph backend 500</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST68">⧉ copy SQL</button><div class="log-sql" id="sql-TST68">SELECT * FROM microsoft_graph_v4.&quot;storage_storagesettings_storage_settings_quota_listservices&quot; LIMIT 5</div></div>
+  <div class="triage-why">HTTP 500 &quot;Invalid URI: The hostname could not be parsed&quot; — Graph backend bug in the FileServices family.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source server error (500)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;InternalServerError&quot;,&quot;message&quot;:&quot;Invalid URI: The hostname could not be parsed.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:38:19&quot;,&quot;request-id&quot;:&quot;bb64169d-8803-4058-8ba2-a5aadd31fc9d&quot;,&quot;client-request-id&quot;:&quot;bb64169d-8803-4058-8ba2-a5aadd31fc9d&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/settings/quota/services
+Hint: The upstream API returned a server error. This may be transient — retry after a brief wait.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TTE69</span> <b>Get all messages</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Teams</span> <span class="lat">⏱ 24371 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">NotFound UnknownError</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TTE69">⧉ copy SQL</button><div class="log-sql" id="sql-TTE69">SELECT * FROM microsoft_graph_v4.&quot;teams_team_functions_teams_getallmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">404 `UnknownError` — `policy/userAssignments`, telephony `listOperations`, `teams/getAllMessages`.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:38:26&quot;,&quot;request-id&quot;:&quot;5234b5e9-42ba-423f-8448-8a1d5698d0aa&quot;,&quot;client-request-id&quot;:&quot;5234b5e9-42ba-423f-8448-8a1d5698d0aa&quot;}}} [GET] https://graph.microsoft.com/v1.0/teams/getAllMessages()
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TTE71</span> <b>List Teams templates</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Teams</span> <span class="lat">⏱ 18615 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">phantom route — &quot;Requested API is not supported&quot;</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TTE71">⧉ copy SQL</button><div class="log-sql" id="sql-TTE71">SELECT * FROM microsoft_graph_v4.&quot;teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate&quot; LIMIT 5</div></div>
+  <div class="triage-why">Route is verbatim from the MS v1.0 OpenAPI but rejected at runtime (&quot;Requested API is not supported&quot; / &quot;Request path is not supported&quot;).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:38:39&quot;,&quot;request-id&quot;:&quot;045dd24c-8fb1-4a1b-ab63-77a2d5b6a797&quot;,&quot;client-request-id&quot;:&quot;045dd24c-8fb1-4a1b-ab63-77a2d5b6a797&quot;}}} [GET] https://graph.microsoft.com/v1.0/teamsTemplates
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TTE72</span> <b>List deleted chats</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Chats</span> <span class="lat">⏱ 22613 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">phantom route — &quot;Requested API is not supported&quot;</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TTE72">⧉ copy SQL</button><div class="log-sql" id="sql-TTE72">SELECT * FROM microsoft_graph_v4.&quot;teamwork_deletedchat_teamwork_listdeletedchats&quot; LIMIT 5</div></div>
+  <div class="triage-why">Route is verbatim from the MS v1.0 OpenAPI but rejected at runtime (&quot;Requested API is not supported&quot; / &quot;Request path is not supported&quot;).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Request path is not supported.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:38:49&quot;,&quot;request-id&quot;:&quot;5ad68a29-f455-496e-ae7d-33024b1a1ced&quot;,&quot;client-request-id&quot;:&quot;5ad68a29-f455-496e-ae7d-33024b1a1ced&quot;}}} [GET] https://graph.microsoft.com/v1.0/teamwork/deletedChats
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div><div class="log-card" data-status="not_found" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TTE73</span> <b>Get all messages</b> <span class="badge" style="background:#cf222e">not_found</span> <span class="area">Teamwork</span> <span class="lat">⏱ 21460 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">phantom route — &quot;Requested API is not supported&quot;</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TTE73">⧉ copy SQL</button><div class="log-sql" id="sql-TTE73">SELECT * FROM microsoft_graph_v4.&quot;teamwork_deletedteam_teamwork_deletedteams_getallmessages&quot; LIMIT 5</div></div>
+  <div class="triage-why">Route is verbatim from the MS v1.0 OpenAPI but rejected at runtime (&quot;Requested API is not supported&quot; / &quot;Request path is not supported&quot;).</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source resource was not found (404)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;NotFound&quot;,&quot;message&quot;:&quot;Requested API is not supported. Please check the path.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:39:00&quot;,&quot;request-id&quot;:&quot;7b90e38e-f7da-4003-98c6-5d3e31856b14&quot;,&quot;client-request-id&quot;:&quot;7b90e38e-f7da-4003-98c6-5d3e31856b14&quot;}}} [GET] https://graph.microsoft.com/v1.0/teamwork/deletedTeams/getAllMessages()
+Hint: Verify the identifier or filter values you passed; the upstream resource was not found.
+</div></details>
+</div></div>
+</div><div class="panel" id="data">
 <h3>5 teams (me_team_me_listjoinedteams)</h3>
 <table><thead><tr><th>name</th><th>team_id</th></tr></thead><tbody><tr><td><b>algsoch</b></td><td><code>fd31e343-d9f4-471b-a821-bc5ed36b10f6</code></td></tr><tr><td><b>Q3 FY26 Sales Operations</b></td><td><code>b4dd618c-7636-4f06-809a-e20d258ccb44</code></td></tr><tr><td><b>Computer Science Department - IIT Delhi</b></td><td><code>c7fe3584-80e6-4374-8d4f-5557e4149899</code></td></tr><tr><td><b>Product Engineering - Mobile Apps</b></td><td><code>4a979088-6773-4ae1-903b-3bf653ab60e5</code></td></tr><tr><td><b>Engineering - FiscalMindset</b></td><td><code>3060ff24-37d9-4dd6-9197-ec864a7672cf</code></td></tr></tbody></table>
 <h3>7 channels — Engineering · FiscalMindset</h3>
@@ -750,29 +1284,43 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 </div><div class="panel" id="tables"><h3>All 77 top-level tables tested</h3><table><thead><tr><th>#</th><th>status</th><th>table</th><th>area</th><th>latency</th></tr></thead><tbody><tr><td class="num">1</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>admin_sharepoint_admin_getsharepoint</code></td><td>SharePoint Admin</td><td class="num">13267 ms</td></tr><tr><td class="num">2</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>admin_sharepoint_admin_sharepoint_getsettings</code></td><td>SharePoint Admin</td><td class="num">13322 ms</td></tr><tr><td class="num">3</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>admin_teamsadminroot_admin_getteams</code></td><td>Teams Admin</td><td class="num">13262 ms</td></tr><tr><td class="num">4</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>admin_teamsadminroot_admin_teams_getpolicy</code></td><td>Teams Admin</td><td class="num">9115 ms</td></tr><tr><td class="num">5</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>admin_teamsadminroot_admin_teams_gettelephonenumbermanagement</code></td><td>Teams Admin</td><td class="num">9097 ms</td></tr><tr><td class="num">6</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>admin_teamsadminroot_admin_teams_listuserconfigurations</code></td><td>Teams Admin</td><td class="num">16448 ms</td></tr><tr><td class="num">7</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>admin_teamsadminroot_admin_teams_policy_listuserassignments</code></td><td>Teams Admin</td><td class="num">16471 ms</td></tr><tr><td class="num">8</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>admin_teamsadminroot_admin_teams_telephonenumbermanagement_listnumberassignments</code></td><td>Teams Admin</td><td class="num">16850 ms</td></tr><tr><td class="num">9</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>admin_teamsadminroot_admin_teams_telephonenumbermanagement_listoperations</code></td><td>Teams Admin</td><td class="num">16109 ms</td></tr><tr><td class="num">10</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>appcatalogs_teamsapp_appcatalogs_listteamsapps</code></td><td>Apps</td><td class="num">24169 ms</td></tr><tr><td class="num">11</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>chats_chat_chats_chat_listchat</code></td><td>Chats</td><td class="num">17206 ms</td></tr><tr><td class="num">12</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>chats_chat_functions_chats_getallmessages</code></td><td>Chats</td><td class="num">18743 ms</td></tr><tr><td class="num">13</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>chats_chat_functions_chats_getallretainedmessages</code></td><td>Chats</td><td class="num">18359 ms</td></tr><tr><td class="num">14</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>drives_drive_drives_drive_listdrive</code></td><td>Drives</td><td class="num">11875 ms</td></tr><tr><td class="num">15</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>me_chat_me_chats_getallmessages</code></td><td>Chats</td><td class="num">17909 ms</td></tr><tr><td class="num">16</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>me_chat_me_chats_getallretainedmessages</code></td><td>Chats</td><td class="num">18193 ms</td></tr><tr><td class="num">17</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>me_chat_me_listchats</code></td><td>Chats</td><td class="num">18782 ms</td></tr><tr><td class="num">18</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>me_drive_me_getdrive</code></td><td>Drives</td><td class="num">18666 ms</td></tr><tr><td class="num">19</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>me_drive_me_listdrives</code></td><td>Drives</td><td class="num">19603 ms</td></tr><tr><td class="num">20</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>me_site_me_listfollowedsites</code></td><td>Sites</td><td class="num">20160 ms</td></tr><tr><td class="num">21</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>me_team_me_joinedteams_getallmessages</code></td><td>Teams</td><td class="num">23580 ms</td></tr><tr><td class="num">22</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>me_team_me_listjoinedteams</code></td><td>Teams</td><td class="num">24765 ms</td></tr><tr><td class="num">23</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>me_userteamwork_me_getteamwork</code></td><td>Teamwork</td><td class="num">22916 ms</td></tr><tr><td class="num">24</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>me_userteamwork_me_teamwork_getallretainedtargetedmessages</code></td><td>Teamwork</td><td class="num">20992 ms</td></tr><tr><td class="num">25</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>me_userteamwork_me_teamwork_getalltargetedmessages</code></td><td>Teamwork</td><td class="num">20467 ms</td></tr><tr><td class="num">26</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>me_userteamwork_me_teamwork_listassociatedteams</code></td><td>Teamwork</td><td class="num">20382 ms</td></tr><tr><td class="num">27</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>me_userteamwork_me_teamwork_listinstalledapps</code></td><td>Teamwork</td><td class="num">18603 ms</td></tr><tr><td class="num">28</td><td><span class="badge" style="background:#cf222e">bad_request</span></td><td><code>shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem</code></td><td>Shares</td><td class="num">16275 ms</td></tr><tr><td class="num">29</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>sites_site_functions_sites_delta</code></td><td>Sites</td><td class="num">15794 ms</td></tr><tr><td class="num">30</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>sites_site_functions_sites_getallsites</code></td><td>Sites</td><td class="num">15986 ms</td></tr><tr><td class="num">31</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>sites_site_sites_site_listsite</code></td><td>Sites</td><td class="num">16324 ms</td></tr><tr><td class="num">32</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_getemailnotificationssetting</code></td><td>Backup Restore</td><td class="num">16300 ms</td></tr><tr><td class="num">33</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listbrowsesessions</code></td><td>Backup Restore</td><td class="num">16822 ms</td></tr><tr><td class="num">34</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listdriveinclusionrules</code></td><td>Backup Restore</td><td class="num">19462 ms</td></tr><tr><td class="num">35</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunits</code></td><td>Backup Restore</td><td class="num">19199 ms</td></tr><tr><td class="num">36</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listdriveprotectionunitsbulkadditionjobs</code></td><td>Backup Restore</td><td class="num">22584 ms</td></tr><tr><td class="num">37</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listexchangeprotectionpolicies</code></td><td>Backup Restore</td><td class="num">27551 ms</td></tr><tr><td class="num">38</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listexchangerestoresessions</code></td><td>Backup Restore</td><td class="num">27327 ms</td></tr><tr><td class="num">39</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listmailboxinclusionrules</code></td><td>Backup Restore</td><td class="num">26202 ms</td></tr><tr><td class="num">40</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunits</code></td><td>Backup Restore</td><td class="num">22765 ms</td></tr><tr><td class="num">41</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listmailboxprotectionunitsbulkadditionjobs</code></td><td>Backup Restore</td><td class="num">22885 ms</td></tr><tr><td class="num">42</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessbrowsesessions</code></td><td>Backup Restore</td><td class="num">25108 ms</td></tr><tr><td class="num">43</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessprotectionpolicies</code></td><td>Backup Restore</td><td class="num">24288 ms</td></tr><tr><td class="num">44</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listonedriveforbusinessrestoresessions</code></td><td>Backup Restore</td><td class="num">24114 ms</td></tr><tr><td class="num">45</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listprotectionpolicies</code></td><td>Backup Restore</td><td class="num">22316 ms</td></tr><tr><td class="num">46</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits</code></td><td>Backup Restore</td><td class="num">23838 ms</td></tr><tr><td class="num">47</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asdriveprotectionunit</code></td><td>Backup Restore</td><td class="num">23748 ms</td></tr><tr><td class="num">48</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_asmailboxprotectionunit</code></td><td>Backup Restore</td><td class="num">25871 ms</td></tr><tr><td class="num">49</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listprotectionunits_assiteprotectionunit</code></td><td>Backup Restore</td><td class="num">29192 ms</td></tr><tr><td class="num">50</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listrestorepoints</code></td><td>Backup Restore</td><td class="num">29147 ms</td></tr><tr><td class="num">51</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listrestoresessions</code></td><td>Backup Restore</td><td class="num">26240 ms</td></tr><tr><td class="num">52</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listserviceapps</code></td><td>Backup Restore</td><td class="num">24075 ms</td></tr><tr><td class="num">53</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listsharepointbrowsesessions</code></td><td>Backup Restore</td><td class="num">24197 ms</td></tr><tr><td class="num">54</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listsharepointprotectionpolicies</code></td><td>Backup Restore</td><td class="num">24090 ms</td></tr><tr><td class="num">55</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listsharepointrestoresessions</code></td><td>Backup Restore</td><td class="num">20503 ms</td></tr><tr><td class="num">56</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listsiteinclusionrules</code></td><td>Backup Restore</td><td class="num">20477 ms</td></tr><tr><td class="num">57</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunits</code></td><td>Backup Restore</td><td class="num">21838 ms</td></tr><tr><td class="num">58</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>solutions_backuprestoreroot_solutions_backuprestore_listsiteprotectionunitsbulkadditionjobs</code></td><td>Backup Restore</td><td class="num">21007 ms</td></tr><tr><td class="num">59</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>solutions_backuprestoreroot_solutions_getbackuprestore</code></td><td>Backup Restore</td><td class="num">20496 ms</td></tr><tr><td class="num">60</td><td><span class="badge" style="background:#cf222e">bad_request</span></td><td><code>storage_filestorage_storage_filestorage_listcontainers</code></td><td>Storage</td><td class="num">17372 ms</td></tr><tr><td class="num">61</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>storage_filestorage_storage_filestorage_listcontainertyperegistrations</code></td><td>Storage</td><td class="num">18161 ms</td></tr><tr><td class="num">62</td><td><span class="badge" style="background:#9a6700">auth</span></td><td><code>storage_filestorage_storage_filestorage_listcontainertypes</code></td><td>Storage</td><td class="num">17781 ms</td></tr><tr><td class="num">63</td><td><span class="badge" style="background:#cf222e">bad_request</span></td><td><code>storage_filestorage_storage_filestorage_listdeletedcontainers</code></td><td>Storage</td><td class="num">19146 ms</td></tr><tr><td class="num">64</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>storage_filestorage_storage_getfilestorage</code></td><td>Storage</td><td class="num">22064 ms</td></tr><tr><td class="num">65</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>storage_storage_storage_storage_getstorage</code></td><td>Storage</td><td class="num">21881 ms</td></tr><tr><td class="num">66</td><td><span class="badge" style="background:#8250df">unsupported</span></td><td><code>storage_storagesettings_storage_getsettings</code></td><td>Storage</td><td class="num">22019 ms</td></tr><tr><td class="num">67</td><td><span class="badge" style="background:#cf222e">error</span></td><td><code>storage_storagesettings_storage_settings_getquota</code></td><td>Storage</td><td class="num">26034 ms</td></tr><tr><td class="num">68</td><td><span class="badge" style="background:#cf222e">error</span></td><td><code>storage_storagesettings_storage_settings_quota_listservices</code></td><td>Storage</td><td class="num">24942 ms</td></tr><tr><td class="num">69</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>teams_team_functions_teams_getallmessages</code></td><td>Teams</td><td class="num">24371 ms</td></tr><tr><td class="num">70</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>teams_team_teams_team_listteam</code></td><td>Teams</td><td class="num">20080 ms</td></tr><tr><td class="num">71</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>teamstemplates_teamstemplate_teamstemplates_teamstemplate_listteamstemplate</code></td><td>Teams</td><td class="num">18615 ms</td></tr><tr><td class="num">72</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>teamwork_deletedchat_teamwork_listdeletedchats</code></td><td>Chats</td><td class="num">22613 ms</td></tr><tr><td class="num">73</td><td><span class="badge" style="background:#cf222e">not_found</span></td><td><code>teamwork_deletedteam_teamwork_deletedteams_getallmessages</code></td><td>Teamwork</td><td class="num">21460 ms</td></tr><tr><td class="num">74</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>teamwork_deletedteam_teamwork_listdeletedteams</code></td><td>Teamwork</td><td class="num">21209 ms</td></tr><tr><td class="num">75</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>teamwork_teamsappsettings_teamwork_getteamsappsettings</code></td><td>Teamwork</td><td class="num">17546 ms</td></tr><tr><td class="num">76</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>teamwork_teamwork_teamwork_teamwork_getteamwork</code></td><td>Teamwork</td><td class="num">16157 ms</td></tr><tr><td class="num">77</td><td><span class="badge" style="background:#1a7f37">pass</span></td><td><code>teamwork_workforceintegration_teamwork_listworkforceintegrations</code></td><td>Teamwork</td><td class="num">16513 ms</td></tr></tbody></table></div>
 <script>
 (function(){
- const tabs=document.querySelectorAll('.tab');
- tabs.forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active'); document.getElementById(t.dataset.tab).classList.add('active');
- }));
- const fbtns=document.querySelectorAll('.fbtn');
- fbtns.forEach(b=>b.addEventListener('click',()=>{
-  fbtns.forEach(x=>x.classList.remove('active')); b.classList.add('active');
-  const f=b.dataset.f;
-  document.querySelectorAll('#log-list .log-card').forEach(c=>{
-   c.classList.toggle('hidden', f!=='all' && c.dataset.status!==f);
-  });
- }));
- const search=document.querySelector('.search');
- if(search) search.addEventListener('input',()=>{
-  const q=search.value.toLowerCase().trim();
-  document.querySelectorAll('#log-list .log-card').forEach(c=>{
-   const showF = document.querySelector('.fbtn.active')?.dataset.f||'all';
-   const okF = showF==='all' || c.dataset.status===showF;
-   const okQ = !q || c.textContent.toLowerCase().includes(q);
-   c.classList.toggle('hidden', !(okF&&okQ));
-  });
- });
+  const tabs=document.querySelectorAll('.tab');
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+   document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+   t.classList.add('active'); document.getElementById(t.dataset.tab).classList.add('active');
+  }));
+  document.querySelectorAll('.log-toolbar').forEach(tb=>{
+   const list=tb.nextElementSibling;
+   const fbtns=tb.querySelectorAll('.fbtn');
+   const search=tb.querySelector('.search');
+   const byBucket=fbtns[0] && fbtns[0].hasAttribute('data-b');
+   const matches=(c,f)=>{
+    if(byBucket) return f==='all'||c.dataset.bucket===f;
+    return f==='all'||c.dataset.status===f;
+   };
+   fbtns.forEach(b=>b.addEventListener('click',()=>{
+    fbtns.forEach(x=>x.classList.remove('active')); b.classList.add('active');
+    const f=b.dataset.f||b.dataset.b;
+    list.querySelectorAll('.log-card').forEach(c=>c.classList.toggle('hidden', !matches(c,f)));
+   }));
+   if(search) search.addEventListener('input',()=>{
+    const q=search.value.toLowerCase().trim();
+    const act=tb.querySelector('.fbtn.active');
+    const f=act? (act.dataset.f||act.dataset.b):'all';
+    list.querySelectorAll('.log-card').forEach(c=>{
+     const okF=matches(c,f);
+     const okQ=!q||c.textContent.toLowerCase().includes(q);
+     c.classList.toggle('hidden', !(okF&&okQ));
+    });
+   });
+  }));
+  document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
+   const el=document.getElementById(b.dataset.copy);
+   navigator.clipboard.writeText(el.textContent).then(()=>{
+    b.textContent='✓ copied';
+    setTimeout(()=>{b.textContent='⧉ copy SQL';},1500);
+   }).catch(()=>{});
+  }));
 })();
 </script></body></html>

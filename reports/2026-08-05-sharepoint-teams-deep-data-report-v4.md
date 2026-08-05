@@ -114,7 +114,7 @@ All **58** non-pass calls triaged: **3 Coral source bugs** (ours — fixable in 
 |---|---|---|
 | `28 × solutions/backupRestore (19 auth + 9 not_found/empty)` | `auth` | `BackupRestore.Read.All` not grantable + empty `UnknownError` → the **M365 Backup feature is not provisioned** in this tenant, so the whole backup-restore API surface is dead. |
 | `10 × unsupported` | `unsupported` | 6× "not supported for AAD accounts (no addressUrl / …)" — legacy Teams admin services; 4× **export APIs "not supported in delegated context"** (app-only only). |
-| `9 × NotFound "Requested API is not supported"` | `not_found` | `chats/getAllMessages`, `chats/getAllRetainedMessages`, `me/joinedTeams/getAllMessages` (a **phantom route** — not in Graph docs), `teams/getAllMessages`, `teamsTemplates`, `teamwork/deletedChats`, `deletedTeams/getAllMessages`. Routes are verbatim from the MS v1.0 OpenAPI but **rejected at runtime**. |
+| `6 × NotFound "Requested API / path is not supported"` | `not_found` | `chats/getAllMessages`, `chats/getAllRetainedMessages`, `me/joinedTeams/getAllMessages` (a **phantom route** — not in Graph docs), `teamsTemplates`, `teamwork/deletedChats`, `deletedTeams/getAllMessages`. Routes are verbatim from the MS v1.0 OpenAPI but **rejected at runtime**. |
 | `3 × NotFound UnknownError` | `not_found` | `policy/userAssignments`, telephony `listOperations`, `teams/getAllMessages`. |
 | `2 × sites (delta / getAllSites)` | `auth` | `sites/delta` (tenant-wide) and `sites/getAllSites` → `accessDenied` — **app-only** permissions. |
 | `2 × storage/filestorage containerTypeRegistrations` | `auth` | "caller does not have required permissions" — **app-permission** API. |
