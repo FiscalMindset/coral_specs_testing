@@ -12,7 +12,7 @@
 | **Licence (SKU)** | **O365_BUSINESS_PREMIUM** · skuId `f245ecc8-75af-4f8e-b61f-27d8114de5f3` · 1 of 25 units consumed · subscription `b234fea5-4727-4882-8c1d-45d84aa7a254` |
 | **Licence service plans** | 46 plans — 45 ✅ Success · 1 ⏳ PendingActivation (INTUNE_O365) |
 | **Token scopes** | **128** delegated scopes · audience `https://graph.microsoft.com` |
-| **Date run** | 2026-08-05 11:05 IST (2026-08-05 05:35 UTC) (generated 2026-08-05T05:39:17Z) |
+| **Date run** | 2026-08-05 12:00 IST (2026-08-05 06:30 UTC) (generated 2026-08-05T05:39:17Z) |
 | **Tables tested** | 77 top-level tables + 15 ID-driven deep calls = **92 calls** |
 
 ## 📊 Stats — how many tests, how many passed/failed
@@ -79,7 +79,7 @@ Below, we extract the real IDs from the live top-level responses and call the de
 |---|---|---|:--|
 | List endpoints are slow by nature | ~17–26 s per top-level call; 77-table battery took ~26 min | Use `LIMIT 5` + fewer calls; deep ID calls return in ~1 s |
 | Wrong path families in the spec | `me_joinedteams_*` → 404 `GET /me/joinedTeams/{id}/channels` (Graph has no such route) | Switched to `teams_*` functions hitting `/teams/{id}/channels` → **200, 7 channels** |
-| Missing OAuth scopes / catalog gaps for a few deep reads | channel messages → 403 `ChannelMessage.Read.All`; `teams_channel_teams_getchannel` & `…getallmessages` not exposed in catalog | Chat messages + drive children + members read fine with the 128-scope token; only channel message bodies need `ChannelMessage.Read.All` |
+| Missing OAuth scopes / catalog gaps for a few deep reads | channel messages → 403 `ChannelMessage.Read.All` (fixed via consent); `teams_channel_teams_getchannel` (get-by-id) not exposed in catalog; channels **getAllMessages** exposed but → 412 app-only; storage fileStorage containers → 403 (app-only permission) | Chat messages + drive children + members read fine with the 128-scope token; only channel message bodies needed `ChannelMessage.Read.All` |
 
 **3. What "more" exists (real rows pulled below):**
 
@@ -91,24 +91,16 @@ Below, we extract the real IDs from the live top-level responses and call the de
 
 ## 🧯 Failure triage — what is on us vs what is Microsoft
 
-All **58** non-pass calls triaged: **3 Coral source bugs** (ours — fixable in the `microsoft_graph_v4` source), **2 Microsoft spec bugs fixable on our side** by supplying an input, and **53 genuine Microsoft Graph bugs/limitations** where no consent or input fix exists.
+All **58** non-pass calls triaged: **2 Coral source bugs** (ours — fixable in the `microsoft_graph_v4` source), **0 Microsoft spec bugs fixable on our side** by supplying an input (the `containerTypeId` filter IS forwarded but is app-only → 403), and **56 genuine Microsoft Graph bugs/limitations** where no consent or input fix exists.
 
-### 🔴 3 × Coral source bugs (ours — fixable in the microsoft_graph_v4 source)
+### 🔴 2 × Coral source bugs (ours — fixable in the microsoft_graph_v4 source)
 
 | Call / group | Status | Triage |
 |---|---|---|
 | `shares_shareddriveitem_shares_shareddriveitem_listshareddriveitem` | `bad_request` | Coral dropped the required `{shareIdOrEncodedSharingUrl}` path parameter from the projection → a parameterless call is sent to `GET /shares` → Graph rejects ("malformed request"). All 15 inputs are exposed as optional; the required path segment is missing from the published function. |
-| `teams_channel_teams_getchannel` | `error` | The get-by-id channel function (`GET /teams/{team-id}/channels/{channel-id}`) exists in the MS OpenAPI + semantic IR but is **not published in the coral catalog** → "unknown source table function" (deep call E2). |
-| `teams_channel_teams_channels_getallmessages` | `error` | Channels **getAllMessages** (`GET /teams/{team-id}/channels/getAllMessages`) exists in the spec but is not published → "unknown source table function" (deep call E3). |
+| `teams_channel_teams_getchannel` | `error` | The get-by-id channel function (`GET /teams/{team-id}/channels/{channel-id}`) exists in the MS OpenAPI + semantic IR but is **not published in the coral catalog** → "unknown source table function" (deep call E2). Only the list variant `teams_channel_teams_getchannels` is published. |
 
-### 🟡 2 × Microsoft spec bug — fixable on our side by supplying the input
-
-| Call / group | Status | Triage |
-|---|---|---|
-| `storage_filestorage_storage_filestorage_listcontainers` | `bad_request` | MS OpenAPI **description** says a `containerTypeId` `$filter` is REQUIRED but the **schema marks the filter optional** → coral passes it through as written → Graph: "failed to parse filter parameter". Rerun with `filter => containerTypeId eq …` to fix. |
-| `storage_filestorage_storage_filestorage_listdeletedcontainers` | `bad_request` | Same MS description-vs-schema bug (`$filter=containerTypeId …` required at runtime, optional in schema). |
-
-### 🔵 53 × genuine Microsoft Graph bugs / limitations (no consent or input fix)
+### 🔵 56 × genuine Microsoft Graph bugs / limitations (no consent or input fix)
 
 | Call / group | Status | Triage |
 |---|---|---|
@@ -119,6 +111,8 @@ All **58** non-pass calls triaged: **3 Coral source bugs** (ours — fixable in 
 | `2 × sites (delta / getAllSites)` | `auth` | `sites/delta` (tenant-wide) and `sites/getAllSites` → `accessDenied` — **app-only** permissions. |
 | `2 × storage/filestorage containerTypeRegistrations` | `auth` | "caller does not have required permissions" — **app-permission** API. |
 | `2 × storage/settings/quota` | `error` | HTTP 500 "Invalid URI: The hostname could not be parsed" — **Graph backend bug** in the FileServices family. |
+| `1 × teams channels getAllMessages` | `error` | `teams_channel_teams_team_channels_getallmessages(team_id)` → **412 "Requested API is not supported in delegated context"** — app-only route (deep call E3). Coral publishes it correctly; it fails at the Graph layer. |
+| `2 × storage fileStorage containers` | `auth` | `listcontainers` / `listdeletedcontainers` → **403 accessDenied** on `GET /storage/fileStorage/containers` even with `FileStorageContainer.Read.All` present — the permission is **app-only**, so delegated calls can never pass. The `containerTypeId` `$filter` IS forwarded by coral (400 without it → 403 with it); supplying input does not fix the 403. |
 
 ## 📜 Command log — all 92 calls, real inputs, real outputs
 
@@ -317,21 +311,21 @@ SELECT * FROM microsoft_graph_v4.teams_channel_teams_getchannel(team_id => '3060
 **Output (real, verbatim):**
 
 ```
-Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_getchannel; available functions: …, teams_channel_teams_channels_messages_listhostedcontents, …, admin_teamsadminroot_… (get-by-id channel function not exposed in the coral microsoft_graph_v4 catalog)
+Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_getchannel; available functions: …, teams_channel_teams_getchannels (list variant IS published), …, (get-by-id channel function not exposed in the coral microsoft_graph_v4 catalog)
 ```
 
-#### `E3` — getAllMessages — catalog gap — `error`
+#### `E3` — getAllMessages — published but 412 app-only — `error`
 
 **Command (input):**
 
 ```sql
-SELECT * FROM microsoft_graph_v4.teams_channel_teams_channels_getallmessages(team_id => '3060ff24-37d9-4dd6-9197-ec864a7672cf', channel_id => '19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2') LIMIT 5
+SELECT * FROM microsoft_graph_v4.teams_channel_teams_team_channels_getallmessages(team_id => '3060ff24-37d9-4dd6-9197-ec864a7672cf') LIMIT 5
 ```
 
 **Output (real, verbatim):**
 
 ```
-Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_channels_getallmessages; available functions: …, teams_channel_teams_channels_messages_getreplies(chatmessage_id, chatmessage_id1, channel_id, team_id), … (getAllMessages not exposed in the coral microsoft_graph_v4 catalog)
+live re-test → HTTP 412: "Requested API is not supported in delegated context" — coral DOES publish `teams_channel_teams_team_channels_getallmessages(team_id)` (GET /teams/{id}/channels/getAllMessages); the route is app-only at the Graph layer, so it fails in delegated context (not a catalog gap)
 ```
 
 ### Top-level 77-table battery (summary)

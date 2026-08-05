@@ -107,27 +107,21 @@
 <h3>Combined with deep battery</h3>
 <table><thead><tr><th>Status</th><th>Count</th><th>%</th></tr></thead><tbody><tr><td>✅ pass</td><td class="num">34</td><td class="num">37.0%</td></tr><tr><td>🔒 auth</td><td class="num">23</td><td class="num">25.0%</td></tr><tr><td>⚠️ bad_request</td><td class="num">3</td><td class="num">3.3%</td></tr><tr><td>🔍 not_found</td><td class="num">18</td><td class="num">19.6%</td></tr><tr><td>🚫 unsupported</td><td class="num">10</td><td class="num">10.9%</td></tr><tr><td>💥 error</td><td class="num">4</td><td class="num">4.3%</td></tr><tr class="total"><td><b>Total</b></td><td class="num"><b>92</b></td><td class="num">100%</td></tr></tbody></table>
 </div><div class="panel" id="triage"><h3>Failure triage — ours vs Microsoft <small>(58 failing calls · exact SQL + real Graph output for each)</small></h3>
-<p>Triaged into <b style="color:#cf222e">3 Coral source bugs</b> (ours — fixable in the <code>microsoft_graph_v4</code> source),
-<b style="color:#9a6700">2 Microsoft spec bugs fixable on our side</b> by supplying an input,
-and <b style="color:#0969da">53 genuine Microsoft Graph bugs / limitations</b> (no consent or input fix exists).
+<p>Triaged into <b style="color:#cf222e">2 Coral source bugs</b> (ours — fixable in the <code>microsoft_graph_v4</code> source),
+<b style="color:#9a6700">0 Microsoft spec bugs fixable on our side</b> by supplying an input,
+and <b style="color:#0969da">56 genuine Microsoft Graph bugs / limitations</b> (no consent or input fix exists).
 Every card shows the exact SQL coral sent plus the real Graph output — hit <b>⧉ copy SQL</b> to re-run any failing call yourself.</p>
 
 <div class="log-toolbar">
- <div class="filters"><button class="fbtn active" data-b="all">All (58)</button><button class="fbtn" data-b="coral">🔴 Coral (3)</button><button class="fbtn" data-b="msspec">🟡 MS spec (2)</button><button class="fbtn" data-b="ms">🔵 Microsoft (53)</button></div>
+ <div class="filters"><button class="fbtn active" data-b="all">All (58)</button><button class="fbtn" data-b="coral">🔴 Coral (2)</button><button class="fbtn" data-b="msspec">🟡 MS spec (0)</button><button class="fbtn" data-b="ms">🔵 Microsoft (56)</button></div>
  <input class="search" type="text" placeholder="Search failing calls… (table, id, error code, triage group)">
 </div>
 <div id="triage-list"><div class="log-card" data-status="error" data-bucket="coral">
   <div class="log-head"><span class="log-code">E2</span> <b>getchannel — catalog has no teams_channel get-by-id function</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Blocked</span> <span class="lat">⏱ 0 ms</span> <span class="bucket coral">🔴 coral bug</span></div>
-  <div class="triage-group">Coral catalog gap — route in OpenAPI + semantic IR, not published</div>
+  <div class="triage-group">Coral catalog gap — get-by-id channel route not published</div>
   <div class="log-sql-wrap"><button class="copy" data-copy="sql-E2">⧉ copy SQL</button><div class="log-sql" id="sql-E2">SELECT * FROM microsoft_graph_v4.teams_channel_teams_getchannel(team_id =&gt; &#x27;3060ff24-37d9-4dd6-9197-ec864a7672cf&#x27;, channel_id =&gt; &#x27;19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2&#x27;)</div></div>
-  <div class="triage-why">The route exists in the MS OpenAPI + semantic IR but coral never publishes it → &quot;unknown source table function&quot;.</div>
-  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_getchannel; available functions: …, teams_channel_teams_channels_messages_listhostedcontents, …, admin_teamsadminroot_… (get-by-id channel function not exposed in the coral microsoft_graph_v4 catalog)</div></details>
-</div><div class="log-card" data-status="error" data-bucket="coral">
-  <div class="log-head"><span class="log-code">E3</span> <b>getAllMessages — catalog gap</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Blocked</span> <span class="lat">⏱ 0 ms</span> <span class="bucket coral">🔴 coral bug</span></div>
-  <div class="triage-group">Coral catalog gap — route in OpenAPI + semantic IR, not published</div>
-  <div class="log-sql-wrap"><button class="copy" data-copy="sql-E3">⧉ copy SQL</button><div class="log-sql" id="sql-E3">SELECT * FROM microsoft_graph_v4.teams_channel_teams_channels_getallmessages(team_id =&gt; &#x27;3060ff24-37d9-4dd6-9197-ec864a7672cf&#x27;, channel_id =&gt; &#x27;19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2&#x27;) LIMIT 5</div></div>
-  <div class="triage-why">The route exists in the MS OpenAPI + semantic IR but coral never publishes it → &quot;unknown source table function&quot;.</div>
-  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_channels_getallmessages; available functions: …, teams_channel_teams_channels_messages_getreplies(chatmessage_id, chatmessage_id1, channel_id, team_id), … (getAllMessages not exposed in the coral microsoft_graph_v4 catalog)</div></details>
+  <div class="triage-why">The get-by-id route `GET /teams/{team-id}/channels/{channel-id}` exists in the MS OpenAPI + semantic IR but coral only publishes the list variant `teams_channel_teams_getchannels` → &quot;unknown source table function&quot;.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_getchannel; available functions: …, teams_channel_teams_getchannels (list variant IS published), …, (get-by-id channel function not exposed in the coral microsoft_graph_v4 catalog)</div></details>
 </div><div class="log-card" data-status="bad_request" data-bucket="coral">
   <div class="log-head"><span class="log-code">TSH28</span> <b>List shared drive item</b> <span class="badge" style="background:#cf222e">bad_request</span> <span class="area">Shares</span> <span class="lat">⏱ 16275 ms</span> <span class="bucket coral">🔴 coral bug</span></div>
   <div class="triage-group">Coral dropped the required {shareIdOrEncodedSharingUrl} path param</div>
@@ -137,24 +131,12 @@ Every card shows the exact SQL coral sent plus the real Graph output — hit <b>
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;invalidRequest&quot;,&quot;message&quot;:&quot;The request is malformed or incorrect.&quot;}} [GET] https://graph.microsoft.com/v1.0/shares
 Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
 </div></details>
-</div><div class="log-card" data-status="bad_request" data-bucket="msspec">
-  <div class="log-head"><span class="log-code">TST60</span> <b>List file-storage containers</b> <span class="badge" style="background:#cf222e">bad_request</span> <span class="area">Storage</span> <span class="lat">⏱ 17372 ms</span> <span class="bucket msspec">🟡 MS spec fixable</span></div>
-  <div class="triage-group">MS spec bug: containerTypeId filter required, schema says optional</div>
-  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST60">⧉ copy SQL</button><div class="log-sql" id="sql-TST60">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_filestorage_listcontainers&quot; LIMIT 5</div></div>
-  <div class="triage-why">MS OpenAPI description says a `containerTypeId` `$filter` is REQUIRED but the schema marks it optional → coral passes it through as written → Graph: &quot;failed to parse filter parameter&quot;. Rerun with `filter =&gt; containerTypeId eq …` to fix.</div>
-  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
-Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;invalidRequest&quot;,&quot;message&quot;:&quot;failed to parse filter parameter.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:21&quot;,&quot;request-id&quot;:&quot;7525da70-124c-437e-b110-a555b1f09384&quot;,&quot;client-request-id&quot;:&quot;7525da70-124c-437e-b110-a555b1f09384&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/containers
-Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
-</div></details>
-</div><div class="log-card" data-status="bad_request" data-bucket="msspec">
-  <div class="log-head"><span class="log-code">TST63</span> <b>List deleted containers</b> <span class="badge" style="background:#cf222e">bad_request</span> <span class="area">Storage</span> <span class="lat">⏱ 19146 ms</span> <span class="bucket msspec">🟡 MS spec fixable</span></div>
-  <div class="triage-group">MS spec bug: containerTypeId filter required, schema says optional</div>
-  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST63">⧉ copy SQL</button><div class="log-sql" id="sql-TST63">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_filestorage_listdeletedcontainers&quot; LIMIT 5</div></div>
-  <div class="triage-why">MS OpenAPI description says a `containerTypeId` `$filter` is REQUIRED but the schema marks it optional → coral passes it through as written → Graph: &quot;failed to parse filter parameter&quot;. Rerun with `filter =&gt; containerTypeId eq …` to fix.</div>
-  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
-Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;invalidRequest&quot;,&quot;message&quot;:&quot;failed to parse filter parameter.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:40&quot;,&quot;request-id&quot;:&quot;8db2d7bc-8f67-4d04-ba52-51c5df9625a2&quot;,&quot;client-request-id&quot;:&quot;8db2d7bc-8f67-4d04-ba52-51c5df9625a2&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/deletedContainers
-Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
-</div></details>
+</div><div class="log-card" data-status="error" data-bucket="ms">
+  <div class="log-head"><span class="log-code">E3</span> <b>getAllMessages — published but 412 app-only</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Blocked</span> <span class="lat">⏱ 0 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">412 — getAllMessages app-only (delegated context unsupported)</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-E3">⧉ copy SQL</button><div class="log-sql" id="sql-E3">SELECT * FROM microsoft_graph_v4.teams_channel_teams_team_channels_getallmessages(team_id =&gt; &#x27;3060ff24-37d9-4dd6-9197-ec864a7672cf&#x27;) LIMIT 5</div></div>
+  <div class="triage-why">Coral publishes `teams_channel_teams_team_channels_getallmessages(team_id)` but Graph rejects it with HTTP 412 &quot;Requested API is not supported in delegated context&quot; — the route is app-only, so no consent/input fix exists.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">live re-test → HTTP 412: &quot;Requested API is not supported in delegated context&quot; — coral DOES publish `teams_channel_teams_team_channels_getallmessages(team_id)` (GET /teams/{id}/channels/getAllMessages); the route is app-only at the Graph layer, so it fails in delegated context (not a catalog gap)</div></details>
 </div><div class="log-card" data-status="unsupported" data-bucket="ms">
   <div class="log-head"><span class="log-code">TAD01</span> <b>Get SharePoint admin root</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">SharePoint Admin</span> <span class="lat">⏱ 13267 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
   <div class="triage-group">unsupported — AAD accounts / delegated-unsupported</div>
@@ -538,6 +520,15 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;UnknownError&quot;,&quot;message&quot;:&quot;&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:14&quot;,&quot;request-id&quot;:&quot;8d973e7f-fde4-4fb1-96e6-e8f304ce734d&quot;,&quot;client-request-id&quot;:&quot;8d973e7f-fde4-4fb1-96e6-e8f304ce734d&quot;}}} [GET] https://graph.microsoft.com/v1.0/solutions/backupRestore
 Hint: Check the configured credentials and whether they have access to this resource.
 </div></details>
+</div><div class="log-card" data-status="bad_request" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TST60</span> <b>List file-storage containers</b> <span class="badge" style="background:#cf222e">bad_request</span> <span class="area">Storage</span> <span class="lat">⏱ 17372 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">storage fileStorage containers — app-only 403</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST60">⧉ copy SQL</button><div class="log-sql" id="sql-TST60">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_filestorage_listcontainers&quot; LIMIT 5</div></div>
+  <div class="triage-why">403 accessDenied on `GET /storage/fileStorage/containers` even with `FileStorageContainer.Read.All` in the token — the permission is app-only, so delegated calls can never pass. The `containerTypeId` `$filter` IS forwarded by coral (400 without it → 403 with it); supplying input does not fix the 403.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;invalidRequest&quot;,&quot;message&quot;:&quot;failed to parse filter parameter.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:21&quot;,&quot;request-id&quot;:&quot;7525da70-124c-437e-b110-a555b1f09384&quot;,&quot;client-request-id&quot;:&quot;7525da70-124c-437e-b110-a555b1f09384&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/containers
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
+</div></details>
 </div><div class="log-card" data-status="auth" data-bucket="ms">
   <div class="log-head"><span class="log-code">TST61</span> <b>List container type registrations</b> <span class="badge" style="background:#9a6700">auth</span> <span class="area">Storage</span> <span class="lat">⏱ 18161 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
   <div class="triage-group">filestorage containerType — app permission</div>
@@ -555,6 +546,15 @@ Hint: Check the configured credentials and whether they have access to this reso
   <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source request was rejected (403)
 Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;accessDenied&quot;,&quot;message&quot;:&quot;Caller does not have required permissions for this API&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:32&quot;,&quot;request-id&quot;:&quot;8c8ed994-4aed-42bc-8fc6-7aca36af1414&quot;,&quot;client-request-id&quot;:&quot;8c8ed994-4aed-42bc-8fc6-7aca36af1414&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/containerTypes
 Hint: Check the configured credentials and whether they have access to this resource.
+</div></details>
+</div><div class="log-card" data-status="bad_request" data-bucket="ms">
+  <div class="log-head"><span class="log-code">TST63</span> <b>List deleted containers</b> <span class="badge" style="background:#cf222e">bad_request</span> <span class="area">Storage</span> <span class="lat">⏱ 19146 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
+  <div class="triage-group">storage fileStorage containers — app-only 403</div>
+  <div class="log-sql-wrap"><button class="copy" data-copy="sql-TST63">⧉ copy SQL</button><div class="log-sql" id="sql-TST63">SELECT * FROM microsoft_graph_v4.&quot;storage_filestorage_storage_filestorage_listdeletedcontainers&quot; LIMIT 5</div></div>
+  <div class="triage-why">403 accessDenied on `GET /storage/fileStorage/containers` even with `FileStorageContainer.Read.All` in the token — the permission is app-only, so delegated calls can never pass. The `containerTypeId` `$filter` IS forwarded by coral (400 without it → 403 with it); supplying input does not fix the 403.</div>
+  <details class="triage-out"><summary>Real output from Microsoft Graph</summary><div class="log-out">Error: Source rejected the request (400)
+Detail: {&quot;error&quot;:{&quot;code&quot;:&quot;invalidRequest&quot;,&quot;message&quot;:&quot;failed to parse filter parameter.&quot;,&quot;innerError&quot;:{&quot;date&quot;:&quot;2026-08-05T05:37:40&quot;,&quot;request-id&quot;:&quot;8db2d7bc-8f67-4d04-ba52-51c5df9625a2&quot;,&quot;client-request-id&quot;:&quot;8db2d7bc-8f67-4d04-ba52-51c5df9625a2&quot;}}} [GET] https://graph.microsoft.com/v1.0/storage/fileStorage/deletedContainers
+Hint: Adjust the query filters or shape to match the target table&#x27;s supported inputs.
 </div></details>
 </div><div class="log-card" data-status="unsupported" data-bucket="ms">
   <div class="log-head"><span class="log-code">TST64</span> <b>Get file storage root</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">Storage</span> <span class="lat">⏱ 22064 ms</span> <span class="bucket ms">🔵 MS bug</span></div>
@@ -700,11 +700,11 @@ Hint: Verify the identifier or filter values you passed; the upstream resource w
 </div><div class="log-card" data-status="error">
   <div class="log-head"><span class="log-code">E2</span> <b>getchannel — catalog has no teams_channel get-by-id function</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Blocked</span></div>
   <div class="log-sql">SELECT * FROM microsoft_graph_v4.teams_channel_teams_getchannel(team_id =&gt; &#x27;3060ff24-37d9-4dd6-9197-ec864a7672cf&#x27;, channel_id =&gt; &#x27;19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2&#x27;)</div>
-  <div class="log-out">Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_getchannel; available functions: …, teams_channel_teams_channels_messages_listhostedcontents, …, admin_teamsadminroot_… (get-by-id channel function not exposed in the coral microsoft_graph_v4 catalog)</div>
+  <div class="log-out">Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_getchannel; available functions: …, teams_channel_teams_getchannels (list variant IS published), …, (get-by-id channel function not exposed in the coral microsoft_graph_v4 catalog)</div>
 </div><div class="log-card" data-status="error">
-  <div class="log-head"><span class="log-code">E3</span> <b>getAllMessages — catalog gap</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Blocked</span></div>
-  <div class="log-sql">SELECT * FROM microsoft_graph_v4.teams_channel_teams_channels_getallmessages(team_id =&gt; &#x27;3060ff24-37d9-4dd6-9197-ec864a7672cf&#x27;, channel_id =&gt; &#x27;19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2&#x27;) LIMIT 5</div>
-  <div class="log-out">Query request is invalid: unknown source table function microsoft_graph_v4.teams_channel_teams_channels_getallmessages; available functions: …, teams_channel_teams_channels_messages_getreplies(chatmessage_id, chatmessage_id1, channel_id, team_id), … (getAllMessages not exposed in the coral microsoft_graph_v4 catalog)</div>
+  <div class="log-head"><span class="log-code">E3</span> <b>getAllMessages — published but 412 app-only</b> <span class="badge" style="background:#cf222e">error</span> <span class="area">Blocked</span></div>
+  <div class="log-sql">SELECT * FROM microsoft_graph_v4.teams_channel_teams_team_channels_getallmessages(team_id =&gt; &#x27;3060ff24-37d9-4dd6-9197-ec864a7672cf&#x27;) LIMIT 5</div>
+  <div class="log-out">live re-test → HTTP 412: &quot;Requested API is not supported in delegated context&quot; — coral DOES publish `teams_channel_teams_team_channels_getallmessages(team_id)` (GET /teams/{id}/channels/getAllMessages); the route is app-only at the Graph layer, so it fails in delegated context (not a catalog gap)</div>
 </div><div class="log-card" data-status="unsupported" data-area="SharePoint Admin">
   <div class="log-head"><span class="log-code">TAD01</span> <b>Get SharePoint admin root</b> <span class="badge" style="background:#8250df">unsupported</span> <span class="area">SharePoint Admin</span> <span class="lat">⏱ 13267 ms</span></div>
   <div class="log-sql">SELECT * FROM microsoft_graph_v4.&quot;admin_sharepoint_admin_getsharepoint&quot; LIMIT 5</div>
