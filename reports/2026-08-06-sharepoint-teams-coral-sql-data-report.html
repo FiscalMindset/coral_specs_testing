@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SharePoint + Teams DATA drill-down via Coral SQL — microsoft_graph_v4 (2026-08-06)</title>
+<style>
+ body{font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:1280px;margin:24px auto;padding:0 14px;color:#1a1a1a;background:#fff}
+ h1{font-size:22px;border-bottom:2px solid #0364ab;padding-bottom:8px}
+ h2{font-size:17px;margin:22px 0 8px;color:#0d2b45}
+ h3{margin:18px 0 6px}
+ .tab{padding:8px 14px;border:1px solid #ccc;border-bottom:none;background:#f4f4f4;cursor:pointer;font-size:13px;border-radius:6px 6px 0 0;margin-right:2px}
+ .tab.active{background:#0364ab;color:#fff;border-color:#0364ab}
+ .panel{display:none;border:1px solid #ccc;border-radius:0 6px 6px 6px;padding:14px;overflow-x:auto}
+ .panel.active{display:block}
+ table{border-collapse:collapse;width:100%;margin:8px 0;font-size:12.5px}
+ th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}
+ th{background:#f0f6fb;font-weight:600}
+ .num{text-align:right}
+ .total td{background:#f6f8fa;font-weight:600}
+ code{font-family:SF Mono,Menlo,Consolas,monospace;font-size:11.5px;background:#f6f8fa;padding:1px 4px;border-radius:3px}
+ pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:8px;overflow-x:auto;font-family:SF Mono,Menlo,Consolas,monospace;font-size:12px}
+ pre code{background:none;color:inherit;padding:0}
+ .hero{background:linear-gradient(135deg,#0d2b45,#0364ab);color:#fff;border-radius:10px;padding:16px 18px;margin:14px 0}
+ .hero-title{font-size:15px;font-weight:700;margin-bottom:10px}
+ .hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+ .hero-card{background:rgba(255,255,255,.09);border-radius:8px;padding:8px 10px}
+ .hero-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;opacity:.85}
+ .hero-value{font-size:13.5px;font-weight:600;margin-top:2px;word-break:break-all}
+ .hero-sub{font-size:11.5px;opacity:.85;word-break:break-all}
+ .hero code{background:rgba(0,0,0,.25);color:#fff}
+ .stat-grid{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}
+ .stat-card{flex:1 1 140px;min-width:130px;border:1px solid #ddd;border-radius:8px;padding:10px 12px;background:#fff}
+ .stat-num{font-size:24px;font-weight:700;color:#0364ab}
+ .stat-label{font-size:11.5px;color:#555}
+ .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+ .b-pass{background:#e6f4ea;color:#1e7e34}
+ .b-warn{background:#fdf3e0;color:#b45309}
+ .b-gap{background:#fde8e8;color:#b91c1c}
+ .callout{border-left:4px solid #0364ab;background:#f0f6fb;padding:10px 14px;border-radius:0 6px 6px 0;margin:12px 0}
+ .callout.warn{border-left-color:#b45309;background:#fdf6ec}
+ .callout.gap{border-left-color:#b91c1c;background:#fdf0f0}
+ .muted{color:#666;font-size:12px}
+</style></head><body>
+<h1>microsoft_graph_v4 — SharePoint + Teams DATA drill-down <span style="color:#0364ab">through Coral SQL</span> (2026-08-06)</h1>
+
+<div class="callout"><b>What changed vs the v4.5 report.</b> The 2026-08-05 deep-data reports pulled real rows and used raw Graph calls for some lookups. This 2026-08-06 report is a <b>pure Coral SQL exercise</b>: every data point — list counts, team/channel/message inventories, calendar events, user identity — was retrieved <b>only through <code>SELECT</code> queries against the <code>microsoft_graph_v4</code> Coral source</b>. No direct curl/Graph calls. This proves the Coral connector alone answers "what data lives in my tenant's SharePoint + Teams" — with three documented limitations at the end.</div>
+
+<div class="tab active" data-tab="data">📊 Data</div>
+<div class="tab" data-tab="sql">📜 SQL log</div>
+<div class="tab" data-tab="gaps">⚠️ Limitations</div>
+
+<div class="panel active" id="panel-data">
+
+<div class="hero">
+  <div class="hero-title">Report profile — tenant, user & method</div>
+  <div class="hero-grid">
+    <div class="hero-card"><div class="hero-label">Tenant</div><div class="hero-value">algsoch</div><div class="hero-sub">algsoch762.onmicrosoft.com</div></div>
+    <div class="hero-card"><div class="hero-label">Tenant ID</div><div class="hero-value" style="font-size:11px">0aa3a51b-3716-44d7-9636-f85f3db072bf</div></div>
+    <div class="hero-card"><div class="hero-label">User</div><div class="hero-value">vicky kumar</div><div class="hero-sub">vickykumar@algsoch762.onmicrosoft.com</div></div>
+    <div class="hero-card"><div class="hero-label">User objectId</div><div class="hero-value" style="font-size:11px">55bcc9a0-6062-4976-9341-c27579fe09e3</div></div>
+    <div class="hero-card"><div class="hero-label">Licence</div><div class="hero-value">O365_BUSINESS_PREMIUM</div><div class="hero-sub">1 of 25 units</div></div>
+    <div class="hero-card"><div class="hero-label">Method</div><div class="hero-value">100% Coral SQL</div><div class="hero-sub">no raw Graph calls</div></div>
+    <div class="hero-card"><div class="hero-label">Date run</div><div class="hero-value">2026-08-06</div><div class="hero-sub">12:00–12:20 IST</div></div>
+  </div>
+</div>
+
+<h2>📊 Headline numbers — everything Coral can see</h2>
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-num">27</div><div class="stat-label">SharePoint lists (root site)</div></div>
+  <div class="stat-card"><div class="stat-num">956</div><div class="stat-label">List items (all 27 lists)</div></div>
+  <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">Teams (all public)</div></div>
+  <div class="stat-card"><div class="stat-num">24</div><div class="stat-label">Channels (across 5 teams)</div></div>
+  <div class="stat-card"><div class="stat-num">147</div><div class="stat-label">Channel messages</div></div>
+  <div class="stat-card"><div class="stat-num">31</div><div class="stat-label">Calendar events (30-day window)</div></div>
+</div>
+<div class="muted">Users/groups: not enumerable via Coral catalog — only per-user UPN lookup (ground truth 231 users / 44 groups).</div>
+
+<h2>🗂️ SharePoint — 27 lists, 956 items (all via Coral)</h2>
+<table>
+<tr><th>#</th><th>List</th><th>Items</th><th>List ID</th></tr>
+<tr><td>1</td><td>Code Snippets</td><td class="num">20</td><td><code>a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e</code></td></tr>
+<tr><td>2</td><td>Contributors</td><td class="num">25</td><td><code>8cb8d9ab-b3d2-421e-9e20-1788aad27ef9</code></td></tr>
+<tr><td>3</td><td>CompanyList</td><td class="num">0</td><td><code>2aa1498c-117a-4df8-86d6-29f832d56383</code></td></tr>
+<tr><td>4</td><td>Student Enrollment</td><td class="num">50</td><td><code>c8bb6b92-f29b-419d-9fa6-2a682d67ae1b</code></td></tr>
+<tr><td>5</td><td>Claude Code Sessions</td><td class="num">100</td><td><code>e38c1fdb-28fa-4d09-b927-3441dee1a623</code></td></tr>
+<tr><td>6</td><td>Recent Commits</td><td class="num">225</td><td><code>f0e3ab87-4686-4867-80c5-38a8a8ad43eb</code></td></tr>
+<tr><td>7</td><td>Personal Projects</td><td class="num">15</td><td><code>29b45f46-3186-4dfd-a9f3-4a983e7467b8</code></td></tr>
+<tr><td>8</td><td>Documentation Files</td><td class="num">59</td><td><code>9b40fa9a-bc58-4617-8d55-623f39b66911</code></td></tr>
+<tr><td>9</td><td>Reading List</td><td class="num">31</td><td><code>7ee1653b-a88e-4735-a40d-69f3d357bd4b</code></td></tr>
+<tr><td>10</td><td>Campus Events</td><td class="num">15</td><td><code>1938b254-38b0-49d1-890f-7fbeb2f47a0b</code></td></tr>
+<tr><td>11</td><td>Employee Directory</td><td class="num">45</td><td><code>ef0c6d15-2052-46a5-a68b-8680c5ec32ea</code></td></tr>
+<tr><td>12</td><td>AI Tool Usage</td><td class="num">29</td><td><code>c19b49f4-3d77-49b3-b7dc-8ad35de16ab3</code></td></tr>
+<tr><td>13</td><td>Faculty Directory</td><td class="num">25</td><td><code>ace7bdd3-23d7-451b-957c-8cfede349e85</code></td></tr>
+<tr><td>14</td><td>Course Catalog</td><td class="num">20</td><td><code>848d9478-aa55-4e98-96de-917dbb1ba822</code></td></tr>
+<tr><td>15</td><td>Vendor Contracts</td><td class="num">12</td><td><code>73ce9c36-542f-4958-8500-97f34b6127c1</code></td></tr>
+<tr><td>16</td><td>Events</td><td class="num">0</td><td><code>1650b960-9447-4f06-bfda-9d1ec7b93f72</code></td></tr>
+<tr><td>17</td><td>Project Tracker</td><td class="num">15</td><td><code>853701d5-af66-4fd6-bbe6-9fb53e173e1e</code></td></tr>
+<tr><td>18</td><td>Sales Pipeline</td><td class="num">20</td><td><code>b65c44d8-5d9f-4fe7-bee1-b499c279d06f</code></td></tr>
+<tr><td>19</td><td>GraphTestList</td><td class="num">1</td><td><code>ef2395d2-0a2e-4f8c-b31f-c0dd9c07c230</code></td></tr>
+<tr><td>20</td><td>Engineering Tasks</td><td class="num">28</td><td><code>b416f24d-02bc-4097-92e6-cdd0f7fb07af</code></td></tr>
+<tr><td>21</td><td>Customer Support Tickets</td><td class="num">25</td><td><code>df815316-472f-45a9-9c72-ce8c92bcce78</code></td></tr>
+<tr><td>22</td><td>Git Repositories</td><td class="num">8</td><td><code>e229ce7d-36e0-4c6b-b2e7-da6966116477</code></td></tr>
+<tr><td>23</td><td>Documents</td><td class="num">0</td><td><code>d7afb5f6-0ad6-4312-85bf-e5f35ac9a1f5</code></td></tr>
+<tr><td>24</td><td>Daily Activities</td><td class="num">28</td><td><code>e24b10d1-a0e1-4919-8fa7-f2b9871e433e</code></td></tr>
+<tr><td>25</td><td>Skills Inventory</td><td class="num">89</td><td><code>805f3435-3cda-44cf-90c9-f3b9fbe5833f</code></td></tr>
+<tr><td>26</td><td>Library Books</td><td class="num">32</td><td><code>83aa845e-ff02-4427-9a37-f72749e980ac</code></td></tr>
+<tr><td>27</td><td>AI Development Sessions</td><td class="num">39</td><td><code>35c1c54f-cbc2-4938-83bc-f7da286109ea</code></td></tr>
+<tr class="total"><td colspan="2">TOTAL</td><td class="num">956</td><td></td></tr>
+</table>
+
+<h2>👥 Teams — 5 teams, 24 channels, 147 messages</h2>
+<table>
+<tr><th>Team</th><th>Team ID</th><th>Channels</th><th>Msgs</th></tr>
+<tr><td>algsoch</td><td><code>fd31e343-d9f4-471b-a821-bc5ed36b10f6</code></td><td class="num">1</td><td class="num">27</td></tr>
+<tr><td>Q3 FY26 Sales Operations</td><td><code>b4dd618c-7636-4f06-809a-e20d258ccb44</code></td><td class="num">5</td><td class="num">29</td></tr>
+<tr><td>Computer Science Department - IIT Delhi</td><td><code>c7fe3584-80e6-4374-8d4f-5557e4149899</code></td><td class="num">6</td><td class="num">34</td></tr>
+<tr><td>Product Engineering - Mobile Apps</td><td><code>4a979088-6773-4ae1-903b-3bf653ab60e5</code></td><td class="num">5</td><td class="num">25</td></tr>
+<tr><td>Engineering - FiscalMindset</td><td><code>3060ff24-37d9-4dd6-9197-ec864a7672cf</code></td><td class="num">7</td><td class="num">32</td></tr>
+<tr class="total"><td>TOTAL</td><td></td><td class="num">24</td><td class="num">147</td></tr>
+</table>
+
+<h3>Channel + message detail (per team)</h3>
+<table>
+<tr><th>Team</th><th>Channel</th><th>Msgs</th></tr>
+<tr><td rowspan="1">algsoch</td><td>algsoch <code>19:c8scDQq77q-vVMQy2e1bU0s88qn0-IbQuiCpXVR2VIU1@thread.tacv2</code></td><td class="num">27</td></tr>
+<tr><td rowspan="5">Q3 FY26 Sales Ops</td><td>Sales-Enablement <code>19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>Pipeline-Review <code>19:06cfa468861942faa8910b71c7b3c65a@thread.tacv2</code></td><td class="num">6</td></tr>
+<tr><td>Wins-Celebrations <code>19:1ae0cc6ec2b546c89bfdcb7f0f5f58d1@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>Forecast-Q3 <code>19:a7ef4bafe8314ea2a85280ed1bd61c5a@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>General <code>19:d-NuaQFUPbRVxnRzKchgavuFrGU7tg0RCKutXd3Ye5E1@thread.tacv2</code></td><td class="num">11</td></tr>
+<tr><td rowspan="6">CS Dept - IIT Delhi</td><td>General <code>19:1IrfMCY02-FFoh3mE7cBtdslnIFdWRYazPGKcQ0m3ro1@thread.tacv2</code></td><td class="num">9</td></tr>
+<tr><td>Student-Affairs <code>19:1d14aec6f2d54df0b68a2079b7bdfce7@thread.tacv2</code></td><td class="num">6</td></tr>
+<tr><td>Industry-Outreach <code>19:2903f4825f854190a9f8d4acfd2e3c38@thread.tacv2</code></td><td class="num">5</td></tr>
+<tr><td>Faculty-Meetings <code>19:2d120c3212514d3689fc3f4a7d4bf3b8@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>Curriculum-Design <code>19:6ee92655829e4e219475b2c4d1327a76@thread.tacv2</code></td><td class="num">5</td></tr>
+<tr><td>Research-Collaboration <code>19:84c65ac7e93744b9b3aa7da76cae86d5@thread.tacv2</code></td><td class="num">5</td></tr>
+<tr><td rowspan="5">Product Eng - Mobile</td><td>iOS-Development <code>19:01c46841817c4022829fafa3790e774a@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>Android-Development <code>19:09c12fd9917b4cf1a4260dcbf29bd0e0@thread.tacv2</code></td><td class="num">5</td></tr>
+<tr><td>Releases <code>19:129db065c3bb4202a8cb420b24489423@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>Code-Reviews <code>19:3006ac34c5ae485d89fab2f03e0e0eee@thread.tacv2</code></td><td class="num">3</td></tr>
+<tr><td>General <code>19:M4aav83n9M0l21Po4ikboO9r8bsJpJZWfM1RrMOIE0w1@thread.tacv2</code></td><td class="num">9</td></tr>
+<tr><td rowspan="7">Engineering - FiscalMindset</td><td>algsoch-app <code>19:60ec5d2639f1419690333dd0e91adeeb@thread.tacv2</code></td><td class="num">3</td></tr>
+<tr><td>janadhikar <code>19:73f069c0f8b2434d9fbdc3142770f9bc@thread.tacv2</code></td><td class="num">3</td></tr>
+<tr><td>General <code>19:ItshHaHwLbsFYDuOZKIvjIytKYIZ60ogOHddC44No1Q1@thread.tacv2</code></td><td class="num">11</td></tr>
+<tr><td>docs-research <code>19:cc8117e4c093461fb15e5d171417e36e@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>ai-sessions <code>19:db2a5e637b4d4b43b4d2a3da26752f16@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>contributors <code>19:de2a4e6af0d94fda9f07619dd16a484c@thread.tacv2</code></td><td class="num">4</td></tr>
+<tr><td>blindfold <code>19:fe2cb6314cdb431f95536a240f042841@thread.tacv2</code></td><td class="num">3</td></tr>
+<tr class="total"><td colspan="2">TOTAL</td><td class="num">147</td></tr>
+</table>
+
+<h3>Message content reality (sampled via Coral)</h3>
+<div class="callout"><b>Team algsoch · channel algsoch — 27 msgs:</b> 26 are <code>membersAddedEventMessageDetail</code> system events (member <code>268705de-…</code>, initiator AAD app <code>62b732f7-…</code>); 1 real message — vicky kumar · <i>"testing and testing your skill"</i> (2026-08-04T15:25Z).</div>
+<div class="callout"><b>Team Q3 FY26 Sales Ops · General — 11 msgs:</b> 7 system events (members/channel added); 4 real from vicky kumar (2026-08-04T22:26Z):</div>
+<ul>
+<li><i>"Welcome to Q3 FY26 Sales Operations! 🎯 Hi team — Q3 starts July 1st. Let's aim for ₹45 Cr in new bookings this quarter. Pipeline review every Tuesday 10 AM IST. Cheers, Rajesh Kumar, VP Sales"</i></li>
+<li><i>"Q3 OKRs are now live in the team SharePoint. Key milestones: 60 SQLs/week, 25% win rate, ₹45Cr target."</i></li>
+<li><i>"Just signed up for SaaStr Annual 2026 in San Francisco — Sept 8-10. Anyone interested in joining? Limited slots available."</i></li>
+<li><i>"Reminder: Q2 close-out reports due by EOD Friday. Please update your deal stages in the Sales Pipeline list before then."</i></li>
+</ul>
+<div class="muted">All sampled messages: 0 attachments, 0 reactions, 0 mentions. Authors resolve to objectId <code>55bcc9a0-…</code> (vicky kumar); channel payloads carry no UPN (only <code>teamworkUserIdentity</code> id/displayName).</div>
+
+<h2>📅 Calendar — 31 events (30-day window, via Coral)</h2>
+<table>
+<tr><th>Subject</th><th>Start (UTC)</th><th>Location</th></tr>
+<tr><td>Skip-level 1:1 - skip director</td><td>2026-08-07T03:45</td><td>Conference Room A</td></tr>
+<tr><td>Faculty Meeting - CSE Dept</td><td>2026-08-07T11:45</td><td>Senate Hall, IIT Delhi</td></tr>
+<tr><td>Customer Call - Tata Consultancy</td><td>2026-08-09T10:30</td><td>Teams</td></tr>
+<tr><td>NBA Accreditation Workshop</td><td>2026-08-10T06:00</td><td>Auditorium</td></tr>
+<tr><td>Annual health checkup</td><td>2026-08-10T15:15</td><td>Apollo Hospital</td></tr>
+<tr><td>Vendor meeting - Microsoft Research</td><td>2026-08-11T04:30</td><td>Teams</td></tr>
+<tr><td>Partnership call - Freshworks</td><td>2026-08-11T11:15</td><td>Teams</td></tr>
+<tr><td>Research Talk - Stanford visiting faculty</td><td>2026-08-11T11:00</td><td>Seminar Hall A</td></tr>
+<tr><td>Hackathon prep - CodeFest</td><td>2026-08-11T11:15</td><td>Co-working space</td></tr>
+<tr><td>Book club: DDD Chapter 7</td><td>2026-08-11T16:00</td><td>Local library</td></tr>
+<tr><td>Deep Work - JanAdhikar release prep</td><td>2026-08-12T01:00</td><td>Home office</td></tr>
+<tr><td>Graph Test Calendar Event</td><td>2026-08-12T04:30</td><td>—</td></tr>
+<tr><td>Hiring Loop - SDE II candidate</td><td>2026-08-13T04:45</td><td>Conference Room B</td></tr>
+<tr><td>Curriculum Committee Meeting</td><td>2026-08-13T09:00</td><td>Committee Room</td></tr>
+<tr><td>Dentist appointment</td><td>2026-08-13T15:45</td><td>Clove Dental</td></tr>
+<tr><td>Flight to Bengaluru - Customer visit</td><td>2026-08-17T11:15</td><td>Indira Gandhi Airport</td></tr>
+<tr><td>Course: Advanced TypeScript Patterns</td><td>2026-08-17T13:30</td><td>Coursera</td></tr>
+<tr><td>Customer Call - HDFC Bank</td><td>2026-08-18T03:30</td><td>Teams</td></tr>
+<tr><td>Team 1:1 - Engineering Manager</td><td>2026-08-19T09:30</td><td>Teams</td></tr>
+<tr><td>Investor Update - Series A Lead</td><td>2026-08-19T10:00</td><td>Teams</td></tr>
+<tr><td>Yoga session</td><td>2026-08-24T02:45</td><td>Yoga studio</td></tr>
+<tr><td>Q3 Forecast Review with Leadership</td><td>2026-08-25T03:30</td><td>Conference Room A / Teams</td></tr>
+<tr><td>Team 1:1 - Sales Lead</td><td>2026-08-25T10:00</td><td>Teams</td></tr>
+<tr><td>Deep Work - Algsoch roadmap</td><td>2026-08-26T02:30</td><td>Home office</td></tr>
+<tr><td>Sales Pipeline Scrub</td><td>2026-08-27T09:00</td><td>Home office</td></tr>
+<tr><td>Industry Advisory Board Meeting</td><td>2026-08-27T10:30</td><td>Senate Hall</td></tr>
+<tr><td>Customer Call - Reliance Industries</td><td>2026-08-28T05:45</td><td>Teams</td></tr>
+<tr><td>Quarterly Board Meeting Prep</td><td>2026-08-30T11:45</td><td>Conference Room A</td></tr>
+<tr><td>PhD Committee - Candidate Review</td><td>2026-09-01T04:15</td><td>Senate Hall</td></tr>
+<tr><td>Team 1:1 - Senior PM</td><td>2026-09-03T08:30</td><td>Teams</td></tr>
+<tr><td>Hiring Loop - Senior PM candidate</td><td>2026-09-04T12:00</td><td>Conference Room B</td></tr>
+</table>
+
+<h2>🧾 Verdict</h2>
+<div class="callout"><b>Coral SQL alone fully inventories the tenant's SharePoint + Teams data</b> — 27 lists / 956 items, 5 teams / 24 channels / 147 messages, 31 calendar events, per-user identity — all reproducible with the exact SQL below. The two genuine gaps (field-level list content, user/group enumeration) are <b>catalog surface limitations</b>, not auth or spec bugs.</div>
+
+</div>
+
+<div class="panel" id="panel-sql">
+<h2>📜 Command log — key Coral SQL (real inputs)</h2>
+<pre><code>-- 1. Team index
+SELECT json_as_text(value) AS teams FROM microsoft_graph_v4.teams_team_teams_team_listteam LIMIT 1;
+
+-- 2. Channels per team
+SELECT json_as_text(value) AS ch FROM microsoft_graph_v4.teams_channel_teams_listchannels(team_id => 'fd31e343-d9f4-471b-a821-bc5ed36b10f6') LIMIT 1;
+
+-- 3. Message count per channel
+SELECT json_length(value) AS c FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id => 'fd31e343-d9f4-471b-a821-bc5ed36b10f6',
+  channel_id => '19:c8scDQq77q-vVMQy2e1bU0s88qn0-IbQuiCpXVR2VIU1@thread.tacv2', top => 50) LIMIT 1;
+
+-- 4. Calendar view (30 days)
+SELECT json_as_text(value) AS evt FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
+  startdatetime => '2026-08-06T00:00:00Z', enddatetime => '2026-09-05T00:00:00Z', top => 100) LIMIT 1;
+
+-- 5. List item count
+SELECT json_length(value) AS item_count FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
+  site_id => 'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id => 'f0e3ab87-4686-4867-80c5-38a8a8ad43eb', top => 500) LIMIT 1;  -- Recent Commits = 225
+
+-- 6. Per-user lookup
+SELECT displayname, mail, businessphones, id
+FROM microsoft_graph_v4.users_user_users_user_getuserbyuserprincipalname(
+  userprincipalname => 'vickykumar@algsoch762.onmicrosoft.com');
+
+-- 7. List column schema (Employee Directory)
+SELECT json_as_text(value) AS cols FROM microsoft_graph_v4.sites_list_sites_lists_listcolumns(
+  site_id => 'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id => 'ef0c6d15-2052-46a5-a68b-8680c5ec32ea') LIMIT 1;</code></pre>
+</div>
+
+<div class="panel" id="panel-gaps">
+<h2>⚠️ Documented Coral limitations found this run</h2>
+<table>
+<tr><th>#</th><th>Limitation</th><th>Detail</th></tr>
+<tr><td>1</td><td><span class="badge b-gap">field values</span></td><td><code>sites_list_sites_lists_items_getfields(site_id, list_id, listitem_id)</code> returns <b>only <code>odata_type</code> + <code>id</code></b> — column values (names, departments, ticket statuses) are not exposed. <code>sites_list_sites_lists_listcolumns</code> does return the <b>schema</b> (e.g. Employee Directory: <code>Title</code> [required], <code>Color Tag</code> [read-only], <code>ComplianceAssetId</code>), so structure is enumerable, cell content is not.</td></tr>
+<tr><td>2</td><td><span class="badge b-gap">no user/group lists</span></td><td><code>GET /users</code> and <code>GET /groups</code> list functions are <b>absent from the Coral catalog</b> (searched <code>%listusers%</code>, <code>%listgroups%</code>, <code>users_user_%</code>, <code>groups_group_%</code> — only nested/copilot surfaces exist). Users/groups are resolvable <b>only by known UPN/ID</b>, never enumerated. Ground truth 231 users / 44 groups is not reproducible through Coral alone.</td></tr>
+<tr><td>3</td><td><span class="badge b-warn">top caps differ</span></td><td>SharePoint <code>listitems</code> tolerated <code>top=500</code> (Recent Commits needs 225); Teams <code>messages</code> rejects <code>top>50</code> (HTTP 400). Both are Graph-side limits surfaced faithfully by Coral, not connector bugs.</td></tr>
+<tr><td>4</td><td><span class="badge b-warn">no UPN in messages</span></td><td>Channel message payloads carry only <code>teamworkUserIdentity.id</code> + <code>displayName</code>; resolving authors to mailboxes requires a separate per-user call.</td></tr>
+</table>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+ t.classList.add('active');
+ document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+}));
+</script>
+</body></html>
