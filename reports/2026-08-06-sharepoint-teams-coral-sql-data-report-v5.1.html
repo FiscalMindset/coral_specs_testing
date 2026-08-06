@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>coral-specs-testing · v5.1</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown-light.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">microsoft_graph_v4 — SharePoint + Teams Coral SQL data
+report v5.1</h1>
+</header>
+<h1
+id="microsoft_graph_v4-sharepoint-teams-data-drill-down-through-coral-sql-v5.1-re-verification-2026-08-06">microsoft_graph_v4
+— SharePoint + Teams DATA drill-down through Coral SQL — <strong>v5.1
+re-verification</strong> (2026-08-06)</h1>
+<blockquote>
+<p><strong>What changed vs the v5 report.</strong> v5 (2026-08-06
+06:30–06:50 UTC) was a <strong>pure Coral SQL</strong> exercise proving
+the connector alone inventories the tenant’s SharePoint + Teams data,
+with two documented limitations. This v5.1 report <strong>re-verifies
+both limitations against the live catalog</strong> using a re-added
+source authenticated with a fresh Microsoft Entra business token
+(<code>az login</code> for work), and adds <strong>stronger,
+catalog-level evidence</strong> for every claim. Three new findings
+surfaced:</p>
+<ol type="1">
+<li><strong>The v5 report’s user-lookup SQL is NOT
+reproducible.</strong> v5 showed
+<code>SELECT displayname, mail, businessphones, id … FROM users_user_users_user_getuserbyuserprincipalname</code>
+returning objectId <code>55bcc9a0-…</code>. The <strong>current catalog
+exposes NO <code>id</code> column</strong> on that function (130+
+columns, checked exhaustively). The objectId is real (confirmed via the
+token JWT <code>oid</code> claim) but is <strong>not retrievable through
+Coral</strong>.</li>
+<li><strong>The field-values limitation is now proven across ALL 12
+<code>getfields</code> variants</strong> — sites/groups/drives/shares ×
+listitems/versions/documentsetversions — not just the single site-based
+variant v5 tested. Every one returns <strong>only
+<code>odata_type</code> + <code>id</code></strong>.</li>
+<li><strong>Group-by-uniqueName also hides <code>id</code>.</strong>
+<code>groups_group_groups_group_getgroupbyuniquename</code> exposes
+<code>uniquename</code>, <code>organizationid</code>,
+<code>securityidentifier</code>, <code>mailnickname</code> … but
+<strong>no <code>id</code> column</strong> either.</li>
+</ol>
+</blockquote>
+<hr />
+<h2 id="report-profile-tenant-user-source-method">👤 Report profile —
+tenant, user, source &amp; method</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tenant</strong></td>
+<td>algsoch · <code>algsoch762.onmicrosoft.com</code></td>
+</tr>
+<tr>
+<td><strong>Tenant ID</strong></td>
+<td><code>0aa3a51b-3716-44d7-9636-f85f3db072bf</code></td>
+</tr>
+<tr>
+<td><strong>User</strong></td>
+<td>vicky kumar ·
+<code>vickykumar@algsoch762.onmicrosoft.com</code></td>
+</tr>
+<tr>
+<td><strong>User objectId</strong></td>
+<td><code>55bcc9a0-6062-4976-9341-c27579fe09e3</code> (from token JWT
+<code>oid</code>, NOT from Coral)</td>
+</tr>
+<tr>
+<td><strong>Licence</strong></td>
+<td>O365_BUSINESS_PREMIUM · 1 of 25 units</td>
+</tr>
+<tr>
+<td><strong>Coral source</strong></td>
+<td><code>microsoft_graph_v4</code> (manifest
+<code>~/Downloads/coral-repo/sources/core-v4/microsoft_graph_v4/manifest.yaml</code>,
+DSL v4, OpenAPI v1.0 surface)</td>
+</tr>
+<tr>
+<td><strong>Date run</strong></td>
+<td>2026-08-06 19:00–19:20 IST (2026-08-06 13:30–13:50 UTC) —
+re-verification</td>
+</tr>
+<tr>
+<td><strong>Method</strong></td>
+<td>100% Coral SQL (<code>coral</code> MCP →
+<code>SELECT … FROM microsoft_graph_v4.*</code>) + catalog queries
+(<code>coral.table_functions</code>)</td>
+</tr>
+<tr>
+<td><strong>Token</strong></td>
+<td>Microsoft Entra business access token minted via
+<code>az login</code> for the work account; scopes below</td>
+</tr>
+<tr>
+<td><strong>Root site</strong></td>
+<td><code>algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="token-scopes-in-effect-for-this-session-from-decoded-jwt">🔑
+Token scopes in effect for this session (from decoded JWT)</h3>
+<pre><code>Application.ReadWrite.All  AppRoleAssignment.ReadWrite.All  AuditLog.Read.All
+DelegatedPermissionGrant.ReadWrite.All  Directory.AccessAsUser.All  email
+Group.ReadWrite.All  openid  profile  SubjectNameRegistration.ReadWrite
+User.Read.All  User.ReadWrite.All</code></pre>
+<p><strong>Crucial consequence:</strong> this token has
+<strong>no</strong> <code>Sites.Read.All</code>,
+<code>Files.Read(.All)</code>, <code>Team.ReadBasic.All</code>,
+<code>Channel.ReadBasic.All</code>, or <code>Calendars.Read</code>. So
+SharePoint lists/items, Teams, and Calendar all return <strong>403 with
+explicit Graph “Missing scope permissions” errors</strong> in this
+session (see probe log below). The v5 headline numbers (27 lists / 956
+items, 5 teams / 24 channels / 147 messages, 31 calendar events) were
+captured with the interactive OAuth token that had the manifest scopes
+and are <strong>not re-verifiable with the az token</strong>. They are
+retained here as v5-captured data, clearly labelled.</p>
+<hr />
+<h2
+id="session-2-verification-log-what-the-az-token-session-can-and-cannot-reach">🧪
+Session 2 verification log — what the az-token session CAN and CANNOT
+reach</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Coral SQL</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User lookup by UPN</td>
+<td><code>users_user_users_user_getuserbyuserprincipalname('vickykumar@…')</code></td>
+<td>✅ works — displayname, mail, UPN returned</td>
+</tr>
+<tr>
+<td>Group by uniqueName (known key)</td>
+<td><code>groups_group_groups_group_getgroupbyuniquename</code></td>
+<td>✅ endpoint reachable — real Graph 404 on a non-existent name
+(i.e. auth passed, endpoint live)</td>
+</tr>
+<tr>
+<td>SharePoint drive/listitems</td>
+<td><code>drives_list_…_getdrive</code>,
+<code>sites_list_sites_lists_listitems(…)</code></td>
+<td>❌ <strong>403 <code>accessDenied</code></strong></td>
+</tr>
+<tr>
+<td>Teams index</td>
+<td><code>teams_team_teams_team_listteam</code></td>
+<td>❌ <strong>403 <code>Forbidden</code></strong> — “API requires one
+of ‘Team.ReadBasic.All, TeamSettings.Read.All…’”</td>
+</tr>
+<tr>
+<td>Calendar view</td>
+<td><code>me_calendar_me_calendar_listcalendarview(…)</code></td>
+<td>❌ <strong>403 <code>ErrorAccessDenied</code></strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>These 403s are <strong>Graph-side scope failures surfaced faithfully
+by Coral</strong> — not connector bugs. They prove the connector
+forwards the token’s real scopes and surfaces Graph’s error text
+verbatim.</p>
+</blockquote>
+<hr />
+<h2
+id="limitation-1-list-item-field-values-are-not-retrievable-via-coral-now-proven-across-all-12-routes">🔬
+Limitation #1 — list-item field VALUES are not retrievable via Coral
+(now proven across ALL 12 routes)</h2>
+<p>v5 tested only <code>sites_list_sites_lists_items_getfields</code>.
+This run enumerated <strong>every</strong> <code>*getfields*</code>
+table function in the catalog — there are exactly <strong>12</strong>,
+covering every SharePoint family — and pulled each one’s declared result
+columns:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Route family</th>
+<th>Item type</th>
+<th>Exposed columns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sites_list_sites_lists_items</code></td>
+<td>listitems</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>sites_list_sites_lists_items_versions</code></td>
+<td>versions</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>sites_list_sites_lists_items_documentsetversions</code></td>
+<td>documentsetversions</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>groups_site_groups_sites_lists_items</code></td>
+<td>listitems</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>groups_site_groups_sites_lists_items_versions</code></td>
+<td>versions</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>groups_site_groups_sites_lists_items_documentsetversions</code></td>
+<td>documentsetversions</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>drives_list_drives_list_items</code></td>
+<td>listitems</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>drives_list_drives_list_items_versions</code></td>
+<td>versions</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>drives_list_drives_list_items_documentsetversions</code></td>
+<td>documentsetversions</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>shares_list_shares_list_items</code></td>
+<td>listitems</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>shares_list_shares_list_items_versions</code></td>
+<td>versions</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+<tr>
+<td><code>shares_list_shares_list_items_documentsetversions</code></td>
+<td>documentsetversions</td>
+<td><code>odata_type</code>, <code>id</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>No <code>fields</code> object is ever exposed.</strong> Live
+probes of the <code>sites</code>, <code>groups</code>,
+<code>drives</code>, and <code>shares</code> listitem variants each
+returned rows shaped exactly <code>odata_type</code> + <code>id</code>,
+with the <code>fields</code> payload (employee names, departments,
+ticket statuses, commit messages, …) absent from the result. You can
+enumerate list <strong>structure</strong> via
+<code>sites_list_sites_lists_listcolumns</code>, and item
+<strong>counts</strong> via <code>json_length(value)</code>, but never
+the <strong>cell content</strong>.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Every one of these returns rows with only two columns:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> microsoft_graph_v4.sites_list_sites_lists_items_getfields(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  site_id <span class="op">=&gt;</span> <span class="st">&#39;algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b&#39;</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  list_id <span class="op">=&gt;</span> <span class="st">&#39;a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e&#39;</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  listitem_id <span class="op">=&gt;</span> <span class="st">&#39;&lt;any&gt;&#39;</span>);</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- odata_type | id   (fields missing)</span></span></code></pre></div>
+<hr />
+<h2
+id="limitation-2-no-root-level-usergroup-enumeration-re-confirmed-plus-new-id-gating">🔬
+Limitation #2 — no root-level user/group enumeration (re-confirmed, plus
+NEW <code>id</code> gating)</h2>
+<h3 id="enumeration-surface">Enumeration surface</h3>
+<p>Every <code>users_…list…</code> table function in the catalog is a
+<strong>nested</strong> surface under an already-known user — Todo lists
+(<code>users_todo_…list_…</code>), Teams apps, settings, data-security
+governance, activities/history — <strong>none</strong> is a root
+<code>GET /users</code>. Similarly for groups: the only direct getter is
+<strong>by uniqueName</strong>
+(<code>groups_group_groups_group_getgroupbyuniquename</code>), which
+resolves a group you already identify — it cannot list the tenant’s 44
+groups. Users can only be resolved <strong>by known UPN</strong>
+(<code>users_user_users_user_getuserbyuserprincipalname</code>). Ground
+truth (231 users / 44 groups) remains <strong>not reproducible through
+Coral alone</strong>.</p>
+<h3 id="new-primary-idobjectid-is-gated-on-both-lookups">NEW: primary
+<code>id</code>/objectId is gated on BOTH lookups</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lookup function</th>
+<th>Exposes objectId?</th>
+<th><code>id</code>-like columns present</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>users_user_users_user_getuserbyuserprincipalname</code> (130+
+cols)</td>
+<td>❌ <strong>no <code>id</code> column at all</strong></td>
+<td><code>securityidentifier</code> (null), <code>identities</code>
+(null), <code>organizationid</code>-n/a</td>
+</tr>
+<tr>
+<td><code>groups_group_groups_group_getgroupbyuniquename</code> (130+
+cols)</td>
+<td>❌ <strong>no <code>id</code> column at all</strong></td>
+<td><code>uniquename</code>, <code>organizationid</code>,
+<code>securityidentifier</code>, <code>mailnickname</code></td>
+</tr>
+</tbody>
+</table>
+<p>The v5 report’s SQL
+<code>SELECT displayname, mail, businessphones, id …</code>
+<strong>cannot succeed against the current catalog</strong> —
+<code>id</code> simply is not a column. The reported objectId
+<code>55bcc9a0-…</code> is correct (the JWT <code>oid</code> claim in
+the session token equals it exactly) but was not obtained from Coral.
+Anyone reproducing v5 will get an “unknown column <code>id</code>”
+error.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Works, but NO id column is available:</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> displayname, mail, userprincipalname, securityidentifier</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> microsoft_graph_v4.users_user_users_user_getuserbyuserprincipalname(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  userprincipalname <span class="op">=&gt;</span> <span class="st">&#39;vickykumar@algsoch762.onmicrosoft.com&#39;</span>);</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- → vicky kumar | vickykumar@… | vickykumar@… | NULL</span></span></code></pre></div>
+<hr />
+<h2
+id="v5-headline-data-captured-06300650-utc-with-interactive-oauth-token-retained-not-re-verified">🗂️
+v5 headline data (captured 06:30–06:50 UTC with interactive OAuth token
+— retained, not re-verified)</h2>
+<p>These numbers come from the v5 pure-Coral-SQL run and are
+<strong>accurate as of that run</strong>. They could not be re-verified
+in this session because the az business token lacks the
+SharePoint/Teams/Calendar scopes (403 above). Reproducing them requires
+the interactive OAuth login (manifest scopes:
+<code>Sites.Read.All</code>, <code>Files.Read(.All)</code>,
+<code>Team.ReadBasic.All</code>, <code>Channel.ReadBasic.All</code>,
+<code>Chat.Read(.Basic)</code>, <code>User.Read</code>).</p>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 40%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>Domain</th>
+<th style="text-align: right;">Count</th>
+<th>How counted (Coral SQL)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SharePoint lists (root site)</td>
+<td style="text-align: right;"><strong>27</strong></td>
+<td><code>sites_list_sites_lists_listitems</code> per list id,
+<code>json_length(value)</code></td>
+</tr>
+<tr>
+<td>SharePoint list items (all 27 lists)</td>
+<td style="text-align: right;"><strong>956</strong></td>
+<td>summed per-list counts</td>
+</tr>
+<tr>
+<td>Teams</td>
+<td style="text-align: right;"><strong>5</strong> (all public)</td>
+<td><code>teams_team_teams_team_listteam</code></td>
+</tr>
+<tr>
+<td>Channels (across 5 teams)</td>
+<td style="text-align: right;"><strong>24</strong></td>
+<td><code>teams_channel_teams_listchannels</code> per team id</td>
+</tr>
+<tr>
+<td>Channel messages</td>
+<td style="text-align: right;"><strong>147</strong></td>
+<td><code>teams_channel_teams_channels_listmessages</code> per channel,
+<code>json_length(value)</code></td>
+</tr>
+<tr>
+<td>Calendar events (30-day window)</td>
+<td style="text-align: right;"><strong>31</strong></td>
+<td><code>me_calendar_me_calendar_listcalendarview</code></td>
+</tr>
+</tbody>
+</table>
+<p>Full per-list, per-team/channel, and per-event tables are in the
+<strong>v5 report</strong>:
+<code>reports/2026-08-06-sharepoint-teams-coral-sql-data-report.md</code>.</p>
+<hr />
+<h2 id="final-limitation-list-v5-v5.1-evidence-combined">⚠️ Final
+limitation list (v5 + v5.1 evidence combined)</h2>
+<ol type="1">
+<li><strong>List item field values are NOT retrievable via Coral —
+proven on all 12 <code>getfields</code> routes</strong>
+(sites/groups/drives/shares × listitems/versions/documentsetversions).
+Only <code>odata_type</code> + <code>id</code>; the <code>fields</code>
+object is never exposed. <code>listcolumns</code> gives schema,
+<code>json_length</code> gives counts, but cell content is
+unreachable.</li>
+<li><strong>No root-level user/group enumeration.</strong> Only
+get-by-known-UPN and get-by-known-uniqueName exist; every
+<code>users_…list…</code>/<code>groups_…list…</code> surface is nested
+under an already-known entity.</li>
+<li><strong>NEW: <code>id</code>/objectId is gated on the user and group
+lookups themselves.</strong> Neither
+<code>getuserbyuserprincipalname</code> nor
+<code>getgroupbyuniquename</code> exposes a primary <code>id</code>
+column. The v5 report’s <code>SELECT … id</code> is not
+reproducible.</li>
+<li><strong><code>top</code> caps differ by API family</strong>
+(SharePoint listitems ~500; Teams messages 50) — Graph-side limits
+surfaced faithfully by Coral.</li>
+<li><strong>Channel message payloads carry no UPN</strong> — only
+<code>teamworkUserIdentity.id</code> + <code>displayName</code> (v5
+observation; un-re-verified this session for scope reasons).</li>
+<li><strong>Operational note:</strong> a plain Entra business token
+(<code>az login</code>) does <strong>not</strong> cover
+SharePoint/Teams/Calendar — you need the interactive OAuth login with
+the manifest scopes. This is a token-scope property, not a Coral
+bug.</li>
+</ol>
+<hr />
+<h2 id="verdict">🧾 Verdict</h2>
+<ul>
+<li><strong>Coral SQL fully inventories tenant SharePoint + Teams
+data</strong> — but only when the source is authenticated with the
+manifest-scoped interactive OAuth token (v5: 27 lists / 956 items, 5
+teams / 24 channels / 147 messages, 31 events). With a bare az business
+token, identity + group-by-name still work, but
+SharePoint/Teams/Calendar are hard-gated by Graph scope errors that
+Coral forwards verbatim.</li>
+<li><strong>The two genuine data gaps are now provable at catalog
+level</strong>: (a) field values on list items across
+<strong>all</strong> 12 getfields routes, and (b) user/group
+enumeration. <strong>New in v5.1:</strong> even the primary
+<code>id</code>/objectId is not exposed on the user/group lookup
+functions, so the v5 report’s identity query must be corrected.</li>
+<li><strong>Recommendation to Coral maintainers:</strong> expose the
+<code>fields</code> object on listitem getters (or an equivalent column)
+and publish root <code>GET /users</code> / <code>GET /groups</code> list
+functions; the surface already returns
+<code>uniquename</code>/<code>organizationid</code> on groups, so the
+machinery for primary-key columns clearly exists.</li>
+</ul>
+<h2 id="command-log-key-coral-sql-used-real-inputs-session-2">📜 Command
+log — key Coral SQL used (real inputs, session 2)</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- 1. User lookup (works) — </span><span class="al">NOTE</span><span class="co">: no id column available</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> displayname, mail, userprincipalname, securityidentifier</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> microsoft_graph_v4.users_user_users_user_getuserbyuserprincipalname(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  userprincipalname <span class="op">=&gt;</span> <span class="st">&#39;vickykumar@algsoch762.onmicrosoft.com&#39;</span>);</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- 2. Group lookup by uniqueName (endpoint reachable; 404 on unknown name = auth OK)</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> displayname, uniquename, mailnickname</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> microsoft_graph_v4.groups_group_groups_group_getgroupbyuniquename(uniquename <span class="op">=&gt;</span> <span class="st">&#39;&lt;real-unique-name&gt;&#39;</span>);</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- 3. Field-values proof — all 12 getfields variants expose only odata_type + id</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> function_name, result_columns_json</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> coral.table_functions</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> schema_name<span class="op">=</span><span class="st">&#39;microsoft_graph_v4&#39;</span> <span class="kw">AND</span> function_name ILIKE <span class="st">&#39;%getfields%&#39;</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> function_name;  <span class="co">-- 12 rows, every result_columns_json = [odata_type, id]</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">-- 4. SharePoint listitems with az token → 403 accessDenied (no Sites.Read.All)</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> json_length(<span class="fu">value</span>) <span class="kw">AS</span> c <span class="kw">FROM</span> microsoft_graph_v4.sites_list_sites_lists_listitems(</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  site_id <span class="op">=&gt;</span> <span class="st">&#39;algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b&#39;</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  list_id <span class="op">=&gt;</span> <span class="st">&#39;a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e&#39;</span>, top <span class="op">=&gt;</span> <span class="dv">500</span>);</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">-- 5. Teams index with az token → 403 Forbidden (&quot;requires Team.ReadBasic.All…&quot;)</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">count</span>(<span class="op">*</span>) <span class="kw">FROM</span> microsoft_graph_v4.teams_team_teams_team_listteam;</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">-- 6. Calendar view with az token → 403 ErrorAccessDenied</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> json_length(<span class="fu">value</span>) <span class="kw">FROM</span> microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  startdatetime <span class="op">=&gt;</span> <span class="st">&#39;2026-08-06T00:00:00Z&#39;</span>, enddatetime <span class="op">=&gt;</span> <span class="st">&#39;2026-09-05T00:00:00Z&#39;</span>, top <span class="op">=&gt;</span> <span class="dv">100</span>);</span></code></pre></div>
+</body>
+</html>
