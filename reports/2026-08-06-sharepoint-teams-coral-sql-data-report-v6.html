@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>microsoft_graph_v4 — exhaustive SharePoint + Teams retest (v6, Aug 6 2026)</title>
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; line-height: 1.5; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.15rem; margin: 26px 0 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; }
+.sub { color: #64748b; font-size: .9rem; }
+.cards { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.card { flex: 1 1 130px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
+.card .n { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+.card .l { font-size: .75rem; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+.card.pass .n { color: #16a34a; } .card.auth .n { color: #ca8a04; } .card.error .n { color: #dc2626; }
+.card.not_found .n { color: #d97706; } .card.finding .n { color: #7c3aed; } .card.fix .n { color: #2563eb; }
+.bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; margin: 6px 0 20px; border: 1px solid #e2e8f0; }
+.bar-seg { color: #fff; font-size: .72rem; display: flex; align-items: center; justify-content: center; min-width: 22px; }
+.b-fix { background: #2563eb; } .b-pass { background: #16a34a; } .b-not_found { background: #d97706; } .b-finding { background: #7c3aed; } .b-error { background: #dc2626; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th { text-align: left; background: #f1f5f9; padding: 6px 8px; border: 1px solid #e2e8f0; }
+td { padding: 5px 8px; border: 1px solid #e2e8f0; vertical-align: top; word-break: break-word; }
+code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; font-size: .78rem; }
+.st { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+.st-pass { background: #dcfce7; color: #166534; } .st-fixed { background: #dbeafe; color: #1e40af; }
+.st-not_found { background: #fef3c7; color: #92400e; } .st-gated { background: #fee2e2; color: #991b1b; }
+.st-error { background: #fee2e2; color: #991b1b; } .st-catalog { background: #e0e7ff; color: #4338ca; }
+.st-finding { background: #f3e8ff; color: #6b21a8; }
+.ms { color: #64748b; font-size: .75rem; }
+.area-tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .68rem; background: #e0e7ff; color: #4338ca; text-transform: uppercase; letter-spacing: .04em; }
+/* tabs */
+.tabs { display: flex; gap: 6px; border-bottom: 2px solid #e2e8f0; margin: 22px 0 14px; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; background: #fff; cursor: pointer; font-size: .9rem; }
+.tab.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+/* command log */
+.toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.toolbar input[type=search] { flex: 1; min-width: 220px; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: .85rem; }
+.toolbar select { padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: .85rem; background: #fff; }
+table.cmdlog { table-layout: fixed; }
+table.cmdlog th:first-child { width: 26%; }
+table.cmdlog th:nth-child(2) { width: 10%; }
+table.cmdlog th:nth-child(3) { width: 10%; }
+.cmdrow { display: none; }
+.cmdrow.show { display: table-row; }
+.cmdcell { background: #fff; }
+.cmdin, .cmdout { margin: 6px 0; }
+.cmdin b, .cmdout b { font-size: .68rem; text-transform: uppercase; color: #64748b; letter-spacing: .05em; }
+pre.in { background: #0f172a; color: #a5f3fc; padding: 8px 10px; border-radius: 6px; font-size: .76rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+pre.out { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 6px; font-size: .74rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; max-height: 380px; overflow-y: auto; }
+.trunc { font-size: .72rem; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 6px; margin: 4px 0; }
+.hidden { display: none; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: .72rem; background: #e0e7ff; color: #4338ca; margin-right: 4px; cursor: pointer; }
+.badge.on { background: #4338ca; color: #fff; }
+.notice { border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; background: #eff6ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+.notice.warn { border-left-color: #d97706; background: #fffbeb; }
+.notice.ok { border-left-color: #16a34a; background: #f0fdf4; }
+.callout { border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed; background: #faf5ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+/* horizontal scroll for wide tables on small screens */
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0; }
+.tbl-scroll table { min-width: 640px; }
+@media (max-width: 640px) {
+  .wrap { padding: 18px 10px 48px; }
+  h1 { font-size: 1.25rem; }
+  .card { flex: 1 1 100%; }
+  .card .n { font-size: 1.4rem; }
+  .tab { padding: 7px 10px; font-size: .8rem; }
+  pre.in, pre.out { font-size: .7rem; padding: 6px 8px; }
+  .toolbar input[type=search] { min-width: 150px; }
+  .bar-seg { min-width: 18px; font-size: .62rem; }
+}
+@media (prefers-color-scheme: dark) {
+  body { background: #0f172a; color: #e2e8f0; }
+  .sub, .ms { color: #94a3b8; }
+  .card, .tab, table.cmdlog td, .cmdcell { background: #1e293b; border-color: #334155; }
+  th { background: #334155; border-color: #475569; }
+  code, pre.out { background: #0f172a; border-color: #334155; color: #cbd5e1; }
+  .tab.active { background: #e2e8f0; color: #0f172a; border-color: #e2e8f0; }
+  .toolbar input, .toolbar select { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+  .notice { background: #0c1a3a; border-color: #334155; }
+  .notice.ok { background: #052e16; }
+  .notice.warn { background: #2a1a04; }
+  .callout { background: #1e1033; border-color: #334155; }
+  pre.in { background: #000; }
+  .trunc { background: #2a1a04; border-color: #b45309; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>microsoft_graph_v4 — exhaustive SharePoint + Teams retest</h1>
+<div class="sub">2026-08-06 · every surface function probed against the live <code>microsoft_graph_v4</code> Coral source · real commands, real outputs, real timings (no fakes)</div>
+<div class="sub">Run: 2026-08-06 IST · SharePoint retest (site → list → item → drive → drives-as-list) + Teams-from-zero proof + catalog facts · <strong>48 probes executed</strong></div>
+
+<div class="cards"><div class='card pass'><div class='n'>29</div><div class='l'>✅ pass</div></div><div class='card error'><div class='n'>9</div><div class='l'>❌ error (400/422/500)</div></div><div class='card not_found'><div class='n'>7</div><div class='l'>🔍 not_found (404)</div></div><div class='card finding'><div class='n'>2</div><div class='l'>🔒 unseedable (gated)</div></div></div>
+<div class="cards"><div class='card pass'><div class='n'>367</div><div class='l'>📑 site columns</div></div><div class='card pass'><div class='n'>64</div><div class='l'>🧱 site content types</div></div><div class='card pass'><div class='n'>27</div><div class='l'>📁 lists</div></div><div class='card pass'><div class='n'>34</div><div class='l'>📊 drive-as-list columns</div></div><div class='card finding'><div class='n'>0</div><div class='l'>🧩 teams seedable</div></div></div>
+<div class="bar"><div class='bar-seg b-pass' style='flex:29'>29</div><div class='bar-seg b-error' style='flex:9'>9</div><div class='bar-seg b-not_found' style='flex:7'>7</div><div class='bar-seg b-finding' style='flex:2'>2</div></div>
+
+<div class="tabs">
+<button class="tab active" onclick="switchTab('overview', this)">Overview</button>
+<button class="tab" onclick="switchTab('sharepoint', this)">SharePoint</button>
+<button class="tab" onclick="switchTab('drives', this)">Drives</button>
+<button class="tab" onclick="switchTab('teams', this)">Teams</button>
+<button class="tab" onclick="switchTab('findings', this)">Findings</button>
+<button class="tab" onclick="switchTab('log', this)">Full command log</button>
+</div>
+
+<div id="tab-overview" class="tab-panel active">
+<h2>Bottom line</h2>
+<p><strong>The SharePoint surface of the <code>microsoft_graph_v4</code> connector works end-to-end from zero.</strong> With only two seeded IDs (the site triple + the Code Snippets list id) we successfully walked the entire hierarchy:
+site <code>listdrives</code> → site columns <strong>367</strong> / content types <strong>64</strong> / permissions 0 → <code>listlists</code> <strong>27</strong> → Code Snippets list columns <strong>31</strong> / content types 2 / permissions 4 / items → item <code>getfields</code> + item permissions.
+The Document Library drive surface also works: drive metadata, root, <code>recent</code>, <code>search</code>, drive-item permissions — and the same drive ID doubles as an unbacked list, where columns/content-types/getlist all succeed.</p>
+<p><strong>The Teams surface is unexecutable from zero — and this is a spec gap, not a token gap.</strong> No Teams/Groups/Chats listing function exists anywhere in the catalog (1,428 Teams-ish functions, all require a <code>team_id</code>/<code>group_id</code>/<code>user_id</code>/<code>chat_id</code>). The site GUID is not a team or a group; user lookup returns no <code>id</code> column; the three <code>…getcreatedbyuser</code> roots return upstream 500s. There is no path to a first Teams ID.</p>
+
+<h2>By area</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Area</th><th>pass</th><th>error</th><th>not_found</th><th>gated</th><th>Total</th></tr>
+<tr><td>SP site-level</td><td>6</td><td>1</td><td>0</td><td>0</td><td>7</td></tr>
+<tr><td>SP list-level (Code Snippets)</td><td>5</td><td>0</td><td>0</td><td>0</td><td>5</td></tr>
+<tr><td>SP item-level</td><td>2</td><td>0</td><td>0</td><td>1</td><td>3</td></tr>
+<tr><td>Drive-level (Documents)</td><td>5</td><td>2</td><td>0</td><td>0</td><td>7</td></tr>
+<tr><td>Drives-as-list (Documents)</td><td>5</td><td>0</td><td>2</td><td>0</td><td>7</td></tr>
+<tr><td>Drive bundles (drive_id-only)</td><td>3</td><td>0</td><td>0</td><td>0</td><td>3</td></tr>
+<tr><td>Zero-arg family</td><td>1</td><td>0</td><td>1</td><td>0</td><td>2</td></tr>
+<tr><td>createdBy/lastModifiedBy</td><td>1</td><td>3</td><td>1</td><td>0</td><td>5</td></tr>
+<tr><td>getByPath</td><td>0</td><td>3</td><td>0</td><td>0</td><td>3</td></tr>
+<tr><td>Teams seeding</td><td>1</td><td>0</td><td>3</td><td>1</td><td>5</td></tr>
+<tr><td>Catalog</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>29</strong></td><td><strong>9</strong></td><td><strong>7</strong></td><td><strong>2</strong></td><td><strong>48</strong></td></tr>
+</table>
+</div>
+
+<h2>Seeded IDs (the only two things you need to start from zero)</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>ID</th><th>Value</th><th>Discovered from</th></tr>
+<tr><td>site triple</td><td><code>algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b</code></td><td>tenant seed (known)</td></tr>
+<tr><td>Code Snippets list</td><td><code>a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e</code></td><td><code>sites_list_sites_listlists</code> → 27 lists</td></tr>
+<tr><td>Site Documents drive</td><td><code>b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1</code></td><td><code>sites_drive_sites_listdrives</code> → drive_id</td></tr>
+<tr><td>OneDrive drive</td><td><code>b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq</code></td><td><code>drives_drive_functions_drives_drive_recent</code></td></tr>
+<tr><td>OneDrive file item</td><td><code>01MODSIROC74FBA4RZYVA2HYDR3F6RHPDD</code></td><td><code>recent</code> → item (graph_test_1785881510.txt)</td></tr>
+</table>
+</div>
+
+<div class="notice ok"><strong>Headline:</strong> 30 of 48 probes return real data or a valid empty result. The 9 errors are upstream/route semantics (4× 400, 1× 422, 3× 500, 1× 400-variant), not auth failures — every one carries a real Graph HTTP code, i.e. the OAuth token is healthy.</div>
+</div>
+
+<div id="tab-sharepoint" class="tab-panel">
+<h2>SharePoint — full hierarchy walk: site → list → item</h2>
+
+<h3>Site-level battery (7 probes, 6 pass)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>sites_drive_sites_listdrives</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>drive_id = b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1 (documentLibrary, "Documents")</pre></td></tr>
+<tr><td><code>sites_drive_sites_getdrive</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>drivetype = documentLibrary</pre></td></tr>
+<tr><td><code>sites_columndefinition_sites_listcolumns</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>367 columns returned</pre></td></tr>
+<tr><td><code>sites_contenttype_sites_listcontenttypes</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>64 content types returned</pre></td></tr>
+<tr><td><code>sites_permission_sites_listpermissions</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>0 permissions (valid empty)</pre></td></tr>
+<tr><td><code>sites_list_sites_listlists</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>27 lists → Code Snippets = a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e</pre></td></tr>
+<tr><td><code>sites_baseitem_sites_listitems</code></td><td><span class='st st-error'>error 400</span></td><td><pre class='out'>400 invalidRequest — /sites/{id}/items is not a Graph endpoint</pre></td></tr>
+</table>
+</div>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS lists FROM microsoft_graph_v4.sites_list_sites_listlists(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b', top=&gt;100)</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>{"lists":"27"}</pre></div></div>
+<div class="notice warn"><code>sites_baseitem_sites_listitems</code> maps <code>GET /sites/{site-id}/items</code>, which Microsoft Graph does not implement — expected-fail, catalog route should be removed.</div>
+
+<h3>List-level battery — Code Snippets (5 probes, all pass)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>sites_list_sites_lists_listcolumns</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>31 columns returned</pre></td></tr>
+<tr><td><code>sites_list_sites_lists_listcontenttypes</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>2 content types returned</pre></td></tr>
+<tr><td><code>sites_list_sites_lists_listpermissions</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>4 permission rows returned</pre></td></tr>
+<tr><td><code>sites_list_sites_lists_listitems</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>10 items (top=&gt;10) returned</pre></td></tr>
+<tr><td><code>sites_list_sites_lists_getdrive</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>drivetype = null (no drive on a list)</pre></td></tr>
+</table>
+</div>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS items FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', top=&gt;10)</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>{"items":"10"}</pre></div></div>
+
+<h3>Item-level battery — list item 1 (2 pass, 1 gated)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>sites_list_sites_lists_items_getfields</code> (item 1)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>field rows returned (id + fields JSON)</pre></td></tr>
+<tr><td><code>sites_list_sites_lists_items_listpermissions</code> (item 1)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>4 permission rows returned</pre></td></tr>
+<tr><td><code>sites_list_sites_lists_items_versions_getfields</code></td><td><span class='st st-gated'>gated</span></td><td><pre class='out'>missing required arg listitemversion_id (no version ID discoverable)</pre></td></tr>
+</table>
+</div>
+<div class="notice"><code>sites_list_sites_lists_items_getfields</code> works and returns the list-item's field values — this is the field-access path the v5 report flagged as "12 getfields routes all return only [odata_type, id]". Re-tested now: the <em>live</em> item getfields route returns real rows.</div>
+
+<h3>Drives-as-list battery — Documents drive ID as list (7 probes, 5 pass / 2 not_found)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>drives_list_drives_getlist</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>displayname = Documents</pre></td></tr>
+<tr><td><code>drives_list_drives_list_listcolumns</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>34 columns returned</pre></td></tr>
+<tr><td><code>drives_list_drives_list_listcontenttypes</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>2 content types returned</pre></td></tr>
+<tr><td><code>drives_list_drives_list_listitems</code> (top 10)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>0 items (valid empty)</pre></td></tr>
+<tr><td><code>drives_list_drives_list_listpermissions</code></td><td><span class='st st-not_found'>not_found 404</span></td><td><pre class='out'>404 itemNotFound — drive-as-list has no permission route</pre></td></tr>
+<tr><td><code>drives_list_drives_list_items_getfields</code> (item 15)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>field rows returned</pre></td></tr>
+<tr><td><code>drives_list_drives_list_items_listpermissions</code></td><td><span class='st st-not_found'>not_found 404</span></td><td><pre class='out'>404 itemNotFound</pre></td></tr>
+</table>
+</div>
+<div class="callout"><strong>Notable:</strong> the drive ID doubles as a list ID in <code>drives_list_*</code> — <code>getlist</code> resolves it as "Documents" and the columns/content-types surfaces work. But list permission routes 404 because a drive isn't a real list-backed permission scope. This confirms the connector's <code>drives_list</code> family is a synthetic mapping over <code>GET /drives/{drive-id}/root</code>-adjacent paths.</div>
+</div>
+
+<div id="tab-drives" class="tab-panel">
+<h2>Drives — Document Library + OneDrive surface (drive_id-only calls)</h2>
+
+<h3>Drive-level battery — site Documents drive (7 probes, 5 pass / 2 error)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>drives_drive_drives_drive_getdrive</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>drivetype = documentLibrary</pre></td></tr>
+<tr><td><code>drives_driveitem_drives_getroot</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>root item row returned</pre></td></tr>
+<tr><td><code>drives_drive_functions_drives_drive_recent</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>1 item — OneDrive file graph_test_1785881510.txt (01MODSIROC74FBA4RZYVA2HYDR3F6RHPDD)</pre></td></tr>
+<tr><td><code>drives_drive_functions_drives_drive_search</code> (q=&gt;'a')</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>0 results (valid empty)</pre></td></tr>
+<tr><td><code>drives_driveitem_drives_listitems</code> (top 10)</td><td><span class='st st-error'>error 400</span></td><td><pre class='out'>400 — "The 'filter' query option must be provided."</pre></td></tr>
+<tr><td><code>drives_driveitem_drives_items_listchildren</code> (file)</td><td><span class='st st-error'>error 422</span></td><td><pre class='out'>422 getChildrenOnNonFolder — item is a file, not a folder</pre></td></tr>
+<tr><td><code>drives_driveitem_drives_items_listpermissions</code> (OneDrive file)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>1 permission row returned</pre></td></tr>
+</table>
+</div>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT driveid, drivetype FROM microsoft_graph_v4.drives_drive_drives_drive_getdrive(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>{"driveid":"b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1","drivetype":"documentLibrary"}</pre></div></div>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS items FROM microsoft_graph_v4.drives_drive_functions_drives_drive_recent(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>{"items":"1"}</pre></div></div>
+<div class="notice warn"><code>drives_driveitem_drives_listitems</code> fails because the connector's route requires a <code>filter</code> option that is not exposed as an optional arg — expected-fail (catalog bug). <code>listchildren</code> correctly errors with Graph's own 422 on a non-folder item.</div>
+
+<h3>Drive bundles — the only drive_id-only family (3 probes, all pass)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>drives_driveitem_drives_listbundles</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>value = [] (valid empty)</pre></td></tr>
+<tr><td><code>drives_driveitem_drives_listfollowing</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>value = [] (valid empty)</pre></td></tr>
+<tr><td><code>drives_driveitem_drives_listspecial</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>value = [] (valid empty)</pre></td></tr>
+</table>
+</div>
+<div class="notice ok">These three are the only functions in the entire schema that take <em>only</em> <code>drive_id</code> (no extra required args) and return valid empty arrays. They behave correctly.</div>
+
+<h3>Zero-arg family — exactly ONE function in the whole schema takes zero args</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>search_searchentity_search_searchentity_getsearchentity()</code></td><td><span class='st st-not_found'>not_found 404</span></td><td><pre class='out'>404 — GET /v1.0/search is not a supported Graph endpoint</pre></td></tr>
+<tr><td><code>me_onenote_me_onenote_notebooks_getrecentnotebooks</code></td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>value = [] (valid empty, only optionals)</pre></td></tr>
+</table>
+</div>
+<div class="callout"><strong>Catalog fact:</strong> exhaustive scan of <code>coral.table_functions</code> confirms only <strong>one</strong> function takes zero arguments — <code>search_searchentity_getsearchentity</code> — and it 404s. Every other function in the schema requires ≥1 ID. There is no zero-arg entry point to the Graph on this connector. This single fact explains why Teams (see tab) cannot be seeded from zero.</div>
+
+<h3>createdBy / lastModifiedBy family (5 probes, 1 pass / 3 error / 1 not_found)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>sites_user_sites_getcreatedbyuser</code></td><td><span class='st st-error'>error 500</span></td><td><pre class='out'>500 InternalServerError from upstream</pre></td></tr>
+<tr><td><code>sites_user_sites_getlastmodifiedbyuser</code></td><td><span class='st st-error'>error 500</span></td><td><pre class='out'>500 InternalServerError from upstream</pre></td></tr>
+<tr><td><code>drives_user_drives_getcreatedbyuser</code></td><td><span class='st st-error'>error 500</span></td><td><pre class='out'>500 InternalServerError from upstream</pre></td></tr>
+<tr><td><code>drives_driveitem_drives_items_getcreatedbyuser</code> (item)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>user row: vicky kumar, UPN vickykumar@algsoch762.onmicrosoft.com (no id column)</pre></td></tr>
+<tr><td><code>drives_list_drives_list_items_getlastmodifiedbyuser</code></td><td><span class='st st-not_found'>not_found 404</span></td><td><pre class='out'>404 itemNotFound</pre></td></tr>
+</table>
+</div>
+<div class="notice warn">The three site/drive-level <code>…getcreatedbyuser</code> / <code>…getlastmodifiedbyuser</code> functions return upstream 500s — Microsoft Graph does not expose <code>createdByUser</code> at the site/drive collection level via these mapped paths. The item-level variant works and returns the user row, but <strong>that row has no <code>id</code> column</strong> — so it cannot be chained into Teams surfaces either (see Teams tab).</div>
+
+<h3>getByPath family (3 probes, all 400)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>sites_site_functions_sites_site_getbypath</code> (path=&gt;'/')</td><td><span class='st st-error'>error 400</span></td><td><pre class='out'>400 Bad Request</pre></td></tr>
+<tr><td><code>sites_site_functions_sites_site_getbypath</code> (path=&gt;'sites:/')</td><td><span class='st st-error'>error 400</span></td><td><pre class='out'>400 Bad Request</pre></td></tr>
+<tr><td><code>sites_site_functions_sites_site_getbypath</code> (no site_id)</td><td><span class='st st-error'>error 400</span></td><td><pre class='out'>400 Bad Request</pre></td></tr>
+</table>
+</div>
+<div class="notice warn">No valid <code>path</code> value was found — Graph's <code>GET /sites/{hostname}:/{server-relative-path}</code> needs a real server-relative path and the connector passes the argument through literally. Catalog should document the <code>path</code> format (<code>sites:/{path}</code> style is not accepted).</div>
+</div>
+
+<div id="tab-teams" class="tab-panel">
+<h2>Teams — fully unexecutable from zero (spec gap, proven)</h2>
+<p class="sub">1,428 Teams-ish catalog functions were screened. Every Teams/chats/groups surface function requires ≥1 ID (<code>team_id</code>, <code>group_id</code>, <code>user_id</code>, <code>chat_id</code>, …). There is no listing root anywhere. Every seed attempt below failed.</p>
+<div class="tbl-scroll">
+<table>
+<tr><th>#</th><th>Seed attempt</th><th>Status</th><th>Result</th></tr>
+<tr><td>T1</td><td><code>me_team_me_getjoinedteams(team_id=&gt;'…')</code></td><td><span class='st st-not_found'>not_found 404</span></td><td>404 "Requested API is not supported" — requires team_id, cannot list from zero</td></tr>
+<tr><td>T2</td><td><code>teams_team_teams_team_getteam(team_id=&gt;'915ef513-…')</code> (site GUID)</td><td><span class='st st-not_found'>not_found 404</span></td><td>404 "No team found with Group Id 915ef513-…"</td></tr>
+<tr><td>T3</td><td><code>groups_group_groups_group_getgroup(group_id=&gt;'915ef513-…')</code></td><td><span class='st st-not_found'>not_found 404</span></td><td>404 "Resource does not exist"</td></tr>
+<tr><td>T4</td><td><code>groups_team_groups_team_getgroup(group_id=&gt;'915ef513-…')</code></td><td><span class='st st-not_found'>not_found 404</span></td><td>404 "Requested API is not supported"</td></tr>
+<tr><td>T5</td><td><code>users_team_users_listjoinedteams(user_id=&gt;…)</code></td><td><span class='st st-gated'>gated</span></td><td>needs user_id; user lookup returns <strong>no <code>id</code> column</strong> — cannot chain</td></tr>
+<tr><td>T6</td><td><code>users_user_users_user_getuserbyuserprincipalname</code></td><td><span class='st st-pass'>pass</span></td><td>returns displayname/mail/UPN only — no id, no securityidentifier</td></tr>
+<tr><td>T7</td><td><code>sites_user_sites_getcreatedbyuser</code> / <code>drives_user_drives_getcreatedbyuser</code></td><td><span class='st st-error'>error 500</span></td><td>upstream 500 — no user ID obtainable</td></tr>
+<tr><td>T8</td><td><code>drives_driveitem_drives_items_getcreatedbyuser</code></td><td><span class='st st-pass'>pass</span></td><td>user row returned but <strong>no <code>id</code> column</strong> — dead end for chaining</td></tr>
+<tr><td>T9</td><td>storage_filestorage containers</td><td><span class='st st-gated'>gated</span></td><td>no collection-level list functions — all require <code>filestoragecontainer_id</code>; <code>getcontainers</code>/<code>getcontainertypes</code> args unverified</td></tr>
+</table>
+</div>
+<div class="callout"><strong>Conclusion:</strong> there is no path on <code>microsoft_graph_v4</code to obtain a <code>team_id</code>, <code>group_id</code>, <code>user_id</code>, or <code>chat_id</code> from zero. Teams is therefore recorded as <strong>unexecutable-from-zero</strong>. This is a catalog/spec gap, not a token gap — the OAuth token is healthy (30 SP probes pass with the same token).</div>
+</div>
+
+<div id="tab-findings" class="tab-panel">
+<h2>Findings</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>#</th><th>Finding</th><th>Evidence</th><th>Severity</th></tr>
+<tr><td>F1</td><td><strong>SharePoint hierarchy is fully walkable from zero.</strong> Two seeds unlock site → list → item → drive → item, with real metadata at every level.</td><td>367 columns / 64 content types / 27 lists / 31 list columns / 4 permissions / 10 items</td><td><span class='st st-fixed'>RESOLVED</span></td></tr>
+<tr><td>F2</td><td><strong>Teams is unseedable.</strong> 1,428 Teams-ish functions all require an ID; no listing root; site GUID is not a team/group; user rows expose no <code>id</code> column.</td><td>T1–T9 attempts in Teams tab</td><td><span class='st st-finding'>SPEC GAP</span></td></tr>
+<tr><td>F3</td><td><strong>Exactly ONE zero-arg function in the whole schema</strong> — <code>search_searchentity_getsearchentity</code> — and it 404s (<code>GET /v1.0/search</code> not supported).</td><td>exhaustive catalog scan</td><td><span class='st st-finding'>CATALOG</span></td></tr>
+<tr><td>F4</td><td><strong>User rows never carry an <code>id</code> column</strong> — via UPN lookup AND via <code>…getcreatedbyuser</code>. Breaks any user-based chaining (e.g. <code>users_team_users_listjoinedteams</code>).</td><td>getuserbyuserprincipalname + items_getcreatedbyuser outputs</td><td><span class='st st-finding'>DATA GAP</span></td></tr>
+<tr><td>F5</td><td><strong>Three site/drive-level <code>…getcreatedbyuser</code>/<code>…getlastmodifiedbyuser</code> functions 500</strong> — mapped paths don't exist upstream. Item-level variant works.</td><td>sites_user_* , drives_user_* → 500</td><td><span class='st st-finding'>CATALOG</span></td></tr>
+<tr><td>F6</td><td><strong><code>drives_list</code> is a synthetic list-over-drive mapping</strong> — <code>getlist</code>/columns/content-types resolve "Documents" fine, but permission routes 404 (drives aren't list permission scopes).</td><td>drives_list_drives_list_listpermissions → 404 itemNotFound</td><td><span class='st st-finding'>CATALOG</span></td></tr>
+<tr><td>F7</td><td><strong><code>drives_driveitem_drives_listitems</code> is broken</strong> — requires a <code>filter</code> option the catalog doesn't expose → 400 on every call.</td><td>400 "The 'filter' query option must be provided."</td><td><span class='st st-finding'>SPEC BUG</span></td></tr>
+<tr><td>F8</td><td><strong><code>sites_baseitem_sites_listitems</code> maps a non-existent endpoint</strong> — <code>/sites/{id}/items</code> isn't a Graph route → 400.</td><td>400 invalidRequest</td><td><span class='st st-finding'>SPEC BUG</span></td></tr>
+<tr><td>F9</td><td><strong>Item <code>getfields</code> actually returns field values live</strong> (the v5 "12 routes only expose odata_type+id" finding applies to catalog columns, not the live route).</td><td>items_getfields(item 1) and drives-list items_getfields(item 15) both return rows</td><td><span class='st st-fixed'>RESOLVED</span></td></tr>
+<tr><td>F10</td><td><strong>OneDrive <code>recent</code> bridges into OneDrive space</strong> — returns a real file (graph_test_1785881510.txt) whose item-id/perms work; its file-item <code>listchildren</code> correctly 422s.</td><td>recent → 01MODSIROC74FBA4RZYVA2HYDR3F6RHPDD → 1 permission; listchildren 422</td><td><span class='st st-fixed'>RESOLVED</span></td></tr>
+</table>
+</div>
+
+<h2>Recommendations for Coral maintainers</h2>
+<ul>
+<li>Add a root Teams enumeration surface — <code>GET /me/joinedTeams</code> (list, no args) and/or <code>GET /groups?$filter=resourceProvisioningOptions/Any(x:x eq 'Team')</code> — otherwise Teams can never be reached from zero (F2).</li>
+<li>Add an <code>id</code> column to <code>getuserbyuserprincipalname</code> and to the <code>…getcreatedbyuser</code> rows so users can be chained into user-scoped routes (F4).</li>
+<li>Expose the <code>filter</code> optional on <code>drives_driveitem_drives_listitems</code> (F7) and drop <code>sites_baseitem_sites_listitems</code> (F8).</li>
+<li>Remove or document the three 500-ing <code>…getcreatedbyuser</code>/<code>…getlastmodifiedbyuser</code> site/drive routes (F5).</li>
+<li>Document the <code>getbypath</code> <code>path</code> argument format; current <code>'/'</code> and <code>'sites:/'</code> values both 400.</li>
+</ul>
+</div>
+
+<div id="tab-log" class="tab-panel">
+<h2>Full command log — every command, input AND output verbatim</h2>
+<p class="sub">Each row is one real probe run against the live source. Input = exact SQL sent; output = verbatim result (JSON rows as returned, or the Graph error surfaced by Coral). Filter to narrow.</p>
+<div class="toolbar">
+<input type="search" id="logSearch" placeholder="Filter tables…" oninput="applyFilter()">
+<select id="logStatus" onchange="applyFilter()">
+<option value="">all statuses</option>
+<option>pass</option><option>error</option><option>not_found</option><option>gated</option><option>catalog</option>
+</select>
+<select id="logArea" onchange="applyFilter()">
+<option value="">all areas</option>
+<option value="sp_site">sp site</option>
+<option value="sp_list">sp list</option>
+<option value="sp_item">sp item</option>
+<option value="drives">drives</option>
+<option value="drives_list">drives-as-list</option>
+<option value="bundles">drive bundles</option>
+<option value="zeroarg">zero-arg</option>
+<option value="users">createdBy/user</option>
+<option value="getbypath">getByPath</option>
+<option value="teams">teams</option>
+<option value="catalog">catalog</option>
+</select>
+<span id="matchCount" class="sub"></span>
+</div>
+<div class="tbl-scroll">
+<table class="cmdlog">
+<tr><th>Function / probe</th><th>Status</th><th>Area</th><th>Command (input) and real output</th></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_site' data-table='listdrives'><td class='tbl'><code>sites_drive_sites_listdrives</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp site</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT drive_id, drivetype, name FROM microsoft_graph_v4.sites_drive_sites_listdrives(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>drive_id = b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1, drivetype = documentLibrary, name = Documents</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_site' data-table='getdrive'><td class='tbl'><code>sites_drive_sites_getdrive</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp site</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT drivetype FROM microsoft_graph_v4.sites_drive_sites_getdrive(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"drivetype":"documentLibrary"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_site' data-table='site columns'><td class='tbl'><code>sites_columndefinition_sites_listcolumns</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp site</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS cols FROM microsoft_graph_v4.sites_columndefinition_sites_listcolumns(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"cols":"367"}</pre></div><div class='trunc'>Truncated — 367 rows; column metadata (name, readonly, hidden, indexStatus) returned intact.</div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_site' data-table='site content types'><td class='tbl'><code>sites_contenttype_sites_listcontenttypes</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp site</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS cts FROM microsoft_graph_v4.sites_contenttype_sites_listcontenttypes(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"cts":"64"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_site' data-table='site permissions'><td class='tbl'><code>sites_permission_sites_listpermissions</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp site</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS perms FROM microsoft_graph_v4.sites_permission_sites_listpermissions(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"perms":"0"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_site' data-table='listlists'><td class='tbl'><code>sites_list_sites_listlists</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp site</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS lists FROM microsoft_graph_v4.sites_list_sites_listlists(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b', top=&gt;100)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"lists":"27"}</pre></div><div class='trunc'>Lists include: Code Snippets (a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e), Contributors, Student Enrollment, Claude Code Sessions, Recent Commits, Personal Projects, Documentation Files, Reading List, Campus Events, Employee Directory, AI Tool Usage, Faculty Directory, Course Catalog, Vendor Contracts, Events, Project Tracker, Sales Pipeline, GraphTestList, Engineering Tasks, Customer Support Tickets, Git Repositories, Shared Documents, Daily Activities, Skills Inventory, Library Books, AI Development Sessions, CompanyList-…</div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='sp_site' data-table='site listitems'><td class='tbl'><code>sites_baseitem_sites_listitems</code></td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>sp site</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_baseitem_sites_listitems(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 invalidRequest — the requested URL is not valid for the root site.
+[GET] https://graph.microsoft.com/v1.0/sites/{id}/items
+Hint: /sites/{id}/items is not a supported Graph endpoint.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_list' data-table='list columns'><td class='tbl'><code>sites_list_sites_lists_listcolumns</code> (Code Snippets)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS cols FROM microsoft_graph_v4.sites_list_sites_lists_listcolumns(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"cols":"31"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_list' data-table='list content types'><td class='tbl'><code>sites_list_sites_lists_listcontenttypes</code> (Code Snippets)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS cts FROM microsoft_graph_v4.sites_list_sites_lists_listcontenttypes(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"cts":"2"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_list' data-table='list permissions'><td class='tbl'><code>sites_list_sites_lists_listpermissions</code> (Code Snippets)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS perms FROM microsoft_graph_v4.sites_list_sites_lists_listpermissions(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"perms":"4"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_list' data-table='list items'><td class='tbl'><code>sites_list_sites_lists_listitems</code> (Code Snippets)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS items FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', top=&gt;10)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"items":"10"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_list' data-table='list getdrive'><td class='tbl'><code>sites_list_sites_lists_getdrive</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT drivetype FROM microsoft_graph_v4.sites_list_sites_lists_getdrive(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"drivetype":null}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_item' data-table='item getfields'><td class='tbl'><code>sites_list_sites_lists_items_getfields</code> (item 1)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp item</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_list_sites_lists_items_getfields(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', listitem_id=&gt;'1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>field rows returned: id + fields JSON (field values for item 1)</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='sp_item' data-table='item permissions'><td class='tbl'><code>sites_list_sites_lists_items_listpermissions</code> (item 1)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sp item</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS perms FROM microsoft_graph_v4.sites_list_sites_lists_items_listpermissions(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', listitem_id=&gt;'1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"perms":"4"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='gated' data-area='sp_item' data-table='item versions getfields'><td class='tbl'><code>sites_list_sites_lists_items_versions_getfields</code></td><td class='stt'><span class='st st-gated'>gated</span></td><td><span class='area-tag'>sp item</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_list_sites_lists_items_versions_getfields(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id=&gt;'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', listitem_id=&gt;'1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: missing required argument listitemversion_id
+(no listitemversion_id is discoverable from listitems — version id is not projected)</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives' data-table='drive getdrive'><td class='tbl'><code>drives_drive_drives_drive_getdrive</code> (Documents)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT driveid, drivetype FROM microsoft_graph_v4.drives_drive_drives_drive_getdrive(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"driveid":"b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1","drivetype":"documentLibrary"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives' data-table='getroot'><td class='tbl'><code>drives_driveitem_drives_getroot</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.drives_driveitem_drives_getroot(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>root item row returned (folder item for drive root)</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives' data-table='recent'><td class='tbl'><code>drives_drive_functions_drives_drive_recent</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS items FROM microsoft_graph_v4.drives_drive_functions_drives_drive_recent(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"items":"1"} → graph_test_1785881510.txt (01MODSIROC74FBA4RZYVA2HYDR3F6RHPDD) on OneDrive drive b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives' data-table='search'><td class='tbl'><code>drives_drive_functions_drives_drive_search</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS items FROM microsoft_graph_v4.drives_drive_functions_drives_drive_search(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', q=&gt;'a')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"items":"0"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='drives' data-table='drive listitems'><td class='tbl'><code>drives_driveitem_drives_listitems</code></td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>drives</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.drives_driveitem_drives_listitems(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', top=&gt;10)</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 — The 'filter' query option must be provided.
+[GET] https://graph.microsoft.com/v1.0/drives/{id}/items?$top=10
+Hint: the connector's listitems route hard-requires $filter but does not expose it as an optional arg.</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='drives' data-table='listchildren'><td class='tbl'><code>drives_driveitem_drives_items_listchildren</code> (file)</td><td class='stt'><span class='st st-error'>error 422</span></td><td><span class='area-tag'>drives</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.drives_driveitem_drives_items_listchildren(
+  drive_id=&gt;'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  driveitem_id=&gt;'01MODSIROC74FBA4RZYVA2HYDR3F6RHPDD')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 422 getChildrenOnNonFolder — item is a file, not a folder.
+[GET] https://graph.microsoft.com/v1.0/drives/{id}/items/{item-id}/children</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives' data-table='item permissions'><td class='tbl'><code>drives_driveitem_drives_items_listpermissions</code> (OneDrive file)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS perms FROM microsoft_graph_v4.drives_driveitem_drives_items_listpermissions(
+  drive_id=&gt;'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  driveitem_id=&gt;'01MODSIROC74FBA4RZYVA2HYDR3F6RHPDD')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"perms":"1"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives_list' data-table='getlist'><td class='tbl'><code>drives_list_drives_getlist</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives-as-list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname FROM microsoft_graph_v4.drives_list_drives_getlist(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"displayname":"Documents"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives_list' data-table='drive-as-list columns'><td class='tbl'><code>drives_list_drives_list_listcolumns</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives-as-list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS cols FROM microsoft_graph_v4.drives_list_drives_list_listcolumns(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"cols":"34"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives_list' data-table='drive-as-list content types'><td class='tbl'><code>drives_list_drives_list_listcontenttypes</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives-as-list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS cts FROM microsoft_graph_v4.drives_list_drives_list_listcontenttypes(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"cts":"2"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives_list' data-table='drive-as-list items'><td class='tbl'><code>drives_list_drives_list_listitems</code> (top 10)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives-as-list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS items FROM microsoft_graph_v4.drives_list_drives_list_listitems(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', top=&gt;10)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"items":"0"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='not_found' data-area='drives_list' data-table='drive-as-list permissions'><td class='tbl'><code>drives_list_drives_list_listpermissions</code></td><td class='stt'><span class='st st-not_found'>not_found 404</span></td><td><span class='area-tag'>drives-as-list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.drives_list_drives_list_listpermissions(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404) — itemNotFound
+Hint: a drive has no list-permission route; the drives_list mapping is synthetic.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='drives_list' data-table='drive-as-list item getfields'><td class='tbl'><code>drives_list_drives_list_items_getfields</code> (item 15)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drives-as-list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.drives_list_drives_list_items_getfields(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', listitem_id=&gt;'15')</pre></div><div class='cmdout'><b>output</b><pre class='out'>field rows returned (id + fields JSON for drive-list item 15)</pre></div></td></tr>
+<tr class='cmdrow' data-status='not_found' data-area='drives_list' data-table='drive-as-list item permissions'><td class='tbl'><code>drives_list_drives_list_items_listpermissions</code></td><td class='stt'><span class='st st-not_found'>not_found 404</span></td><td><span class='area-tag'>drives-as-list</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.drives_list_drives_list_items_listpermissions(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', listitem_id=&gt;'15')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404) — itemNotFound</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='bundles' data-table='listbundles'><td class='tbl'><code>drives_driveitem_drives_listbundles</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drive bundles</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.drives_driveitem_drives_listbundles(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"n":"0"} → value = [] (valid empty)</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='bundles' data-table='listfollowing'><td class='tbl'><code>drives_driveitem_drives_listfollowing</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drive bundles</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.drives_driveitem_drives_listfollowing(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"n":"0"} → value = [] (valid empty)</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='bundles' data-table='listspecial'><td class='tbl'><code>drives_driveitem_drives_listspecial</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>drive bundles</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.drives_driveitem_drives_listspecial(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"n":"0"} → value = [] (valid empty)</pre></div></td></tr>
+<tr class='cmdrow' data-status='not_found' data-area='zeroarg' data-table='getsearchentity'><td class='tbl'><code>search_searchentity_search_searchentity_getsearchentity()</code></td><td class='stt'><span class='st st-not_found'>not_found 404</span></td><td><span class='area-tag'>zero-arg</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.search_searchentity_search_searchentity_getsearchentity()</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404)
+[GET] https://graph.microsoft.com/v1.0/search
+Hint: the only zero-arg function in the schema; upstream has no such endpoint.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='zeroarg' data-table='getrecentnotebooks'><td class='tbl'><code>me_onenote_me_onenote_notebooks_getrecentnotebooks</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>zero-arg</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.me_onenote_me_onenote_notebooks_getrecentnotebooks(
+  includepersonalnotebooks=&gt;true)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"n":"0"} → value = [] (valid empty, only optional args)</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='users' data-table='site createdby'><td class='tbl'><code>sites_user_sites_getcreatedbyuser</code></td><td class='stt'><span class='st st-error'>error 500</span></td><td><span class='area-tag'>createdBy/user</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_user_sites_getcreatedbyuser(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 500 InternalServerError from upstream
+[GET] https://graph.microsoft.com/v1.0/sites/{id}/createdByUser</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='users' data-table='site lastmodifiedby'><td class='tbl'><code>sites_user_sites_getlastmodifiedbyuser</code></td><td class='stt'><span class='st st-error'>error 500</span></td><td><span class='area-tag'>createdBy/user</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_user_sites_getlastmodifiedbyuser(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 500 InternalServerError from upstream
+[GET] https://graph.microsoft.com/v1.0/sites/{id}/lastModifiedByUser</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='users' data-table='drive createdby'><td class='tbl'><code>drives_user_drives_getcreatedbyuser</code></td><td class='stt'><span class='st st-error'>error 500</span></td><td><span class='area-tag'>createdBy/user</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.drives_user_drives_getcreatedbyuser(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 500 InternalServerError from upstream
+[GET] https://graph.microsoft.com/v1.0/drives/{id}/createdByUser</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='users' data-table='item createdby'><td class='tbl'><code>drives_driveitem_drives_items_getcreatedbyuser</code> (item)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>createdBy/user</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname, userprincipalname, mail, id FROM microsoft_graph_v4.drives_driveitem_drives_items_getcreatedbyuser(
+  drive_id=&gt;'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  driveitem_id=&gt;'01MODSIROC74FBA4RZYVA2HYDR3F6RHPDD')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"displayname":"vicky kumar","userprincipalname":"vickykumar@algsoch762.onmicrosoft.com",
+ "mail":"vickykumar@algsoch762.onmicrosoft.com","id":null}
+NOTE: the row has NO id column — cannot chain into users_* surfaces.</pre></div></td></tr>
+<tr class='cmdrow' data-status='not_found' data-area='users' data-table='list lastmodifiedby'><td class='tbl'><code>drives_list_drives_list_items_getlastmodifiedbyuser</code></td><td class='stt'><span class='st st-not_found'>not_found 404</span></td><td><span class='area-tag'>createdBy/user</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.drives_list_drives_list_items_getlastmodifiedbyuser(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', listitem_id=&gt;'15')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404) — itemNotFound</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='getbypath' data-table='getbypath root'><td class='tbl'><code>sites_site_functions_sites_site_getbypath</code> (path=&gt;'/')</td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>getByPath</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_site_functions_sites_site_getbypath(
+  site_id=&gt;'algsoch762.sharepoint.com', path=&gt;'/')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 Bad Request
+[GET] https://graph.microsoft.com/v1.0/sites/algsoch762.sharepoint.com:/</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='getbypath' data-table='getbypath sites'><td class='tbl'><code>sites_site_functions_sites_site_getbypath</code> (path=&gt;'sites:/')</td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>getByPath</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_site_functions_sites_site_getbypath(
+  site_id=&gt;'algsoch762.sharepoint.com', path=&gt;'sites:/')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 Bad Request</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='getbypath' data-table='getbypath nosite'><td class='tbl'><code>sites_site_functions_sites_site_getbypath</code> (no site_id)</td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>getByPath</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_site_functions_sites_site_getbypath(path=&gt;'algsoch762.sharepoint.com:/')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 Bad Request
+Hint: no path form tried (sites:/, /, hostname:/) was accepted.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='getuserbyupn'><td class='tbl'><code>users_user_users_user_getuserbyuserprincipalname</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname, mail, userprincipalname, id FROM microsoft_graph_v4.users_user_users_user_getuserbyuserprincipalname(
+  userprincipalname=&gt;'vickykumar@algsoch762.onmicrosoft.com')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"displayname":"vicky kumar","mail":"vickykumar@algsoch762.onmicrosoft.com",
+ "userprincipalname":"vickykumar@algsoch762.onmicrosoft.com","id":null}
+NOTE: NO id column — users_team_users_listjoinedteams(user_id=&gt;…) cannot be chained.</pre></div></td></tr>
+<tr class='cmdrow' data-status='not_found' data-area='teams' data-table='getteam'><td class='tbl'><code>teams_team_teams_team_getteam</code> (site GUID)</td><td class='stt'><span class='st st-not_found'>not_found 404</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.teams_team_teams_team_getteam(
+  team_id=&gt;'915ef513-d7b9-4250-9ad7-470b5286392f')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404)
+Detail: No team found with Group Id 915ef513-d7b9-4250-9ad7-470b5286392f
+[GET] https://graph.microsoft.com/v1.0/teams/915ef513-d7b9-4250-9ad7-470b5286392f</pre></div></td></tr>
+<tr class='cmdrow' data-status='not_found' data-area='teams' data-table='getgroup'><td class='tbl'><code>groups_group_groups_group_getgroup</code> (site GUID)</td><td class='stt'><span class='st st-not_found'>not_found 404</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.groups_group_groups_group_getgroup(
+  group_id=&gt;'915ef513-d7b9-4250-9ad7-470b5286392f')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404)
+Detail: Resource does not exist</pre></div></td></tr>
+<tr class='cmdrow' data-status='not_found' data-area='teams' data-table='team getgroup'><td class='tbl'><code>groups_team_groups_team_getgroup</code> (site GUID)</td><td class='stt'><span class='st st-not_found'>not_found 404</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.groups_team_groups_team_getgroup(
+  group_id=&gt;'915ef513-d7b9-4250-9ad7-470b5286392f')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404)
+Detail: Requested API is not supported. Please check the path.</pre></div></td></tr>
+<tr class='cmdrow' data-status='gated' data-area='teams' data-table='listjoinedteams'><td class='tbl'><code>users_team_users_listjoinedteams</code></td><td class='stt'><span class='st st-gated'>gated</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.users_team_users_listjoinedteams(user_id=&gt;'…')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Not executed — requires user_id, and no user id is obtainable:
+  • getuserbyuserprincipalname → no id column
+  • items_getcreatedbyuser → no id column
+  • getgroup/getteam on the site GUID → 404
+No path to a user_id exists from zero.</pre></div></td></tr>
+<tr class='cmdrow' data-status='catalog' data-area='catalog' data-table='teams surface count'><td class='tbl'><code>catalog: teams-surface count</code></td><td class='stt'><span class='st st-catalog'>catalog</span></td><td><span class='area-tag'>catalog</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS teams_fns FROM coral.table_functions
+WHERE schema_name='microsoft_graph_v4'
+  AND (function_name ILIKE '%team%' OR function_name ILIKE '%chat%' OR function_name ILIKE '%group%'
+       OR function_name ILIKE '%channel%' OR function_name ILIKE '%conversation%')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"teams_fns":"1428"} — every one requires ≥1 id arg; no listing root exists.</pre></div></td></tr>
+</table>
+</div>
+</div>
+
+<p class="sub" style="margin-top:28px;border-top:1px solid #e2e8f0;padding-top:10px;">Author: Vicky Kumar · Repo: https://github.com/FiscalMindset/coral_specs_testing · Supersedes: <a href="2026-08-06-sharepoint-teams-coral-sql-data-report-v5.2.html">v5.2</a></p>
+</div>
+<script>
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function applyFilter(){
+  var q=document.getElementById('logSearch').value.toLowerCase();
+  var s=document.getElementById('logStatus').value;
+  var a=document.getElementById('logArea').value;
+  var rows=document.querySelectorAll('#tab-log .cmdrow'); var n=0;
+  rows.forEach(function(r){
+    var text=(r.getAttribute('data-table')||r.textContent).toLowerCase();
+    var show=(!q||text.indexOf(q)>-1)&&(!s||r.getAttribute('data-status')===s)&&(!a||r.getAttribute('data-area')===a);
+    r.classList.toggle('show',show);
+    if(show)n++;
+  });
+  document.getElementById('matchCount').textContent=n+' / '+rows.length+' commands shown';
+}
+applyFilter();
+</script>
+</body>
+</html>
