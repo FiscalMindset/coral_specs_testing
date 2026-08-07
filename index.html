@@ -179,142 +179,26 @@
   <h2>🔐 Microsoft account in use</h2>
   <div class="table-wrap"><table>
     <tbody>
-      <tr><th>Tenant</th><td><code>algsochgmail.onmicrosoft.com</code> (Azure for Students)</td></tr>
-      <tr><th>Tenant ID</th><td><code>89de3b75-fef2-44f9-90a4-cf8c69700c83</code></td></tr>
+      <tr><th>Tenant</th><td><code>algsoch762.onmicrosoft.com</code> (M365 Business Premium)</td></tr>
+      <tr><th>Tenant ID</th><td><code>0aa3a51b-3716-44d7-9636-f85f3db072bf</code></td></tr>
       <tr><th>Admin account</th><td><code>algsoch@gmail.com</code> (Global Administrator)</td></tr>
-      <tr><th>Test user</th><td><code>vicky@algsochgmail.onmicrosoft.com</code></td></tr>
-      <tr><th>Sign-in methods</th><td>Interactive OAuth (keychain) · <code>az</code> admin token (1h)</td></tr>
+      <tr><th>Test user</th><td><code>vickykumar@algsoch762.onmicrosoft.com</code> (objectId <code>55bcc9a0-6062-4976-9341-c27579fe09e3</code>)</td></tr>
+      <tr><th>Sign-in methods</th><td>Delegated OAuth (refresh-token flow) · <code>az</code> admin token (1h)</td></tr>
       <tr><th>Coral app ID</th><td><code>4eedabf0-b27e-4c98-ac7b-4c7f5d504bee</code></td></tr>
-      <tr><th>License state</th><td>No M365 — identity works, file/Teams endpoints return structured errors</td></tr>
+      <tr><th>License state</th><td><code>O365_BUSINESS_PREMIUM</code> · 1 of 25 units (licensed 2026-08-04) — SharePoint + Teams fully functional</td></tr>
     </tbody>
   </table></div>
 
   <h2>📊 Reports</h2>
-  <p>Each report has a matching <code>.md</code> (raw) and <code>.html</code> (responsive) version. Reports are <strong>frozen</strong> once committed.</p>
-
-  <div class="report" style="border-left:4px solid var(--tag-pass);">
-    <h3>🆕 2026-07-31 v2 — Full re-run: az-minted admin token + 4-layer retry strategy <span class="badge badge-pass">current</span></h3>
-    <div class="stats">
-      <div class="stat"><span class="label">Date</span><span class="value">2026-07-31</span></div>
-      <div class="stat"><span class="label">Coral</span><span class="value">0.8.1</span></div>
-      <div class="stat"><span class="label">Tables</span><span class="value">733/733</span></div>
-      <div class="stat"><span class="label">Pass</span><span class="value">129</span></div>
-      <div class="stat"><span class="label">Timeouts</span><span class="value">0 (resolved)</span></div>
-      <div class="stat"><span class="label">expired_token</span><span class="value">0</span></div>
-    </div>
-    <p>📄 <a href="reports/2026-07-31-msgraph-reauth-test-report-v2.md">Markdown</a> · <a href="reports/2026-07-31-msgraph-reauth-test-report-v2.html">HTML</a> — full 733-table az-token re-run: 4-layer retry strategy (az-minted token + mid-run re-auth + 30s retry sweep + 120s retry sweep), 4-day compare (Jul 29 + Jul 30 + Jul 31 v1 + v2), per-prefix pass table, command log, all 45 spec bugs with verbatim outputs, all 28 timeout tables resolved.</p>
-    <details style="font-size:0.9rem;margin-top:0.5rem;">
-      <summary style="cursor:pointer;font-weight:600;">🔍 Key results (tap to expand)</summary>
-      <h4 style="margin:0.6rem 0 0.3rem;">Pass by prefix (top movers)</h4>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Prefix</th><th>Total</th><th>Pass</th><th>Rate</th></tr></thead>
-        <tbody>
-          <tr><td><code>tenantrelationships_</code></td><td>6</td><td>6</td><td>100%</td></tr>
-          <tr><td><code>auditlogs_</code></td><td>4</td><td>3</td><td>75%</td></tr>
-          <tr><td><code>directory_</code></td><td>22</td><td>13</td><td>59%</td></tr>
-          <tr><td><code>policies_</code></td><td>29</td><td>16</td><td>55%</td></tr>
-          <tr><td><code>me_</code></td><td>147</td><td>36</td><td>25%</td></tr>
-          <tr><td><code>identity_</code></td><td>26</td><td>7</td><td>27%</td></tr>
-          <tr><td><code>security_</code></td><td>64</td><td>3</td><td>5%</td></tr>
-          <tr><td><code>admin_</code></td><td>36</td><td>4</td><td>11%</td></tr>
-        </tbody>
-      </table></div>
-      <h4 style="margin:0.6rem 0 0.3rem;">vs v1 (same date, different methodology)</h4>
-      <ul>
-        <li><strong>+7 passes</strong> (122 → 129) — 15 tables recovered via 2 retry sweeps</li>
-        <li><strong>0 final timeouts</strong> — all 28 resolved via 120s retry sweep</li>
-        <li><strong>0 final expired_token</strong> — token-expiry problem solved</li>
-        <li><strong>42/45 spec bugs unchanged</strong>, 3 reclassified (now confirmed via 120s retry)</li>
-        <li><strong>Runtime</strong> ~2h 30m (v1: 47m) — extra time for 2 mid-run re-auths + 2 retry sweeps</li>
-      </ul>
-      <p style="font-size:0.85rem;margin:0.5rem 0 0;color:var(--muted);">v1 (frozen) used keychain OAuth · 122 pass · 30 timeouts · 47m. v2 used az-minted admin token + 4-layer retry strategy · 129 pass · 0 timeouts · 0 expired_token · ~2h 30m. Same scope, same Coral, same tenant.</p>
-    </details>
-  </div>
-
-  <div class="report">
-    <h3>2026-07-31 v1 (frozen) — Full re-run: delegated keychain OAuth, 47m</h3>
-    <div class="stats">
-      <div class="stat"><span class="label">Date</span><span class="value">2026-07-31</span></div>
-      <div class="stat"><span class="label">Coral</span><span class="value">0.8.1</span></div>
-      <div class="stat"><span class="label">Tables</span><span class="value">733/733</span></div>
-      <div class="stat"><span class="label">Pass</span><span class="value">122</span></div>
-      <div class="stat"><span class="label">Timeouts</span><span class="value">30</span></div>
-      <div class="stat"><span class="label">expired_token</span><span class="value">0</span></div>
-    </div>
-    <p>📄 <a href="reports/2026-07-31-msgraph-reauth-test-report.md">Markdown</a> · <a href="reports/2026-07-31-msgraph-reauth-test-report.html">HTML</a> — v1 (frozen): full 733-table delegated re-run, status distribution, per-prefix passes vs Jul 29, spec-bug recheck (45), app-only-only recheck (30), timeout analysis, places regression.</p>
-  </div>
-
-  <div class="report">
-    <h3>2026-07-30 — Microsoft Graph v4: 45 genuine spec bugs <span class="badge badge-warn">spec bugs</span></h3>
-    <div class="stats">
-      <div class="stat"><span class="label">Date</span><span class="value">2026-07-30</span></div>
-      <div class="stat"><span class="label">Scope</span><span class="value">45 spec bugs</span></div>
-      <div class="stat"><span class="label">Categories</span><span class="value">5</span></div>
-      <div class="stat"><span class="label">Re-tested v2</span><span class="value">42/45 still</span></div>
-    </div>
-    <p>📄 <a href="reports/2026-07-30-msgraph-spec-bugs.md">Markdown</a> · <a href="reports/2026-07-30-msgraph-spec-bugs.html">HTML</a> — 45 tables with OpenAPI parser bugs: 13 wrong URL, 13 deprecated, 12 wrong audience, 4 needs entityId, 3 unsupported query. All would fail for any AAD tenant with any credentials.</p>
-  </div>
-
-  <div class="report">
-    <h3>2026-07-29 — Re-auth test: Coral 0.8.1 / surface-singular fix <span class="badge badge-pass">0 timeouts</span></h3>
-    <div class="stats">
-      <div class="stat"><span class="label">Coral</span><span class="value">0.8.1</span></div>
-      <div class="stat"><span class="label">Tables</span><span class="value">733</span></div>
-      <div class="stat"><span class="label">Table funcs</span><span class="value">5,776</span></div>
-      <div class="stat"><span class="label">Identity</span><span class="value">6/6 PASS</span></div>
-      <div class="stat"><span class="label">Timeouts</span><span class="value">0</span></div>
-    </div>
-    <p>📄 <a href="reports/2026-07-29-msgraph-reauth-test-report.md">Markdown</a> · <a href="reports/2026-07-29-msgraph-reauth-test-report.html">HTML</a> — full command & output log: CLI basics, schema discovery, identity queries, M365 license-gated, premium failures, feature-specific failures, table functions, error quality assessment, vs-0.5.2 diff.</p>
-    <details style="font-size:0.9rem;margin-top:0.5rem;">
-      <summary style="cursor:pointer;font-weight:600;">🟢 8 PASS · 🔴 4 FAIL (tap to expand)</summary>
-      <h4 style="margin:0.6rem 0 0.3rem;">Passed</h4>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Query</th><th>Result</th><th>Reason</th></tr></thead>
-        <tbody>
-          <tr><td>CLI basics</td><td>✅</td><td>All exit code 0</td></tr>
-          <tr><td>Schema discovery</td><td>✅</td><td>733 tables, 5,972 columns, 5,776 funcs</td></tr>
-          <tr><td>Me / User profile</td><td>✅</td><td><code>displayName: "Vicky Test"</code></td></tr>
-          <tr><td>List users</td><td>✅</td><td>17 users returned</td></tr>
-          <tr><td>Organization / Tenant</td><td>✅</td><td>Tenant ID, type, quota readable</td></tr>
-          <tr><td>Groups</td><td>✅</td><td>2 security groups</td></tr>
-          <tr><td>Applications</td><td>✅</td><td>3 apps including <code>coral</code></td></tr>
-          <tr><td>Service Principals</td><td>✅</td><td>3 SPs</td></tr>
-          <tr><td>Devices</td><td>✅</td><td>Empty list (no devices)</td></tr>
-        </tbody>
-      </table></div>
-      <h4 style="margin:0.6rem 0 0.3rem;">Failures</h4>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Query</th><th>Status</th><th>Reason</th></tr></thead>
-        <tbody>
-          <tr><td>Drives</td><td>❌ 400</td><td><code>Tenant does not have a SPO license</code></td></tr>
-          <tr><td>Chats</td><td>❌ 403</td><td><code>Failed to get license info — no Teams license</code></td></tr>
-          <tr><td>Teams</td><td>❌ 403</td><td><code>Failed to get license info — no Teams license</code></td></tr>
-          <tr><td>Agreements</td><td>❌ 403</td><td><code>Missing scopes: Agreement.Read.All</code></td></tr>
-          <tr><td>Sign-in logs</td><td>❌ 403</td><td><code>No premium license (Entra P1/P2)</code></td></tr>
-        </tbody>
-      </table></div>
-      <p style="font-size:0.85rem;margin:0.5rem 0 0;color:var(--muted);">vs 0.5.2: Agreements & Teams <strong>timed out</strong> before; now return clean 403s. <strong>0 timeouts</strong> across all tests (was 2). All failures are expected (no M365/premium license).</p>
-    </details>
-  </div>
-
-  <div class="report">
-    <h3>2026-07-14 — Microsoft Graph v4 connector: no-license test battery <span class="badge badge-blue">Complete</span></h3>
-    <div class="stats">
-      <div class="stat"><span class="label">Date (UTC)</span><span class="value">2026-07-14</span></div>
-      <div class="stat"><span class="label">Time taken</span><span class="value">~3h 40m</span></div>
-      <div class="stat"><span class="label">Commands</span><span class="value">39</span></div>
-      <div class="stat"><span class="label">Output lines</span><span class="value">612</span></div>
-    </div>
-    <p>📄 <a href="reports/2026-07-14-msgraph-connector-test-report.md">Markdown</a> · <a href="reports/2026-07-14-msgraph-connector-test-report.html">HTML</a> — install, OAuth, materialization, query ergonomics, error UX, performance, catalog search findings.</p>
-    <p>📄 <a href="reports/2026-07-14-full-command-output-log.md">Markdown</a> · <a href="reports/2026-07-14-full-command-output-log.html">HTML</a> — every coral command run verbatim with actual output and exit code.</p>
-    <p>📄 <a href="reports/2026-07-14-directory-data-test-log.md">Markdown</a> · <a href="reports/2026-07-14-directory-data-test-log.html">HTML</a> — real-data testing without M365 license: 18 users + 2 groups queried through the connector.</p>
-  </div>
+  <p>All <span id="reportCount"></span> committed reports, newest first. Each has a matching <code>.md</code> (raw) and <code>.html</code> (responsive) version. Reports are <strong>frozen</strong> once committed. Interactive hub: <a href="frontend/reports.html">frontend/reports.html</a>.</p>
+  <div id="reportList"></div>
+  <noscript><p>Enable JavaScript to render the full report list (all reports live in <code>frontend/js/data.js</code>).</p></noscript>
 
   <h2>🧪 Test environment</h2>
   <ul>
     <li><strong>Coral CLI</strong> <code>0.5.2+cf744bd</code> (Jul 14) → <code>0.8.1+3acb123</code> (Jul 29/31) — macOS + Linux (Ubuntu droplet)</li>
-    <li><strong>Microsoft Entra</strong> test tenant (Azure for Students), delegated OAuth + az-minted admin tokens, admin-consented</li>
-    <li><strong>No M365 license</strong> — identity queries work; file/Teams endpoints return structured 400/403 errors (no timeouts in v2 final)</li>
+    <li><strong>Microsoft Entra</strong> test tenant <code>algsoch762.onmicrosoft.com</code> (M365 Business Premium, licensed 2026-08-04), delegated OAuth (refresh-token flow) + az-minted admin tokens, admin-consented</li>
+    <li><strong>Business Premium since 2026-08-04</strong> — SharePoint sites/lists/items + Teams/channels/messages all return real data (see the 08-05/08-06 deep-data and Coral-SQL reports); premium-gated endpoints (Entra P1/P2, etc.) still return structured 403s</li>
   </ul>
 
   <h2>📐 Reporting rules (enforced)</h2>
@@ -326,8 +210,62 @@
   </ul>
 
   <footer>
-    Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-07-31 (v2)
+    Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-08-06 (v6)
   </footer>
 </main>
+<script src="frontend/js/data.js"></script>
+<script src="frontend/js/common.js"></script>
+<script>
+(function () {
+  "use strict";
+  var REPORTS = window.Coral.REPORTS;
+  var container = document.getElementById("reportList");
+  var countEl = document.getElementById("reportCount");
+  if (!container || !REPORTS.length) return;
+
+  var STATUS_BADGE = { latest: "badge-pass", canonical: "badge-blue", superseded: "badge-warn" };
+  var STAT_DEFS = [
+    { k: "pass", label: "Pass" },
+    { k: "error", label: "Errors" },
+    { k: "not_found", label: "Not found" },
+    { k: "gated", label: "Gated" },
+    { k: "total", label: "Total" }
+  ];
+
+  function card(r) {
+    var s = r.stats || {};
+    var statBits = ['<div class="stat"><span class="label">Date</span><span class="value">' + window.Coral.esc(r.date) + "</span></div>"];
+    STAT_DEFS.forEach(function (d) {
+      if (s[d.k] != null) statBits.push('<div class="stat"><span class="label">' + d.label + '</span><span class="value">' + window.Coral.esc(s[d.k]) + "</span></div>");
+    });
+    var status = r.status || "canonical";
+    var badge = STATUS_BADGE[status] || "badge-purple";
+    var links = window.Coral.fileLink(r);
+    var foot = [];
+    if (links.html) foot.push('<a href="' + window.Coral.esc(links.html) + '">HTML</a>');
+    if (links.md && !links.same) foot.push('<a href="' + window.Coral.esc(links.md) + '">.md</a>');
+    foot.push('<a href="frontend/report.html?id=' + encodeURIComponent(r.id) + '">detail ↗</a>');
+    var body = r.headline || r.short || "";
+    return (
+      '<div class="report">' +
+        '<h3>' + window.Coral.esc(r.title) + ' <span class="badge ' + badge + '">' + window.Coral.esc(status) + "</span></h3>" +
+        '<div class="stats">' + statBits.join("") + "</div>" +
+        (body ? "<p>" + window.Coral.esc(body) + "</p>" : "") +
+        '<p style="font-size:0.85rem;margin:0.4rem 0 0;color:var(--muted);">📄 ' + foot.join(" · ") + "</p>" +
+      "</div>"
+    );
+  }
+
+  function sorted(list) {
+    return list.slice().sort(function (a, b) {
+      if (a.date !== b.date) return a.date > b.date ? -1 : 1;
+      return a.id > b.id ? -1 : a.id < b.id ? 1 : 0;
+    });
+  }
+
+  container.innerHTML = sorted(REPORTS).map(card).join("");
+  if (countEl) countEl.textContent = REPORTS.length;
+})();
+</script>
 </body>
 </html>
