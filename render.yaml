@@ -1,0 +1,15 @@
+# Render blueprint for the Coral Specs Testing static hub.
+# Publishes the repo root so both /frontend/ and /reports/ are served —
+# this keeps the hub's relative ../reports/ links working on Render and
+# GitHub Pages alike. No build step: the hub is plain static HTML/JS.
+services:
+  - type: web
+    name: coral-specs-testing
+    runtime: static
+    repo: https://github.com/FiscalMindset/coral_specs_testing
+    staticPublishPath: .
+    buildCommand: ""
+    headers:
+      - path: /**
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate

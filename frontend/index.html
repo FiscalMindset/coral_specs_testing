@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Coral Specs Testing — Microsoft Graph v4 Source Report Hub</title>
+<meta name="description" content="Interactive dashboard over every Microsoft Graph v4 (Coral) connector test report: coverage, findings, scopes, licenses, deep-data drills.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">🔬</span>
+      <span class="brand__text">Coral Specs Testing</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav__link is-active" href="index.html">Overview</a>
+      <a class="nav__link" href="reports.html">Reports</a>
+      <a class="nav__link" href="timeline.html">Timeline</a>
+      <a class="nav__link" href="findings.html">Findings</a>
+      <a class="nav__link" href="guides.html">Guides</a>
+      <a class="nav__link" href="about.html">About</a>
+    </nav>
+    <div class="topbar__actions">
+      <a class="chip" href="https://github.com/FiscalMindset/coral_specs_testing" target="_blank" rel="noopener">Repo ↗</a>
+      <a class="chip" href="https://fiscalmindset.github.io/coral_specs_testing/" target="_blank" rel="noopener">Pages ↗</a>
+      <button id="themeToggle" class="chip chip--icon" type="button" aria-label="Toggle color theme" title="Toggle light/dark">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <p class="hero__kicker">Microsoft Graph v4 connector · withcoral / coral</p>
+    <h1 class="hero__title">Everything we know about the <span class="accent">Microsoft Graph v4</span> source, in one place.</h1>
+    <p class="hero__lede">Every test, battery, scope unlock, deep-data drill, and spec-bug finding from <span id="heroRange"></span> — all measured against a live AAD tenant and the real Microsoft Graph API.</p>
+    <div class="hero__links">
+      <a class="btn btn--primary" href="reports.html">Browse all reports</a>
+      <a class="btn" href="timeline.html">Timeline of the program</a>
+      <a class="btn" href="https://github.com/FiscalMindset/coral_specs_testing" target="_blank" rel="noopener">GitHub repository</a>
+    </div>
+  </div>
+
+  <div id="statGrid" class="stat-grid" aria-label="Headline statistics"></div>
+
+  <div class="section">
+    <div class="section__head">
+      <h2>Failure attribution (733-table battery)</h2>
+      <span class="section__sub">Root cause of every failing table, 07-31</span>
+    </div>
+    <div id="attributionBars" class="bars" aria-label="Failure attribution by root cause"></div>
+  </div>
+
+  <div class="section">
+    <div class="section__head">
+      <h2>Pass-rate journey</h2>
+      <span class="section__sub">How far each battery got, over time</span>
+    </div>
+    <div id="passChart" class="chart" aria-label="Pass-rate trend over time"></div>
+  </div>
+
+  <div class="section">
+    <div class="section__head">
+      <h2>Latest canonical finding</h2>
+      <span class="section__sub">SP + Teams exhaustive retest · v6</span>
+    </div>
+    <div id="latestFinding" class="callout"></div>
+  </div>
+
+  <div class="section">
+    <div class="section__head">
+      <h2>Explore</h2>
+      <span class="section__sub">The whole program, organised</span>
+    </div>
+    <div class="tiles">
+      <a class="tile" href="reports.html">
+        <span class="tile__icon">📄</span>
+        <span class="tile__title">All reports</span>
+        <span class="tile__desc">Searchable, filterable catalog of every report.</span>
+      </a>
+      <a class="tile" href="timeline.html">
+        <span class="tile__icon">🗓️</span>
+        <span class="tile__title">Timeline</span>
+        <span class="tile__desc">A chronological read of the whole program.</span>
+      </a>
+      <a class="tile" href="findings.html">
+        <span class="tile__icon">🧭</span>
+        <span class="tile__title">Key findings</span>
+        <span class="tile__desc">Everything proven, grouped by theme.</span>
+      </a>
+      <a class="tile" href="guides.html">
+        <span class="tile__icon">📚</span>
+        <span class="tile__title">Guides &amp; repros</span>
+        <span class="tile__desc">Step-by-step for the fiddly bits.</span>
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <span>Microsoft Graph v4 · Coral source QA</span>
+    <span class="footer__links">
+      <a href="https://github.com/FiscalMindset/coral_specs_testing" target="_blank" rel="noopener">GitHub</a>
+      <span class="dot">·</span>
+      <a href="https://fiscalmindset.github.io/coral_specs_testing/" target="_blank" rel="noopener">GitHub Pages</a>
+    </span>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>
