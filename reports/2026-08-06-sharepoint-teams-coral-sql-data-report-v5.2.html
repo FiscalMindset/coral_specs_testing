@@ -99,7 +99,8 @@ pre.out { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; bor
 <div class="sub">Run: 2026-08-06 20:10–20:40 IST (14:40–15:10 UTC) · 30 min · <strong>13 commands run, 63 output lines captured</strong></div>
 
 <div class="cards"><div class='card fix'><div class='n'>3/3</div><div class='l'>🔑 403s fixed</div></div><div class='card pass'><div class='n'>31</div><div class='l'>📅 calendar events</div></div><div class='card pass'><div class='n'>27</div><div class='l'>📁 SP lists</div></div><div class='card pass'><div class='n'>20</div><div class='l'>📄 list items</div></div><div class='card finding'><div class='n'>12</div><div class='l'>🧩 getfields gaps</div></div><div class='card not_found'><div class='n'>1</div><div class='l'>⚠️ teams quirk</div></div></div>
-<div class="bar"><div class='bar-seg b-fix' style='flex:3'>3 fixed</div><div class='bar-seg b-pass' style='flex:3'>3 verified</div><div class='bar-seg b-finding' style='flex:12'>12 gaps</div><div class='bar-seg b-not_found' style='flex:1'>1 quirk</div></div>
+<div class="cards"><div class='card pass'><div class='n'>7</div><div class='l'>✅ pass</div></div><div class='card not_found'><div class='n'>1</div><div class='l'>🔍 not_found</div></div><div class='card finding'><div class='n'>3</div><div class='l'>📚 catalog</div></div><div class='card fix'><div class='n'>11</div><div class='l'>🎯 total probes</div></div></div>
+<div class="bar"><div class='bar-seg b-pass' style='flex:7'>7</div><div class='bar-seg b-not_found' style='flex:1'>1</div><div class='bar-seg b-finding' style='flex:3'>3</div></div>
 
 <div class="tabs">
 <button class="tab active" onclick="switchTab('overview', this)">Overview</button>
@@ -174,6 +175,13 @@ The calendar view returning 31 real events is <em>empirical proof</em> that the 
 
 <div id="tab-calendar" class="tab-panel">
 <h2>Calendar — 31 real events (v5 headline re-verified)</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>Area</th><th>First line of real output</th></tr>
+<tr><td class='tbl'><code>me_calendar_…listcalendarview</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>calendar</span></td><td><pre class='out'>{"events":"31"}</pre></td></tr>
+<tr><td class='tbl'><code>calendar raw sample (top=2)</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>calendar</span></td><td><pre class='out'>value = JSON array, 2 events</pre></td></tr>
+</table>
+</div>
 <div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS events
 FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
   startdatetime=&gt;'2026-08-06T00:00:00Z', enddatetime=&gt;'2026-09-05T00:00:00Z', top=&gt;500)</pre></div>
@@ -200,6 +208,15 @@ FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
 
 <div id="tab-sharepoint" class="tab-panel">
 <h2>SharePoint — 27 lists + 20 list items (v5 headline re-verified)</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>Area</th><th>First line of real output</th></tr>
+<tr><td class='tbl'><code>sites_list_sites_listlists</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sharepoint</span></td><td><pre class='out'>{"lists":"27"}</pre></td></tr>
+<tr><td class='tbl'><code>listlists raw sample</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sharepoint</span></td><td><pre class='out'>value = JSON array of 27 lists</pre></td></tr>
+<tr><td class='tbl'><code>sites_list_sites_lists_listitems</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sharepoint</span></td><td><pre class='out'>{"items":"20"}</pre></td></tr>
+<tr><td class='tbl'><code>listitems raw sample (top=2)</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sharepoint</span></td><td><pre class='out'>value = JSON array, items without "fields"</pre></td></tr>
+</table>
+</div>
 
 <h3>Lists — 27 lists</h3>
 <div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS lists
@@ -235,6 +252,12 @@ FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
 
 <div id="tab-teams" class="tab-panel">
 <h2>Teams — scope granted, but the v4 manifest needs a team_id</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>Area</th><th>First line of real output</th></tr>
+<tr><td class='tbl'><code>me_team_me_getjoinedteams</code></td><td class='stt'><span class='st st-not_found'>not_found</span></td><td><span class='area-tag'>teams</span></td><td><pre class='out'>Error: Source resource was not found (404)</pre></td></tr>
+</table>
+</div>
 <div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.me_team_me_getjoinedteams(team_id=&gt;'00000000-0000-0000-0000-000000000000')</pre></div>
 <div class="cmdout"><b>output</b><pre class='out'>Error: Source resource was not found (404)
 Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.",
