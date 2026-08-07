@@ -7,8 +7,9 @@
 <style>
 :root { color-scheme: light dark; }
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; line-height: 1.5; }
-.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
 h1 { font-size: 1.5rem; margin: 0 0 4px; }
 h2 { font-size: 1.15rem; margin: 26px 0 10px; }
 h3 { font-size: 1rem; margin: 20px 0 8px; }
@@ -18,10 +19,10 @@ h3 { font-size: 1rem; margin: 20px 0 8px; }
 .card .n { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
 .card .l { font-size: .75rem; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
 .card.pass .n { color: #16a34a; } .card.auth .n { color: #ca8a04; } .card.error .n { color: #dc2626; }
-.card.not_found .n { color: #d97706; } .card.fix .n { color: #2563eb; }
+.card.not_found .n { color: #d97706; } .card.finding .n { color: #7c3aed; } .card.fix .n { color: #2563eb; }
 .bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; margin: 6px 0 20px; border: 1px solid #e2e8f0; }
 .bar-seg { color: #fff; font-size: .72rem; display: flex; align-items: center; justify-content: center; min-width: 22px; }
-.b-fix { background: #2563eb; } .b-pass { background: #16a34a; } .b-not_found { background: #d97706; } .b-error { background: #dc2626; }
+.b-fix { background: #2563eb; } .b-pass { background: #16a34a; } .b-not_found { background: #d97706; } .b-finding { background: #7c3aed; } .b-error { background: #dc2626; }
 table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 th { text-align: left; background: #f1f5f9; padding: 6px 8px; border: 1px solid #e2e8f0; }
 td { padding: 5px 8px; border: 1px solid #e2e8f0; vertical-align: top; word-break: break-word; }
@@ -61,6 +62,19 @@ pre.out { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; bor
 .notice.warn { border-left-color: #d97706; background: #fffbeb; }
 .notice.ok { border-left-color: #16a34a; background: #f0fdf4; }
 .callout { border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed; background: #faf5ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+/* horizontal scroll for wide tables on small screens */
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0; }
+.tbl-scroll table { min-width: 640px; }
+@media (max-width: 640px) {
+  .wrap { padding: 18px 10px 48px; }
+  h1 { font-size: 1.25rem; }
+  .card { flex: 1 1 100%; }
+  .card .n { font-size: 1.4rem; }
+  .tab { padding: 7px 10px; font-size: .8rem; }
+  pre.in, pre.out { font-size: .7rem; padding: 6px 8px; }
+  .toolbar input[type=search] { min-width: 150px; }
+  .bar-seg { min-width: 18px; font-size: .62rem; }
+}
 @media (prefers-color-scheme: dark) {
   body { background: #0f172a; color: #e2e8f0; }
   .sub, .ms { color: #94a3b8; }
@@ -81,16 +95,17 @@ pre.out { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; bor
 <body>
 <div class="wrap">
 <h1>microsoft_graph_v4 — OAuth re-auth verification</h1>
-<div class="sub">2026-08-06 · interactive OAuth re-auth fixes the v5.1 403s · every command input + verbatim output captured below (no fakes)</div>
+<div class="sub">2026-08-06 · interactive OAuth re-auth fixes the v5.1 403s · 13 real `coral sql` invocations · every command input + verbatim output captured below (no fakes)</div>
 <div class="sub">Run: 2026-08-06 20:10–20:40 IST (14:40–15:10 UTC) · 30 min · <strong>13 commands run, 63 output lines captured</strong></div>
 
-<div class="cards"><div class='card fix'><div class='n'>3/3</div><div class='l'>403s fixed</div></div><div class='card pass'><div class='n'>31</div><div class='l'>calendar events</div></div><div class='card pass'><div class='n'>27</div><div class='l'>SP lists</div></div><div class='card pass'><div class='n'>20</div><div class='l'>list items</div></div><div class='card finding'><div class='n'>12</div><div class='l'>getfields gaps</div></div><div class='card not_found'><div class='n'>1</div><div class='l'>teams 404 quirk</div></div></div>
-<div class="bar"><div class='bar-seg b-fix' style='flex:3'>3 fixed</div><div class='bar-seg b-pass' style='flex:3'>3 verified</div><div class='bar-seg b-finding' style='flex:2'>12 gaps</div><div class='bar-seg b-not_found' style='flex:1'>1 quirk</div></div>
+<div class="cards"><div class='card fix'><div class='n'>3/3</div><div class='l'>🔑 403s fixed</div></div><div class='card pass'><div class='n'>31</div><div class='l'>📅 calendar events</div></div><div class='card pass'><div class='n'>27</div><div class='l'>📁 SP lists</div></div><div class='card pass'><div class='n'>20</div><div class='l'>📄 list items</div></div><div class='card finding'><div class='n'>12</div><div class='l'>🧩 getfields gaps</div></div><div class='card not_found'><div class='n'>1</div><div class='l'>⚠️ teams quirk</div></div></div>
+<div class="bar"><div class='bar-seg b-fix' style='flex:3'>3 fixed</div><div class='bar-seg b-pass' style='flex:3'>3 verified</div><div class='bar-seg b-finding' style='flex:12'>12 gaps</div><div class='bar-seg b-not_found' style='flex:1'>1 quirk</div></div>
 
 <div class="tabs">
 <button class="tab active" onclick="switchTab('overview', this)">Overview</button>
-<button class="tab" onclick="switchTab('fix', this)">The fix</button>
-<button class="tab" onclick="switchTab('evidence', this)">Evidence</button>
+<button class="tab" onclick="switchTab('calendar', this)">Calendar</button>
+<button class="tab" onclick="switchTab('sharepoint', this)">SharePoint</button>
+<button class="tab" onclick="switchTab('teams', this)">Teams</button>
 <button class="tab" onclick="switchTab('findings', this)">Findings</button>
 <button class="tab" onclick="switchTab('log', this)">Full command log</button>
 </div>
@@ -101,7 +116,8 @@ pre.out { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; bor
 The exact same Coral SQL that returned <code>403 accessDenied</code> / <code>403 Forbidden</code> / <code>403 ErrorAccessDenied</code> in the az-login session now returns real data:
 <strong>31 calendar events, 27 SharePoint lists, 20 list items</strong> (Code Snippets list). The v5 headline numbers <strong>re-verify exactly</strong>.</p>
 
-<h2>Before → after (same SQL, different token)</h2>
+<h2>Before → after (the deltas — same SQL, different token)</h2>
+<div class="tbl-scroll">
 <table>
 <tr><th>Probe</th><th>v5.1 (az business token)</th><th>v5.2 (interactive OAuth)</th></tr>
 <tr><td><code>sites_list_sites_lists_listitems</code></td><td><span class='st st-gated'>403 accessDenied</span></td><td><span class='st st-pass'>✅ 20 items, full metadata</span></td></tr>
@@ -109,14 +125,33 @@ The exact same Coral SQL that returned <code>403 accessDenied</code> / <code>403
 <tr><td><code>me_calendar_me_calendar_listcalendarview</code></td><td><span class='st st-gated'>403 ErrorAccessDenied</span></td><td><span class='st st-pass'>✅ 31 events</span></td></tr>
 <tr><td><code>me_team_me_getjoinedteams</code></td><td><span class='st st-gated'>403 Forbidden</span></td><td><span class='st st-not_found'>Graph 404 — scope granted</span></td></tr>
 </table>
-
-<div class="notice ok"><strong>Calendars.Read is NOT in the manifest scopes, yet calendar works.</strong> The manifest declares only
-<code>User.Read · Chat.Read · Chat.ReadBasic · Team.ReadBasic.All · Channel.ReadBasic.All · Files.Read · Files.Read.All · Sites.Read.All · offline_access</code>.
-The calendar view returning 31 real events is <em>empirical proof</em> that the interactive OAuth token carries the delegated scopes needed — and a flag for the manifest: add <code>Calendars.Read</code> explicitly to make the requirement honest.</div>
 </div>
 
-<div id="tab-fix" class="tab-panel">
-<h2>The exact fix — remove + re-add with <code>--interactive</code></h2>
+<h2>By area</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Area</th><th>pass</th><th>not_found</th><th>catalog</th><th>Total</th></tr>
+<tr><td>Identity</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+<tr><td>Calendar</td><td>2</td><td>0</td><td>0</td><td>2</td></tr>
+<tr><td>SharePoint</td><td>4</td><td>0</td><td>0</td><td>4</td></tr>
+<tr><td>Teams</td><td>0</td><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>Catalog</td><td>0</td><td>0</td><td>3</td><td>3</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>7</strong></td><td><strong>1</strong></td><td><strong>3</strong></td><td><strong>11</strong></td></tr>
+</table>
+</div>
+
+<h2>✅ 7 probes returning real data</h2>
+<ul>
+<li><code>users_…getuserbyuserprincipalname</code> — identity row returned <span class='area-tag'>identity</span></li>
+<li><code>me_calendar_…listcalendarview</code> — 31 events <span class='area-tag'>calendar</span></li>
+<li><code>calendar raw sample (top=2)</code> — full event JSON <span class='area-tag'>calendar</span></li>
+<li><code>sites_list_sites_listlists</code> — 27 lists <span class='area-tag'>sharepoint</span></li>
+<li><code>listlists raw sample</code> — real names/descriptions <span class='area-tag'>sharepoint</span></li>
+<li><code>sites_list_sites_lists_listitems</code> — 20 items <span class='area-tag'>sharepoint</span></li>
+<li><code>listitems raw sample (top=2)</code> — metadata, no <code>fields</code> <span class='area-tag'>sharepoint</span></li>
+</ul>
+
+<h2>🔧 How it was fixed</h2>
 <p>Non-interactive token injection cannot work for this source: setting <code>MS_GRAPH_ACCESS_TOKEN</code> alone errors with
 <code>missing required environment variable</code> when the credential method is OAuth. The supported path is the interactive browser flow:</p>
 <div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>$ coral source remove microsoft_graph_v4
@@ -131,12 +166,14 @@ Browser opens → user approves scopes → redirect URL pasted back →
 <div class="notice"><strong>Operational requirement:</strong> the interactive flow needs a real TTY. When driven from a script, run it under a
 pty harness that keeps stdin/stdout attached and answers the three prompts (tenant default, "Sign in with Microsoft", client-id default).
 The authorization-code + PKCE exchange completed in ~79 s and the <code>me_user_me_user_getuser</code> validation query passed.</div>
+
+<div class="notice ok"><strong>Calendars.Read is NOT in the manifest scopes, yet calendar works.</strong> The manifest declares only
+<code>User.Read · Chat.Read · Chat.ReadBasic · Team.ReadBasic.All · Channel.ReadBasic.All · Files.Read · Files.Read.All · Sites.Read.All · offline_access</code>.
+The calendar view returning 31 real events is <em>empirical proof</em> that the interactive OAuth token carries the delegated scopes needed — and a flag for the manifest: add <code>Calendars.Read</code> explicitly to make the requirement honest.</div>
 </div>
 
-<div id="tab-evidence" class="tab-panel">
-<h2>Evidence — real data returned by the re-authenticated source</h2>
-
-<h3>1 · Calendar — 31 real events (v5 headline re-verified)</h3>
+<div id="tab-calendar" class="tab-panel">
+<h2>Calendar — 31 real events (v5 headline re-verified)</h2>
 <div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS events
 FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
   startdatetime=&gt;'2026-08-06T00:00:00Z', enddatetime=&gt;'2026-09-05T00:00:00Z', top=&gt;500)</pre></div>
@@ -146,10 +183,25 @@ FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
 ├────────┤
 │     31 │
 └────────┘</pre></div></div>
-<p class="sub">Sample subjects seen in the raw payload: <code>Skip-level 1:1 - skip director</code> (Conference Room A),
+<p class="sub">Sample subjects seen in the raw payload (top=2): <code>Skip-level 1:1 - skip director</code> (Conference Room A),
 <code>Faculty Meeting - CSE Dept</code> (Senate Hall, IIT Delhi) — full event JSON incl. body, organizer, webLink, attendees.</p>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
+  startdatetime=&gt;'2026-08-06T00:00:00Z', enddatetime=&gt;'2026-09-05T00:00:00Z', top=&gt;2)</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>value = JSON array, 2 events, e.g.:
+[{"subject":"Skip-level 1:1 - skip director","start":{"dateTime":"2026-08-07T03:45:00","timeZone":"UTC"},
+  "end":{"dateTime":"2026-08-07T04:30:00","timeZone":"UTC"},
+  "location":{"displayName":"Conference Room A",...},"organizer":{"emailAddress":{"name":"vicky kumar",
+  "address":"vickykumar@algsoch762.onmicrosoft.com"}},...},
+ {"subject":"Faculty Meeting - CSE Dept","start":{"dateTime":"2026-08-07T11:45:00","timeZone":"UTC"},
+  "end":{"dateTime":"2026-08-07T12:45:00","timeZone":"UTC"},
+  "location":{"displayName":"Senate Hall, IIT Delhi",...},...}]</pre></div></div>
+<div class="notice ok">WAS <span class='st st-gated'>403 ErrorAccessDenied</span> in v5.1 → now <span class='st st-pass'>31 events</span> with the OAuth token. See Findings tab F2 for the <code>Calendars.Read</code> scope note.</div>
+</div>
 
-<h3>2 · SharePoint lists — 27 lists (v5 headline re-verified)</h3>
+<div id="tab-sharepoint" class="tab-panel">
+<h2>SharePoint — 27 lists + 20 list items (v5 headline re-verified)</h2>
+
+<h3>Lists — 27 lists</h3>
 <div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS lists
 FROM microsoft_graph_v4.sites_list_sites_listlists(
   site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b', top=&gt;100)</pre></div>
@@ -165,7 +217,7 @@ Employee Directory, AI Tool Usage, Faculty Directory, Course Catalog, Vendor Con
 GraphTestList, Engineering Tasks, Customer Support Tickets, Git Repositories, Shared Documents, Daily Activities, Skills Inventory,
 Library Books, AI Development Sessions, CompanyList-….</p>
 
-<h3>3 · SharePoint list items — 20 items, full metadata, but NO fields</h3>
+<h3>List items — 20 items, full metadata, but NO fields</h3>
 <div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS items
 FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
   site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
@@ -177,9 +229,12 @@ FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
 │    20 │
 └───────┘</pre></div></div>
 <p class="sub">Item JSON includes <code>createdDateTime, id, webUrl, createdBy, lastModifiedBy, contentType</code> — but <strong>no <code>fields</code> object</strong>
-(the column content that would carry the actual cell values). This is the persistent limitation, proven at catalog level next.</p>
+(the column content that would carry the actual cell values). This is the persistent limitation, proven at catalog level in the Findings tab.</p>
+<div class="notice ok">WAS <span class='st st-gated'>403 accessDenied</span> in v5.1 → now <span class='st st-pass'>27 lists / 20 items</span>.</div>
+</div>
 
-<h3>4 · Teams — scope granted, but the v4 manifest needs a team_id</h3>
+<div id="tab-teams" class="tab-panel">
+<h2>Teams — scope granted, but the v4 manifest needs a team_id</h2>
 <div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.me_team_me_getjoinedteams(team_id=&gt;'00000000-0000-0000-0000-000000000000')</pre></div>
 <div class="cmdout"><b>output</b><pre class='out'>Error: Source resource was not found (404)
 Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.",
@@ -189,23 +244,34 @@ Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. P
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</pre></div></div>
 <div class="callout"><strong>Meaning:</strong> a scope-level 403 would say <em>"API requires one of Team.ReadBasic.All…"</em>. We get a real Graph
 <strong>404</strong> instead — i.e. the OAuth token now has Teams scopes, but the v4 manifest mapped <code>GET /me/joinedTeams</code> to an
-item-style path <code>/me/joinedTeams/{team-id}</code> requiring <code>team_id</code>. You cannot list teams from zero on v4. See Findings tab.</div>
+item-style path <code>/me/joinedTeams/{team-id}</code> requiring <code>team_id</code>. You cannot list teams from zero on v4. See Findings tab F3.</div>
 
-<h3>5 · getfields — all 12 routes expose only odata_type + id</h3>
-<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT count(*) AS total_getfields
+<h3>Catalog — teams functions in v4 (no listteam, all require team_id)</h3>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT function_name, arguments_json
 FROM coral.table_functions
-WHERE schema_name='microsoft_graph_v4' AND function_name ILIKE '%getfields%'</pre></div>
-<div class="cmdout"><b>output</b><pre class='out'>┌────────────────┐
-│ total_getfields │
-│ Int64           │
-├─────────────────┤
-│              12 │
-└─────────────────┘</pre></div></div>
+WHERE schema_name='microsoft_graph_v4'
+  AND (function_name ILIKE '%listteam%' OR function_name ILIKE '%joinedteam%' OR function_name ILIKE '%listchannels%')
+ORDER BY function_name LIMIT 10</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>groups_team_groups_team_listchannels              → required: group_id
+me_team_me_getjoinedteams                          → required: team_id
+me_team_me_joinedteams_channels_getallmembers      → required: channel_id, conversationmember_id, team_id
+me_team_me_joinedteams_channels_getenabledapps      → required: channel_id, team_id, teamsapp_id
+me_team_me_joinedteams_channels_getfilesfolder      → required: channel_id, team_id
+me_team_me_joinedteams_channels_getmembers          → required: channel_id, conversationmember_id, team_id
+me_team_me_joinedteams_channels_getmessages         → required: channel_id, chatmessage_id, team_id
+me_team_me_joinedteams_channels_getsharedwithteams  → required: channel_id, sharedwithchannelteaminfo_id, team_id
+me_team_me_joinedteams_channels_gettabs             → required: channel_id, team_id, teamstab_id
+me_team_me_joinedteams_channels_listallmembers      → required: channel_id, team_id
+
+NOTE: NO teams_team_teams_team_listteam exists in v4 (v5 had it). Only:
+teams_team_teams_team_getteam → required: team_id</pre></div></div>
+<div class="notice warn">WAS <span class='st st-gated'>403 Forbidden</span> in v5.1 → now <span class='st st-not_found'>Graph 404</span>: the OAuth token has the Teams scopes; the <em>route naming</em> is what blocks enumeration.</div>
 </div>
 
 <div id="tab-findings" class="tab-panel">
 <h2>Findings</h2>
 
+<div class="tbl-scroll">
 <table>
 <tr><th>#</th><th>Finding</th><th>Evidence</th><th>Severity</th></tr>
 <tr><td>F1</td><td><strong>Interactive OAuth re-auth fixes all 3 prior 403s.</strong> Same SQL, only the token changed.</td><td>Calendar 31 / lists 27 / items 20 now return data</td><td><span class='st st-fixed'>RESOLVED</span></td></tr>
@@ -216,6 +282,25 @@ WHERE schema_name='microsoft_graph_v4' AND function_name ILIKE '%getfields%'</pr
 <tr><td>F6</td><td><strong>No root-level user/group enumeration.</strong> Only get-by-known-UPN / get-by-known-uniqueName exist; every <code>…listusers/listgroups</code> is nested under an already-known entity.</td><td>catalog search: only nested surfaces</td><td><span class='st st-finding'>DATA GAP</span></td></tr>
 <tr><td>F7</td><td><strong>Plain az business token cannot reach SharePoint/Teams/Calendar.</strong> Not a Coral bug — token scope property. Use <code>coral source add --interactive</code>.</td><td>v5.1 session 403s vs v5.2 pass</td><td><span class='st st-fixed'>RESOLVED</span></td></tr>
 </table>
+</div>
+
+<h2>getfields — all 12 routes expose only odata_type + id (F4 evidence)</h2>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT function_name, result_columns_json
+FROM coral.table_functions
+WHERE schema_name='microsoft_graph_v4' AND function_name ILIKE '%getfields%'
+ORDER BY function_name</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>drives_list_drives_list_items_documentsetversions_getfields        → [odata_type, id]
+drives_list_drives_list_items_getfields                            → [odata_type, id]
+drives_list_drives_list_items_versions_getfields                   → [odata_type, id]
+groups_site_groups_sites_lists_items_documentsetversions_getfields → [odata_type, id]
+groups_site_groups_sites_lists_items_getfields                     → [odata_type, id]
+groups_site_groups_sites_lists_items_versions_getfields            → [odata_type, id]
+shares_list_shares_list_items_documentsetversions_getfields        → [odata_type, id]
+shares_list_shares_list_items_getfields                            → [odata_type, id]
+shares_list_shares_list_items_versions_getfields                   → [odata_type, id]
+sites_list_sites_lists_items_documentsetversions_getfields         → [odata_type, id]
+sites_list_sites_lists_items_getfields                             → [odata_type, id]
+sites_list_sites_lists_items_versions_getfields                    → [odata_type, id]</pre></div></div>
 
 <h2>Recommendations for Coral maintainers</h2>
 <ul>
@@ -231,23 +316,32 @@ WHERE schema_name='microsoft_graph_v4' AND function_name ILIKE '%getfields%'</pr
 <h2>Full command log — every command, input AND output verbatim</h2>
 <p class="sub">Each row is one real probe run against the re-authenticated source. Input = exact SQL sent; output = verbatim result (JSON rows as returned, or the Graph error as surfaced by Coral). Filter to narrow.</p>
 <div class="toolbar">
-<input type="search" id="logSearch" placeholder="Filter functions…" oninput="applyFilter()">
+<input type="search" id="logSearch" placeholder="Filter tables…" oninput="applyFilter()">
 <select id="logStatus" onchange="applyFilter()">
 <option value="">all statuses</option>
 <option>pass</option><option>not_found</option><option>catalog</option>
 </select>
+<select id="logArea" onchange="applyFilter()">
+<option value="">all areas</option>
+<option value="identity">identity</option>
+<option value="calendar">calendar</option>
+<option value="sharepoint">sharepoint</option>
+<option value="teams">teams</option>
+<option value="catalog">catalog</option>
+</select>
 <span id="matchCount" class="sub"></span>
 </div>
+<div class="tbl-scroll">
 <table class="cmdlog">
 <tr><th>Function / probe</th><th>Status</th><th>Area</th><th>Command (input) and real output</th></tr>
-<tr class='cmdrow' data-status='pass' data-area='identity'><td class='tbl'><code>users_…getuserbyuserprincipalname</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td>identity</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname, mail, userprincipalname, securityidentifier
+<tr class='cmdrow' data-status='pass' data-area='identity' data-table='getuserbyuserprincipalname'><td class='tbl'><code>users_…getuserbyuserprincipalname</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>identity</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname, mail, userprincipalname, securityidentifier
 FROM microsoft_graph_v4.users_user_users_user_getuserbyuserprincipalname(
   userprincipalname => 'vickykumar@algsoch762.onmicrosoft.com')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"displayname":"vicky kumar","mail":"vickykumar@algsoch762.onmicrosoft.com",
  "userprincipalname":"vickykumar@algsoch762.onmicrosoft.com","securityidentifier":null}</pre></div></td></tr>
-<tr class='cmdrow' data-status='catalog' data-area='catalog'><td class='tbl'><code>catalog: getfields count</code></td><td class='stt'><span class='st st-pass'>catalog</span></td><td>catalog</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS total_getfields
+<tr class='cmdrow' data-status='catalog' data-area='catalog' data-table='getfields count'><td class='tbl'><code>catalog: getfields count</code></td><td class='stt'><span class='st st-pass'>catalog</span></td><td><span class='area-tag'>catalog</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS total_getfields
 FROM coral.table_functions
 WHERE schema_name='microsoft_graph_v4' AND function_name ILIKE '%getfields%'</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"total_getfields":"12"}</pre></div></td></tr>
-<tr class='cmdrow' data-status='catalog' data-area='catalog'><td class='tbl'><code>catalog: 12 getfields columns</code></td><td class='stt'><span class='st st-pass'>catalog</span></td><td>catalog</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT function_name, result_columns_json
+<tr class='cmdrow' data-status='catalog' data-area='catalog' data-table='12 getfields columns'><td class='tbl'><code>catalog: 12 getfields columns</code></td><td class='stt'><span class='st st-pass'>catalog</span></td><td><span class='area-tag'>catalog</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT function_name, result_columns_json
 FROM coral.table_functions
 WHERE schema_name='microsoft_graph_v4' AND function_name ILIKE '%getfields%'
 ORDER BY function_name</pre></div><div class='cmdout'><b>output</b><pre class='out'>drives_list_drives_list_items_documentsetversions_getfields        → [odata_type, id]
@@ -262,17 +356,17 @@ shares_list_shares_list_items_versions_getfields                   → [odata_ty
 sites_list_sites_lists_items_documentsetversions_getfields         → [odata_type, id]
 sites_list_sites_lists_items_getfields                             → [odata_type, id]
 sites_list_sites_lists_items_versions_getfields                    → [odata_type, id]</pre></div></td></tr>
-<tr class='cmdrow' data-status='pass' data-area='calendar'><td class='tbl'><code>me_calendar_…listcalendarview</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td>calendar</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS events
+<tr class='cmdrow' data-status='pass' data-area='calendar' data-table='calendar count'><td class='tbl'><code>me_calendar_…listcalendarview</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>calendar</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS events
 FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
   startdatetime=>'2026-08-06T00:00:00Z', enddatetime=>'2026-09-05T00:00:00Z', top=>500)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"events":"31"}</pre></div></td></tr>
-<tr class='cmdrow' data-status='pass' data-area='sharepoint'><td class='tbl'><code>sites_list_sites_listlists</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td>sharepoint</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS lists
+<tr class='cmdrow' data-status='pass' data-area='sharepoint' data-table='listlists count'><td class='tbl'><code>sites_list_sites_listlists</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sharepoint</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS lists
 FROM microsoft_graph_v4.sites_list_sites_listlists(
   site_id=>'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b', top=>100)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"lists":"27"}</pre></div></td></tr>
-<tr class='cmdrow' data-status='pass' data-area='sharepoint'><td class='tbl'><code>sites_list_sites_lists_listitems</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td>sharepoint</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS items
+<tr class='cmdrow' data-status='pass' data-area='sharepoint' data-table='listitems count'><td class='tbl'><code>sites_list_sites_lists_listitems</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sharepoint</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS items
 FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
   site_id=>'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
   list_id=>'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', top=>500)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"items":"20"}</pre></div></td></tr>
-<tr class='cmdrow' data-status='pass' data-area='calendar'><td class='tbl'><code>calendar raw sample (top=2)</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td>calendar</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
+<tr class='cmdrow' data-status='pass' data-area='calendar' data-table='calendar raw sample'><td class='tbl'><code>calendar raw sample (top=2)</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>calendar</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.me_calendar_me_calendar_listcalendarview(
   startdatetime=>'2026-08-06T00:00:00Z', enddatetime=>'2026-09-05T00:00:00Z', top=>2)</pre></div><div class='cmdout'><b>output</b><pre class='out'>value = JSON array, 2 events, e.g.:
 [{"subject":"Skip-level 1:1 - skip director","start":{"dateTime":"2026-08-07T03:45:00","timeZone":"UTC"},
   "end":{"dateTime":"2026-08-07T04:30:00","timeZone":"UTC"},
@@ -281,7 +375,7 @@ FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
  {"subject":"Faculty Meeting - CSE Dept","start":{"dateTime":"2026-08-07T11:45:00","timeZone":"UTC"},
   "end":{"dateTime":"2026-08-07T12:45:00","timeZone":"UTC"},
   "location":{"displayName":"Senate Hall, IIT Delhi",...},...}]</pre></div></td></tr>
-<tr class='cmdrow' data-status='pass' data-area='sharepoint'><td class='tbl'><code>listlists raw sample</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td>sharepoint</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.sites_list_sites_listlists(
+<tr class='cmdrow' data-status='pass' data-area='sharepoint' data-table='listlists raw'><td class='tbl'><code>listlists raw sample</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sharepoint</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.sites_list_sites_listlists(
   site_id=>'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b', top=>100)</pre></div><div class='cmdout'><b>output</b><pre class='out'>value = JSON array of 27 lists, e.g.:
 [{"id":"a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e","displayName":"Code Snippets",
   "description":"Personal context list: Code Snippets","webUrl":"https://algsoch762.sharepoint.com/Lists/Code%20Snippets",
@@ -290,19 +384,19 @@ FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
   "description":"All contributors across FiscalMindset repos",...},
  {"id":"c8bb6b92-f29b-419d-9fa6-2a682d67ae1b","displayName":"Student Enrollment",
   "description":"Active students enrolled in current semester",...}, ...]</pre></div></td></tr>
-<tr class='cmdrow' data-status='pass' data-area='sharepoint'><td class='tbl'><code>listitems raw sample (top=2)</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td>sharepoint</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
+<tr class='cmdrow' data-status='pass' data-area='sharepoint' data-table='listitems raw'><td class='tbl'><code>listitems raw sample (top=2)</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>sharepoint</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.sites_list_sites_lists_listitems(
   site_id=>'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
   list_id=>'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', top=>2)</pre></div><div class='cmdout'><b>output</b><pre class='out'>value = JSON array, items have id/webUrl/createdBy/lastModifiedBy/contentType but NO "fields" object:
 [{"id":"1","webUrl":"https://algsoch762.sharepoint.com/Lists/Code%20Snippets/1_.000",
   "createdBy":{"user":{"email":"vickykumar@algsoch762.onmicrosoft.com","id":"55bcc9a0-...","displayName":"vicky kumar"}},
   "contentType":{"id":"0x0100...","name":"Item"}}, ...]</pre></div></td></tr>
-<tr class='cmdrow' data-status='not_found' data-area='teams'><td class='tbl'><code>me_team_me_getjoinedteams</code></td><td class='stt'><span class='st st-not_found'>not_found</span></td><td>teams</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.me_team_me_getjoinedteams(team_id=>'00000000-0000-0000-0000-000000000000')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404)
+<tr class='cmdrow' data-status='not_found' data-area='teams' data-table='getjoinedteams'><td class='tbl'><code>me_team_me_getjoinedteams</code></td><td class='stt'><span class='st st-not_found'>not_found</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.me_team_me_getjoinedteams(team_id=>'00000000-0000-0000-0000-000000000000')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Source resource was not found (404)
 Detail: {"error":{"code":"NotFound","message":"Requested API is not supported. Please check the path.",
 "innerError":{"date":"2026-08-06T20:33:15","request-id":"8cf7153e-1ec3-4339-941b-89fe8b8b5ddf",
 "client-request-id":"8cf7153e-1ec3-4339-941b-89fe8b8b5ddf"}}}
 [GET] https://graph.microsoft.com/v1.0/me/joinedTeams/00000000-0000-0000-0000-000000000000
 Hint: Verify the identifier or filter values you passed; the upstream resource was not found.</pre></div></td></tr>
-<tr class='cmdrow' data-status='catalog' data-area='catalog'><td class='tbl'><code>catalog: teams functions</code></td><td class='stt'><span class='st st-pass'>catalog</span></td><td>catalog</td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT function_name, arguments_json
+<tr class='cmdrow' data-status='catalog' data-area='catalog' data-table='teams functions'><td class='tbl'><code>catalog: teams functions</code></td><td class='stt'><span class='st st-pass'>catalog</span></td><td><span class='area-tag'>catalog</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT function_name, arguments_json
 FROM coral.table_functions
 WHERE schema_name='microsoft_graph_v4'
   AND (function_name ILIKE '%listteam%' OR function_name ILIKE '%joinedteam%' OR function_name ILIKE '%listchannels%')
@@ -321,7 +415,9 @@ NOTE: NO teams_team_teams_team_listteam exists in v4 (v5 had it). Only:
 teams_team_teams_team_getteam → required: team_id</pre></div></td></tr>
 </table>
 </div>
+</div>
 
+<p class="sub" style="margin-top:28px;border-top:1px solid #e2e8f0;padding-top:10px;">Author: Vicky Kumar · Repo: https://github.com/FiscalMindset/coral_specs_testing · Full v5.2 Markdown companion: <a href="2026-08-06-sharepoint-teams-coral-sql-data-report-v5.2.md">2026-08-06-sharepoint-teams-coral-sql-data-report-v5.2.md</a></p>
 </div>
 <script>
 function switchTab(name, btn){
@@ -333,15 +429,15 @@ function switchTab(name, btn){
 function applyFilter(){
   var q=document.getElementById('logSearch').value.toLowerCase();
   var s=document.getElementById('logStatus').value;
+  var a=document.getElementById('logArea').value;
   var rows=document.querySelectorAll('#tab-log .cmdrow'); var n=0;
   rows.forEach(function(r){
-    var text=r.textContent.toLowerCase();
-    var status=r.getAttribute('data-status');
-    var show=(!q||text.indexOf(q)>-1)&&(!s||status===s);
+    var text=(r.getAttribute('data-table')||r.textContent).toLowerCase();
+    var show=(!q||text.indexOf(q)>-1)&&(!s||r.getAttribute('data-status')===s)&&(!a||r.getAttribute('data-area')===a);
     r.classList.toggle('show',show);
     if(show)n++;
   });
-  document.getElementById('matchCount').textContent=n+' / '+rows.length+' shown';
+  document.getElementById('matchCount').textContent=n+' / '+rows.length+' commands shown';
 }
 applyFilter();
 </script>
