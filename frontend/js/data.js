@@ -23,7 +23,27 @@ window.CORAL_REPORTS = [
     ],
     md: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8.md",
     html: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8.html",
-    tags: ["coral-sql", "sharepoint", "teams", "consolidated", "161-probes"]
+    tags: ["coral-sql", "sharepoint", "teams", "consolidated", "161-probes"],
+    addendum: "2026-08-08-sharepoint-teams-coral-sql-data-report-v8-test-data-correction"
+  },
+  {
+    id: "2026-08-08-sharepoint-teams-coral-sql-data-report-v8-test-data-correction",
+    date: "2026-08-08",
+    title: "v8 test-data correction (addendum)",
+    short: "Corrective re-run of the 2 never-retested item-15 probes · taxonomy corrected",
+    category: "sharepoint-teams",
+    status: "addendum",
+    stats: { pass: 79, error: 80, gated: 0, catalog: 2, total: 161 },
+    headline: "Re-ran the 2 never-retested 'item 15' probes from v8's test-data bucket with valid live seeds. test-data 7→5, ms-upstream 22→23 (lastModifiedByUser 500 on both routes), spec/catalog 4→5 (drive-as-list item permissions 404 on valid items). Still sums to 80: 70 Microsoft-side (24+23+10+8+5), 5 test-side, 5 spec/catalog (3-4 Coral-fixable). v8 itself remains frozen.",
+    findings: [
+      "v6-list lastmodifiedby → 500 lastModifiedByUser on drive-as-list AND site-list routes with valid items → ms-upstream",
+      "v6-drive-as-list item permissions → 404 on valid OneDrive items 1/3 while site-list variant returns 4 → spec/catalog",
+      "Remaining 5 test-data probes all pass with valid seeds (version 1.0, root children, item 3, team b4dd618c)",
+      "Corrected taxonomy: ms-scope 24, ms-upstream 23, graph-constraint 10, aad-account 8, test-data 5, delegated-context 5, spec/catalog 5"
+    ],
+    md: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8-test-data-correction.md",
+    html: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8-test-data-correction.html",
+    tags: ["coral-sql", "sharepoint", "teams", "addendum", "correction"]
   },
   {
     id: "2026-08-08-sharepoint-teams-coral-sql-data-report-v7",

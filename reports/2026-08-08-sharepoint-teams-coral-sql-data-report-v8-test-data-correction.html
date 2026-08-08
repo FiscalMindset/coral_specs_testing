@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>microsoft_graph_v4 — v8 test-data correction (addendum)</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 28px 20px 64px; }
+h1 { font-size: 1.6rem; margin: 0 0 6px; }
+h2 { font-size: 1.15rem; margin: 26px 0 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; }
+.sub { color: #475569; font-size: .85rem; margin: 2px 0; }
+.cards { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 10px; }
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; min-width: 130px; }
+.card .n { font-size: 1.7rem; font-weight: 700; }
+.card .l { font-size: .78rem; color: #475569; }
+.card.pass { border-top: 3px solid #16a34a; } .card.error { border-top: 3px solid #dc2626; }
+.card.fix { border-top: 3px solid #2563eb; } .card.warn { border-top: 3px solid #f59e0b; }
+.bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; margin: 10px 0 4px; }
+.bar-seg { display: flex; align-items: center; justify-content: center; color: #fff; font-size: .7rem; font-weight: 700; min-width: 34px; }
+.b-ms { background: #6366f1; } .b-test { background: #f59e0b; } .b-coral { background: #dc2626; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th { text-align: left; background: #f1f5f9; padding: 6px 8px; border: 1px solid #e2e8f0; }
+td { padding: 5px 8px; border: 1px solid #e2e8f0; vertical-align: top; word-break: break-word; }
+code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; font-size: .78rem; }
+pre.in { background: #0f172a; color: #a5f3fc; padding: 8px 10px; border-radius: 6px; font-size: .76rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+pre.out { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 6px; font-size: .74rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+.st { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+.st-pass { background: #dcfce7; color: #166534; }
+.st-error { background: #fee2e2; color: #991b1b; }
+.st-catalog { background: #e0e7ff; color: #4338ca; }
+.st-ms { background: #e0e7ff; color: #4338ca; }
+.st-test { background: #fef3c7; color: #92400e; }
+.notice { border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; background: #eff6ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+.notice.warn { border-left-color: #d97706; background: #fffbeb; }
+.notice.ok { border-left-color: #16a34a; background: #f0fdf4; }
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0; }
+.tbl-scroll table { min-width: 640px; }
+@media (max-width: 640px) {
+  .wrap { padding: 18px 10px 48px; }
+  h1 { font-size: 1.25rem; }
+  .card { flex: 1 1 100%; }
+}
+@media (prefers-color-scheme: dark) {
+  body { background: #0f172a; color: #e2e8f0; }
+  .sub { color: #94a3b8; }
+  .card, table td { background: #1e293b; border-color: #334155; }
+  th { background: #334155; border-color: #475569; }
+  code, pre.out { background: #0f172a; border-color: #334155; color: #cbd5e1; }
+  .notice { background: #0c1a3a; border-color: #334155; }
+  .notice.ok { background: #052e16; }
+  .notice.warn { background: #2a1a04; }
+  pre.in { background: #000; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>microsoft_graph_v4 — v8 test-data correction (addendum)</h1>
+<div class="sub">2026-08-08 · corrective re-run of the 2 never-retested <code>item 15</code> probes · every result live-verified against the <code>microsoft_graph_v4</code> Coral source</div>
+<div class="sub">Re-run: 2026-08-08 12:13–12:20 UTC · supersedes the v8 test-data bucket only · v8 itself remains frozen</div>
+
+<div class="cards"><div class='card test'><div class='n'>7→5</div><div class='l'>🧪 test-data</div></div><div class='card error'><div class='n'>22→23</div><div class='l'>🌀 ms-upstream</div></div><div class='card warn'><div class='n'>4→5</div><div class='l'>🐛 spec / catalog</div></div><div class='card pass'><div class='n'>70</div><div class='l'>🔒 Microsoft-side of 80</div></div></div>
+<div class="bar"><div class='bar-seg b-ms' style='flex:70'>70 MS</div><div class='bar-seg b-test' style='flex:5'>5 test</div><div class='bar-seg b-coral' style='flex:5'>5 coral</div></div>
+
+<div class="notice"><strong>Why this addendum exists.</strong> v8 classified 7 of the 80 errors as <code>test-data</code>. Two of those 7 — <code>v6-drive-as-list item getfields</code> and <code>v6-list lastmodifiedby</code> — had never been retested (they referenced <code>item 15</code> on the <strong>Documents</strong> drive, which is empty). This addendum re-runs both against valid, live-verified seeds. Result: one is a genuine test-side pass (item getfields), and two are <em>not</em> test-side at all — <code>lastModifiedByUser</code> 500s on both routes (upstream) and drive-as-list item permissions 404s on valid items while the site-list route returns 4 rows (catalog route issue).</div>
+
+<h2>Corrected error taxonomy (still sums to 80)</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>cls</th><th>v8</th><th>Corrected</th><th>Δ</th><th>Who can fix</th></tr>
+<tr><td><span class="st st-ms">ms-scope</span></td><td>24</td><td>24</td><td>—</td><td>Microsoft / consent update</td></tr>
+<tr><td><span class="st st-ms">ms-upstream</span></td><td>22</td><td><strong>23</strong></td><td>+1 · lastModifiedByUser 500</td><td>Microsoft</td></tr>
+<tr><td><span class="st st-ms">graph-constraint</span></td><td>10</td><td>10</td><td>—</td><td>Microsoft / connector docs</td></tr>
+<tr><td><span class="st st-ms">aad-account</span></td><td>8</td><td>8</td><td>—</td><td>Microsoft</td></tr>
+<tr><td><span class="st st-test">test-data</span></td><td>7</td><td><strong>5</strong></td><td>−2</td><td>Retest with valid IDs</td></tr>
+<tr><td><span class="st st-ms">delegated-context</span></td><td>5</td><td>5</td><td>—</td><td>Microsoft</td></tr>
+<tr><td><span class="st st-catalog">spec / catalog</span></td><td>4</td><td><strong>5</strong></td><td>+1 · drive-as-list item permissions 404</td><td>Coral maintainers</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>80</strong></td><td><strong>80</strong></td><td></td><td></td></tr>
+</table>
+</div>
+<p><strong>Net: 70 of 80 errors are Microsoft-side (24+23+10+8+5); only 5 are test-side stale IDs; 3–4 are Coral-fixable catalog issues.</strong></p>
+
+<h2>Per-probe disposition of the original 7 test-data errors</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>v8 cls</th><th>Re-run with valid seed</th><th>Corrected cls</th></tr>
+<tr><td><code>v6-item versions getfields</code></td><td><span class="st st-test">test-data</span></td><td><span class="st st-pass">✅ pass</span> — version <code>1.0</code> (was bogus <code>1</code>)</td><td><span class="st st-test">test-data</span></td></tr>
+<tr><td><code>v6-drive listchildren</code></td><td><span class="st st-test">test-data</span></td><td><span class="st st-pass">✅ pass</span> — root (file was not a folder)</td><td><span class="st st-test">test-data</span></td></tr>
+<tr><td><code>v6-drive-as-list item getfields</code></td><td><span class="st st-test">test-data</span></td><td><span class="st st-pass">✅ pass</span> — OneDrive list item 3 (was stale item 15 on empty Documents drive)</td><td><span class="st st-test">test-data</span></td></tr>
+<tr><td><code>v6-getteam</code></td><td><span class="st st-test">test-data</span></td><td><span class="st st-pass">✅ pass</span> — team <code>b4dd618c</code> (was wrong seed)</td><td><span class="st st-test">test-data</span></td></tr>
+<tr><td><code>v6-getgroup</code></td><td><span class="st st-test">test-data</span></td><td><span class="st st-pass">✅ pass</span> — team <code>b4dd618c</code> (was wrong seed)</td><td><span class="st st-test">test-data</span></td></tr>
+<tr><td><code>v6-list lastmodifiedby</code></td><td><span class="st st-test">test-data</span></td><td><span class="st st-error">❌ 500</span> — <code>lastModifiedByUser</code>, drive-as-list AND site-list routes, valid items</td><td><span class="st st-ms">ms-upstream</span></td></tr>
+<tr><td><code>v6-drive-as-list item permissions</code></td><td><span class="st st-test">test-data</span></td><td><span class="st st-error">❌ 404</span> — valid OneDrive items 1/3; site-list variant returns 4</td><td><span class="st st-catalog">spec / catalog</span></td></tr>
+</table>
+</div>
+
+<h2>Why the two were NOT test-side</h2>
+
+<h3><code>v6-list lastmodifiedby</code> → 500 (ms-upstream)</h3>
+<p>The v8 probe used <code>listitem_id 15</code> on the <strong>Documents</strong> drive — which is empty. Retested on the <strong>OneDrive</strong> drive-as-list (15 real items), valid item 3:</p>
+<pre class="in">SELECT * FROM microsoft_graph_v4.drives_list_drives_list_items_getlastmodifiedbyuser(
+  drive_id =&gt; 'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  listitem_id =&gt; '3')</pre>
+<pre class="out">500 InternalServerError "Error processing response from backend service."
+[GET] /drives/{id}/list/items/3/lastModifiedByUser</pre>
+<p>Site-list route (valid item 1) also 500s:</p>
+<pre class="in">SELECT * FROM microsoft_graph_v4.sites_list_sites_lists_items_getlastmodifiedbyuser(
+  site_id =&gt; 'algsoch762.sharepoint.com,915ef513-…,3e018d22-…',
+  list_id =&gt; 'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', listitem_id =&gt; '1')</pre>
+<pre class="out">500 InternalServerError [GET] /sites/{id}/lists/{id}/items/1/lastModifiedByUser</pre>
+
+<h3><code>v6-drive-as-list item permissions</code> → 404 on valid items, site-list works (spec / catalog)</h3>
+<pre class="in">SELECT * FROM microsoft_graph_v4.drives_list_drives_list_items_listpermissions(
+  drive_id =&gt; 'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  listitem_id =&gt; '3')</pre>
+<pre class="out">404 itemNotFound "Item not found" [GET] /drives/{id}/list/items/3/permissions</pre>
+<p>Control — the <strong>site-list</strong> variant returns real rows:</p>
+<pre class="in">SELECT json_length(value) AS n FROM microsoft_graph_v4.sites_list_sites_lists_items_listpermissions(
+  site_id =&gt; 'algsoch762.sharepoint.com,915ef513-…,3e018d22-…',
+  list_id =&gt; 'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', listitem_id =&gt; '1')</pre>
+<pre class="out">n = 4</pre>
+
+<h2>Seeds verified during this addendum</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Seed</th><th>Verified fact</th></tr>
+<tr><td>OneDrive (user) drive <code>b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq</code></td><td>drive-as-list has <strong>15 real items</strong>; item 3 getfields → <code>id=3</code>; item lastModifiedByUser → 500; item permissions → 404</td></tr>
+<tr><td>Documents drive <code>b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1</code></td><td>drive-as-list is <strong>empty</strong> — v8 <code>item 15</code> probes were stale <em>and</em> on the wrong (empty) drive</td></tr>
+<tr><td>Code Snippets list <code>a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e</code></td><td>site item 1 has a real version <code>1.0</code> (getfields → <code>id=1</code>); site item permissions return 4 rows</td></tr>
+<tr><td><code>drives_driveitem_drives_listitems</code></td><td>still requires a <code>filter</code> arg (400 invalidRequest) — unchanged from v8, graph-constraint</td></tr>
+</table>
+</div>
+
+<h2>Re-run command log (verbatim)</h2>
+
+<h3><code>v6-item versions getfields</code> (corrected seed) — <span class="st st-pass">✅ pass</span></h3>
+<pre class="in">SELECT * FROM microsoft_graph_v4.sites_list_sites_lists_items_versions_getfields(
+  site_id =&gt; 'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id =&gt; 'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e',
+  listitem_id =&gt; '1', listitemversion_id =&gt; '1.0')</pre>
+<pre class="out">odata_type=null  id=1</pre>
+
+<h3><code>v6-drive-as-list item getfields</code> (corrected seed) — <span class="st st-pass">✅ pass</span></h3>
+<pre class="in">SELECT * FROM microsoft_graph_v4.drives_list_drives_list_items_getfields(
+  drive_id =&gt; 'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  listitem_id =&gt; '3')</pre>
+<pre class="out">odata_type=null  id=3</pre>
+
+<h3><code>v6-drive-as-list item listitems</code> (seed discovery) — <span class="st st-pass">✅ pass</span></h3>
+<pre class="in">SELECT json_length(value) AS n FROM microsoft_graph_v4.drives_list_drives_list_listitems(
+  drive_id =&gt; 'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq')</pre>
+<pre class="out">n = 15</pre>
+
+<h3><code>v6-list lastmodifiedby</code> (corrected seed) — <span class="st st-error">❌ 500 ms-upstream</span></h3>
+<pre class="in">SELECT * FROM microsoft_graph_v4.drives_list_drives_list_items_getlastmodifiedbyuser(
+  drive_id =&gt; 'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  listitem_id =&gt; '3')</pre>
+<pre class="out">500 InternalServerError "Error processing response from backend service." [GET] /drives/{id}/list/items/3/lastModifiedByUser</pre>
+<p>Site-list control (also 500):</p>
+<pre class="in">SELECT * FROM microsoft_graph_v4.sites_list_sites_lists_items_getlastmodifiedbyuser(
+  site_id =&gt; 'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id =&gt; 'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', listitem_id =&gt; '1')</pre>
+<pre class="out">500 InternalServerError [GET] /sites/{id}/lists/{id}/items/1/lastModifiedByUser</pre>
+
+<h3><code>v6-drive-as-list item permissions</code> (corrected seed) — <span class="st st-catalog">❌ 404 spec / catalog</span></h3>
+<pre class="in">SELECT * FROM microsoft_graph_v4.drives_list_drives_list_items_listpermissions(
+  drive_id =&gt; 'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  listitem_id =&gt; '3')</pre>
+<pre class="out">404 itemNotFound "Item not found" [GET] /drives/{id}/list/items/3/permissions</pre>
+<p>Site-list control (works — 4 permissions):</p>
+<pre class="in">SELECT json_length(value) AS n FROM microsoft_graph_v4.sites_list_sites_lists_items_listpermissions(
+  site_id =&gt; 'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b',
+  list_id =&gt; 'a4bf845a-22f9-4109-bb88-0ec4e1e6fe4e', listitem_id =&gt; '1')</pre>
+<pre class="out">n = 4</pre>
+
+<h3><code>v6-drive listitems</code> (re-confirmed, graph-constraint) — <span class="st st-error">❌ 400</span></h3>
+<pre class="in">SELECT * FROM microsoft_graph_v4.drives_driveitem_drives_listitems(
+  drive_id =&gt; 'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', top =&gt; 10)</pre>
+<pre class="out">400 invalidRequest The 'filter' query option must be provided [GET] drives/{id}/items</pre>
+
+<div class="notice ok"><strong>Bottom line.</strong> The v8 headline holds and is now sharpened: the 80 errors are <strong>70 Microsoft-side, 5 test-side, 3–4 Coral-fixable</strong> — not "69 / 7". Retesting the two never-retested <code>item 15</code> probes proved one is an upstream Graph 500 (<code>lastModifiedByUser</code>) and one is a route-level failure (drive-as-list item permissions), so <strong>only 5 of 80 are fixed by retesting with valid IDs</strong>. v8's pass/error tallies are unaffected; only the error-class attribution moved.</div>
+
+<p class="sub">Records updated: this addendum + the <code>coral-specs-reviewer</code> skill taxonomy. v8 and all prior reports remain frozen and untouched.</p>
+
+</div>
+</body>
+</html>

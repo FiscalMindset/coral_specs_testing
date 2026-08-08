@@ -56,10 +56,10 @@
 | **Probes** | **161** — 48 v6 + 21 v7 + 15 deep (A1–E3) + 77 T-series, merged from all prior batteries |
 | **Result** | 79 pass / 80 error / 2 catalog facts |
 
-Every probe run to date merged into a single 161-probe matrix, all re-verified live against the current `microsoft_graph_v4` source. The data is there and reachable: Teams walkable from one `user_id` (5 teams → 24 channels → messages → members → schedule → 63 apps), chats from zero (11 real messages), OneDrive root (14 items), followed sites (Viva Home). But **80 probes error — and 69 of those 80 are Microsoft-side** (ms-scope 24, ms-upstream 22, graph-constraint 10, aad-account 8, delegated-context 5); only **7 are test-side** stale IDs and **3–4 are Coral-fixable** catalog issues. **Retesting cannot turn any of the 80 into a pass.** Findings:
+Every probe run to date merged into a single 161-probe matrix, all re-verified live against the current `microsoft_graph_v4` source. The data is there and reachable: Teams walkable from one `user_id` (5 teams → 24 channels → messages → members → schedule → 63 apps), chats from zero (11 real messages), OneDrive root (14 items), followed sites (Viva Home). But **80 probes error — and 70 of those 80 are Microsoft-side** (ms-scope 24, ms-upstream 23, graph-constraint 10, aad-account 8, delegated-context 5); only **5 are test-side** stale IDs and **3–4 are Coral-fixable** catalog issues. **Retesting cannot turn any of the 80 into a pass.** Findings:
 
 - 161 probes: 79 pass / 80 error / 2 catalog facts — all four batteries merged, counts verified from `results.json`
-- Error attribution sums to 80 — 69 Microsoft-side, 7 test-side, 4 spec/catalog (only 3–4 Coral-fixable)
+- Error attribution sums to 80 — 70 Microsoft-side, 5 test-side, 5 spec/catalog (only 3–4 Coral-fixable) [corrected 2026-08-08, see addendum]
 - Teams + chats + OneDrive + followed sites all return real rows from seeded IDs; the data IS on the tenant
 - backupRestore surface (28 probes) 100% gated — M365 Backup unprovisioned (403); admin endpoints → 400 "not supported for AAD accounts"
 - F8 catalog drift (T11) FIXED — `chats_chat_chats_chat_listchat` confirmed live
@@ -67,6 +67,7 @@ Every probe run to date merged into a single 161-probe matrix, all re-verified l
 
 - **[HTML](reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8.html)** — 161-probe matrix with filter UI and verbatim inputs/outputs.
 - **[MD](reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8.md)** — full 161-probe command log (raw).
+- **[Addendum HTML](reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8-test-data-correction.html)** · **[Addendum MD](reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8-test-data-correction.md)** — 2026-08-08 corrective re-run of the 2 never-retested `item 15` probes: `test-data` 7→5, `ms-upstream` 22→23, `spec / catalog` 4→5 (v8 itself frozen; taxonomy only).
 
 ### 2026-08-08 — v6 recommendations re-verified + Teams deep walk (v7): Teams unlocked from one user id
 
