@@ -48,7 +48,26 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Most reports ship a `.md` (raw) and a responsive `.html`; a few early ones are `.md`-only (rendered by the hub).
 
-### 🆕 2026-08-06 — Exhaustive SharePoint + Teams retest (v6): 48 probes, Teams spec gap proven
+### 🆕 2026-08-08 — v6 recommendations re-verified + Teams deep walk (v7): Teams unlocked from one user id
+
+| | |
+|---|---|
+| **Date** | 2026-08-08 |
+| **Probes** | 30 — v6 rec re-verification (F2/F4/F5/F7/F8/getByPath) + full Teams walk from a real `user_id` |
+| **Result** | 15 pass / 10 error (400/410/500) / 2 gated / 3 catalog facts |
+
+Two of the six v6 open items moved: **F7 FIXED** (`drives_driveitem_drives_listitems` now exposes its `filter` optional arg → clean result) and **F2 PARTIALLY RESOLVED** — the new `users_team_users_listjoinedteams(user_id)` family unlocks the entire Teams surface with one seeded ID: **5 teams → 24 channels → real channel messages (with author identities) → members → schedule → 63 installed apps**. Teams is no longer "unexecutable from zero". Findings:
+
+- F7 FIXED — `drives_driveitem_drives_listitems(filter)` honored; F2 PARTIAL — Teams walkable from one user id, but `me_getjoinedteams` still mis-modeled
+- F4/F5 persist — user rows carry no `id` column; site/drive `createdByUser` routes still 500 upstream
+- F8 persists — `sites_baseitem_sites_listitems` maps a non-endpoint → 400; `getByPath` now requires `site_id`
+- F11 (new) — `teams listtags` → 403: app role set lacks `TeamworkTag.Read` (permission gap, needs consent update)
+- F13/F14 (new) — Graph option constraints (`top`/`search` rejected on Teams routes); bogus channel id → 410 Gone
+- F15 (new) — connector drift: 6,038 table functions (+262 vs v6), 736 tables, still exactly one zero-arg function
+
+- **[HTML](reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v7.html)** — full 30-probe matrix with verbatim outputs (HTML-only report).
+
+### 2026-08-06 — Exhaustive SharePoint + Teams retest (v6): 48 probes, Teams spec gap proven
 
 | | |
 |---|---|

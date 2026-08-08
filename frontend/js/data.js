@@ -3,12 +3,34 @@
    Do not invent values; update only when a new report is committed. */
 window.CORAL_REPORTS = [
   {
+    id: "2026-08-08-sharepoint-teams-coral-sql-data-report-v7",
+    date: "2026-08-08",
+    title: "v6 recommendations re-verified + Teams deep walk (v7)",
+    short: "29 probes · 16 pass / 10 error / 2 gated / 1 catalog fact",
+    category: "sharepoint-teams",
+    status: "latest",
+    stats: { pass: 16, error: 10, gated: 2, catalog: 1, total: 29 },
+    headline: "Teams unlocked from one user id (55bcc9a0-…): 5 teams → 24 channels → real messages → members → schedule → 63 installed apps. F7 FIXED (drives listitems filter now exposed); F2 PARTIALLY RESOLVED (users_team_users_listjoinedteams opens the surface). New: listtags 403 perm gap, me_getjoinedteams arg bug, Graph top/search option constraints, 410 on bogus channel id.",
+    findings: [
+      "F7 FIXED — drives_driveitem_drives_listitems now exposes filter optional arg → clean [] result",
+      "F2 PARTIAL — users_team_users_listjoinedteams(user_id) walks 5 teams / 24 channels; me_getjoinedteams still mis-modeled",
+      "F4/F5 persist — user rows carry no id column; site/drive createdByUser routes still 500 upstream",
+      "F8 persists — sites_baseitem_sites_listitems still maps non-endpoint → 400; getByPath now requires site_id",
+      "F11 — teams listtags → 403: app role set lacks TeamworkTag.Read (permission gap, needs consent update)",
+      "F13/F14 — Graph option constraints: top rejected on listinstalledapps, search rejected on listmessages; bogus channel → 410 Gone",
+      "F15 — connector drift: 6,038 table functions (+262 vs v6), 736 tables, still exactly one zero-arg function"
+    ],
+    md: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v7.html",
+    html: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v7.html",
+    tags: ["coral-sql", "sharepoint", "teams", "recheck", "deep-walk"]
+  },
+  {
     id: "2026-08-06-sharepoint-teams-coral-sql-data-report-v6",
     date: "2026-08-06",
     title: "Exhaustive SharePoint + Teams retest (v6)",
     short: "48 probes · 29 pass / 9 error / 7 not_found / 2 gated",
     category: "sharepoint-teams",
-    status: "latest",
+    status: "superseded",
     stats: { pass: 29, error: 9, not_found: 7, gated: 2, total: 48 },
     headline: "Every surface function probed against the live source: site → list → item → drive → drives-as-list walk with two seeded IDs; Teams surface proven unexecutable-from-zero (spec gap, not token gap).",
     findings: [

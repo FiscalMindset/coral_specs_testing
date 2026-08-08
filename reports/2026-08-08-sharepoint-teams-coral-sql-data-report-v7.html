@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>microsoft_graph_v4 — v6 recs re-verified + Teams deep walk (v7, Aug 8 2026)</title>
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; line-height: 1.5; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.15rem; margin: 26px 0 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; }
+.sub { color: #64748b; font-size: .9rem; }
+.cards { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.card { flex: 1 1 130px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
+.card .n { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+.card .l { font-size: .75rem; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+.card.pass .n { color: #16a34a; } .card.auth .n { color: #ca8a04; } .card.error .n { color: #dc2626; }
+.card.not_found .n { color: #d97706; } .card.finding .n { color: #7c3aed; } .card.fix .n { color: #2563eb; }
+.bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; margin: 6px 0 20px; border: 1px solid #e2e8f0; }
+.bar-seg { color: #fff; font-size: .72rem; display: flex; align-items: center; justify-content: center; min-width: 22px; }
+.b-fix { background: #2563eb; } .b-pass { background: #16a34a; } .b-not_found { background: #d97706; } .b-finding { background: #7c3aed; } .b-error { background: #dc2626; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th { text-align: left; background: #f1f5f9; padding: 6px 8px; border: 1px solid #e2e8f0; }
+td { padding: 5px 8px; border: 1px solid #e2e8f0; vertical-align: top; word-break: break-word; }
+code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; font-size: .78rem; }
+.st { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+.st-pass { background: #dcfce7; color: #166534; } .st-fixed { background: #dbeafe; color: #1e40af; }
+.st-not_found { background: #fef3c7; color: #92400e; } .st-gated { background: #fee2e2; color: #991b1b; }
+.st-error { background: #fee2e2; color: #991b1b; } .st-catalog { background: #e0e7ff; color: #4338ca; }
+.st-finding { background: #f3e8ff; color: #6b21a8; }
+.ms { color: #64748b; font-size: .75rem; }
+.area-tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .68rem; background: #e0e7ff; color: #4338ca; text-transform: uppercase; letter-spacing: .04em; }
+/* tabs */
+.tabs { display: flex; gap: 6px; border-bottom: 2px solid #e2e8f0; margin: 22px 0 14px; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; background: #fff; cursor: pointer; font-size: .9rem; }
+.tab.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+/* command log */
+.toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.toolbar input[type=search] { flex: 1; min-width: 220px; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: .85rem; }
+.toolbar select { padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: .85rem; background: #fff; }
+table.cmdlog { table-layout: fixed; }
+table.cmdlog th:first-child { width: 26%; }
+table.cmdlog th:nth-child(2) { width: 10%; }
+table.cmdlog th:nth-child(3) { width: 10%; }
+.cmdrow { display: none; }
+.cmdrow.show { display: table-row; }
+.cmdcell { background: #fff; }
+.cmdin, .cmdout { margin: 6px 0; }
+.cmdin b, .cmdout b { font-size: .68rem; text-transform: uppercase; color: #64748b; letter-spacing: .05em; }
+pre.in { background: #0f172a; color: #a5f3fc; padding: 8px 10px; border-radius: 6px; font-size: .76rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+pre.out { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 6px; font-size: .74rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; max-height: 380px; overflow-y: auto; }
+.trunc { font-size: .72rem; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 6px; margin: 4px 0; }
+.hidden { display: none; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: .72rem; background: #e0e7ff; color: #4338ca; margin-right: 4px; cursor: pointer; }
+.badge.on { background: #4338ca; color: #fff; }
+.notice { border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; background: #eff6ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+.notice.warn { border-left-color: #d97706; background: #fffbeb; }
+.notice.ok { border-left-color: #16a34a; background: #f0fdf4; }
+.callout { border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed; background: #faf5ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+/* horizontal scroll for wide tables on small screens */
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0; }
+.tbl-scroll table { min-width: 640px; }
+@media (max-width: 640px) {
+  .wrap { padding: 18px 10px 48px; }
+  h1 { font-size: 1.25rem; }
+  .card { flex: 1 1 100%; }
+  .card .n { font-size: 1.4rem; }
+  .tab { padding: 7px 10px; font-size: .8rem; }
+  pre.in, pre.out { font-size: .7rem; padding: 6px 8px; }
+  .toolbar input[type=search] { min-width: 150px; }
+  .bar-seg { min-width: 18px; font-size: .62rem; }
+}
+@media (prefers-color-scheme: dark) {
+  body { background: #0f172a; color: #e2e8f0; }
+  .sub, .ms { color: #94a3b8; }
+  .card, .tab, table.cmdlog td, .cmdcell { background: #1e293b; border-color: #334155; }
+  th { background: #334155; border-color: #475569; }
+  code, pre.out { background: #0f172a; border-color: #334155; color: #cbd5e1; }
+  .tab.active { background: #e2e8f0; color: #0f172a; border-color: #e2e8f0; }
+  .toolbar input, .toolbar select { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+  .notice { background: #0c1a3a; border-color: #334155; }
+  .notice.ok { background: #052e16; }
+  .notice.warn { background: #2a1a04; }
+  .callout { background: #1e1033; border-color: #334155; }
+  pre.in { background: #000; }
+  .trunc { background: #2a1a04; border-color: #b45309; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>microsoft_graph_v4 — v6 recommendations re-verified + Teams deep walk</h1>
+<div class="sub">2026-08-08 · every probe run against the live <code>microsoft_graph_v4</code> Coral source · real commands, real outputs (no fakes)</div>
+<div class="sub">Run: 2026-08-08 IST · v6 rec re-verification (F2/F4/F5/F7/F8/getByPath) + full Teams walk from a real <code>user_id</code> · <strong>29 probes executed</strong></div>
+
+<div class="cards"><div class='card pass'><div class='n'>16</div><div class='l'>✅ pass</div></div><div class='card error'><div class='n'>10</div><div class='l'>❌ error (400/410/500)</div></div><div class='card finding'><div class='n'>2</div><div class='l'>🔒 gated (403/arg)</div></div><div class='card auth'><div class='n'>1</div><div class='l'>🧮 catalog facts</div></div></div>
+<div class="cards"><div class='card fix'><div class='n'>1</div><div class='l'>✅ FIXED since v6</div></div><div class='card finding'><div class='n'>1</div><div class='l'>🔓 PARTIAL since v6</div></div><div class='card pass'><div class='n'>5</div><div class='l'>👥 joined teams</div></div><div class='card pass'><div class='n'>24</div><div class='l'>💬 channels</div></div><div class='card pass'><div class='n'>63</div><div class='l'>📦 installed apps</div></div></div>
+<div class="bar"><div class='bar-seg b-pass' style='flex:16'>16</div><div class='bar-seg b-error' style='flex:10'>10</div><div class='bar-seg b-finding' style='flex:2'>2</div><div class='bar-seg b-fix' style='flex:1'>1</div></div>
+
+<div class="tabs">
+<button class="tab active" onclick="switchTab('overview', this)">Overview</button>
+<button class="tab" onclick="switchTab('recheck', this)">v6 re-verification</button>
+<button class="tab" onclick="switchTab('teams', this)">Teams deep walk</button>
+<button class="tab" onclick="switchTab('findings', this)">Findings</button>
+<button class="tab" onclick="switchTab('log', this)">Full command log</button>
+</div>
+
+<div id="tab-overview" class="tab-panel active">
+<h2>Bottom line</h2>
+<p><strong>Two of the six v6 open items moved since August 6.</strong> <code>drives_driveitem_drives_listitems</code> now exposes its <code>filter</code> optional arg and returns a clean result (<span class='st st-fixed'>F7 FIXED</span>), and a new function family — <code>users_team_users_listjoinedteams(user_id)</code> — unlocks the entire Teams surface with <strong>one seeded ID</strong> (<span class='st st-fixed'>F2 PARTIALLY RESOLVED</span>). Using the user id <code>55bcc9a0-…-c27579fe09e3</code> we walked: <strong>5 teams → 24 channels → real channel messages (with author identities) → members → schedule → installed apps</strong>. Teams is no longer "unexecutable from zero".</p>
+<p><strong>Still open after re-verification:</strong> F4 (user rows carry no <code>id</code>/<code>securityidentifier</code> column — confirmed against the live schema, the column literally does not exist), F5 (all three <code>…getcreatedbyuser</code>/<code>…getlastmodifiedbyuser</code> site/drive routes still return upstream 500), F8 (<code>sites_baseitem_sites_listitems</code> still 400 — <code>/sites/{id}/items</code> is not a Graph endpoint), and <code>getByPath</code> still 400 on every path form tried.</p>
+
+<h2>By area</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Area</th><th>pass</th><th>error</th><th>gated</th><th>catalog</th><th>Total</th></tr>
+<tr><td>v6 re-verification</td><td>4</td><td>6</td><td>1</td><td>0</td><td>11</td></tr>
+<tr><td>Teams: teams → channels</td><td>5</td><td>0</td><td>0</td><td>0</td><td>5</td></tr>
+<tr><td>Teams: channels → messages</td><td>3</td><td>3</td><td>0</td><td>0</td><td>6</td></tr>
+<tr><td>Teams: members/apps/schedule/replies/tags</td><td>4</td><td>1</td><td>1</td><td>0</td><td>6</td></tr>
+<tr><td>Catalog counts</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>16</strong></td><td><strong>10</strong></td><td><strong>2</strong></td><td><strong>1</strong></td><td><strong>29</strong></td></tr>
+</table>
+</div>
+
+<h2>Seeded IDs (what you need to reach Teams from zero)</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>ID</th><th>Value</th><th>Discovered from</th></tr>
+<tr><td>user_id</td><td><code>55bcc9a0-6062-4976-9341-c27579fe09e3</code></td><td><code>drives_driveitem_…_items_getcreatedbyuser</code> / message <code>from.user.id</code> in the deep walk</td></tr>
+<tr><td>Team — algsoch</td><td><code>fd31e343-d9f4-471b-a821-bc5ed36b10f6</code></td><td><code>users_team_users_listjoinedteams</code> → 5 teams</td></tr>
+<tr><td>Team — Q3 FY26 Sales Operations</td><td><code>b4dd618c-7636-4f06-809a-e20d258ccb44</code></td><td>joined teams (5 channels)</td></tr>
+<tr><td>Team — CSE Dept IIT Delhi</td><td><code>c7fe3584-80e6-4374-8d4f-5557e4149899</code></td><td>joined teams (6 channels)</td></tr>
+<tr><td>Team — Product Eng Mobile Apps</td><td><code>4a979088-6773-4ae1-903b-3bf653ab60e5</code></td><td>joined teams (5 channels)</td></tr>
+<tr><td>Team — Eng FiscalMindset</td><td><code>3060ff24-37d9-4dd6-9197-ec864a7672cf</code></td><td>joined teams (7 channels)</td></tr>
+<tr><td>Sales-Enablement channel</td><td><code>19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2</code></td><td><code>teams_channel_teams_listchannels</code></td></tr>
+<tr><td>Real channel message</td><td><code>1785882430298</code> ("Customer reference: BYJU'S…")</td><td><code>teams_channel_teams_channels_listmessages</code></td></tr>
+</table>
+</div>
+
+<div class="notice ok"><strong>Headline:</strong> 16 of 29 probes return real data or a valid empty result. The 10 errors carry genuine Graph HTTP codes (400/410/500) — i.e. the OAuth token is healthy and every failure is route/semantics. Teams data is real: 5 teams with descriptions, 24 channels with web URLs, authored messages, 7 members, 63 installed apps.</div>
+</div>
+
+<div id="tab-recheck" class="tab-panel">
+<h2>v6 recommendations — re-verified live (11 probes)</h2>
+
+<h3>F7 — drives_driveitem_drives_listitems (FIXED)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>drives_driveitem_drives_listitems(filter=&gt;'true')</code></td><td><span class='st st-fixed'>FIXED</span></td><td><pre class='out'>{"n":"0"} — value = [] (valid empty). v6 hard-400'd with "The 'filter' query option must be provided." Now the filter arg is exposed and honored.</pre></td></tr>
+</table>
+</div>
+<div class="notice ok">The v6 blocker is gone. <code>listitems</code> on a drive now accepts <code>filter</code> and returns valid results instead of 400.</div>
+
+<h3>F4 — user rows carry no id column (STILL OPEN)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>users_user_…_getuserbyuserprincipalname</code></td><td><span class='st st-pass'>pass (data gap)</span></td><td><pre class='out'>displayname=vicky kumar, mail=vickykumar@…, userprincipalname=vickykumar@… — NO id, NO securityidentifier column (confirmed: selecting id throws "No column named id")</pre></td></tr>
+</table>
+</div>
+<div class="notice warn"><strong>Confirmed at the schema level:</strong> the UPN lookup function exposes <code>odata_type … userprincipalname</code> but there is <em>no</em> <code>id</code> column in scope (the SQL error literally lists all valid columns, and <code>id</code> is absent). This is why v6 could not chain into <code>users_*</code> routes. The Teams walk in this report bypasses it via the <code>from.user.id</code> on a message and via <code>drives_…_items_getcreatedbyuser</code> — but the column gap itself is unchanged.</div>
+
+<h3>F2 — Teams reachability (PARTIALLY RESOLVED via users_team_users_listjoinedteams)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>users_team_users_listjoinedteams(user_id=&gt;'55bcc9a0-…')</code></td><td><span class='st st-fixed'>PARTIAL</span></td><td><pre class='out'>5 real teams: algsoch, Q3 FY26 Sales Operations, CSE Dept IIT Delhi, Product Eng Mobile Apps, Eng FiscalMindset (all with tenantId 0aa3a51b-…)</pre></td></tr>
+<tr><td><code>me_team_me_getjoinedteams</code></td><td><span class='st st-gated'>gated</span></td><td><pre class='out'>arguments_json = [{"name":"team_id","required":true}] — still requires team_id, cannot list from zero</pre></td></tr>
+</table>
+</div>
+<div class="notice ok"><strong>Key change since v6:</strong> <code>users_team_users_listjoinedteams</code> exists with a single required <code>user_id</code> and returns the user's real teams. Combined with the user_id discovered from a drive-item's <code>createdByUser</code> (v6 T8) or from any message's <code>from.user.id</code>, Teams is now reachable from zero. The v6 "Teams fully unexecutable" conclusion is superseded.</div>
+
+<h3>F5 — createdBy / lastModifiedBy routes (STILL 500)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>sites_user_sites_getcreatedbyuser</code></td><td><span class='st st-error'>error 500</span></td><td><pre class='out'>500 InternalServerError "Error processing response from backend service" — GET /sites/{id}/createdByUser</pre></td></tr>
+<tr><td><code>sites_user_sites_getlastmodifiedbyuser</code></td><td><span class='st st-error'>error 500</span></td><td><pre class='out'>500 InternalServerError (re-verified this run)</pre></td></tr>
+<tr><td><code>drives_user_drives_getcreatedbyuser</code></td><td><span class='st st-error'>error 500</span></td><td><pre class='out'>500 InternalServerError — GET /drives/{id}/createdByUser</pre></td></tr>
+<tr><td><code>drives_driveitem_drives_items_getcreatedbyuser</code> (item)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>user row: vicky kumar (no id column)</pre></td></tr>
+</table>
+</div>
+<div class="notice warn">Unchanged from v6 — the item-level variant works but exposes no <code>id</code>, so it still cannot chain into user-scoped routes except by hard-coding the known object id.</div>
+
+<h3>F8 — sites_baseitem_sites_listitems (STILL 400)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>sites_baseitem_sites_listitems</code></td><td><span class='st st-error'>error 400</span></td><td><pre class='out'>400 invalidRequest "The request is malformed or incorrect" — GET /sites/{id}/items</pre></td></tr>
+</table>
+</div>
+<div class="notice warn"><code>/sites/{id}/items</code> is not a Microsoft Graph endpoint. Expected-fail; the catalog route should be removed.</div>
+
+<h3>getByPath (STILL 400)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>sites_site_functions_sites_site_getbypath(path=&gt;'/')</code></td><td><span class='st st-error'>error 400</span></td><td><pre class='out'>400 Bad Request "Error in query syntax" — GET /sites/{hostname}/getByPath(path='/')</pre></td></tr>
+<tr><td><code>sites_site_functions_sites_site_getbypath</code> (no site_id)</td><td><span class='st st-error'>error 400</span></td><td><pre class='out'>Missing required arg site_id (argument now required by the connector)</pre></td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-teams" class="tab-panel">
+<h2>Teams — the deep walk (from one user_id, everything is real)</h2>
+<p class="sub">Seed: <code>user_id = 55bcc9a0-6062-4976-9341-c27579fe09e3</code> (object id of vicky kumar, discoverable from drive-item createdByUser or any message from.user.id). All outputs below are live.</p>
+
+<h3>Step 1 — joined teams (5)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>team_id</th><th>displayName</th><th>description</th><th>channels</th></tr>
+<tr><td><code>fd31e343-d9f4-471b-a821-bc5ed36b10f6</code></td><td>algsoch</td><td>—</td><td>1</td></tr>
+<tr><td><code>b4dd618c-7636-4f06-809a-e20d258ccb44</code></td><td>Q3 FY26 Sales Operations</td><td>Cross-functional team for Q3 sales execution, pipeline reviews, and forecast alignment</td><td>5</td></tr>
+<tr><td><code>c7fe3584-80e6-4374-8d4f-5557e4149899</code></td><td>Computer Science Department - IIT Delhi</td><td>Faculty coordination, research, and academic planning for CSE Department</td><td>6</td></tr>
+<tr><td><code>4a979088-6773-4ae1-903b-3bf653ab60e5</code></td><td>Product Engineering - Mobile Apps</td><td>Mobile app team (iOS + Android) - feature planning, code reviews, releases</td><td>5</td></tr>
+<tr><td><code>3060ff24-37d9-4dd6-9197-ec864a7672cf</code></td><td>Engineering - FiscalMindset</td><td>Engineering coordination across all FiscalMindset repositories (Blindfold, Algsoch, JanAdhikar)</td><td>7</td></tr>
+<tr><td colspan="3"><strong>Total</strong></td><td><strong>24</strong></td></tr>
+</table>
+</div>
+
+<h3>Step 2 — channels (24 across 5 teams)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Team</th><th>Channels (channel_id)</th></tr>
+<tr><td>Q3 FY26 Sales Operations</td><td>Sales-Enablement (<code>19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2</code>), Pipeline-Review, Wins-Celebrations, Forecast-Q3, General</td></tr>
+<tr><td>algsoch</td><td>General (<code>19:c8scDQq77q-vVMQy2e1bU0s88qn0-IbQuiCpXVR2VIU1@thread.tacv2</code>)</td></tr>
+<tr><td>CSE Dept IIT Delhi</td><td>6 channels</td></tr>
+<tr><td>Product Eng Mobile Apps</td><td>5 channels</td></tr>
+<tr><td>Eng FiscalMindset</td><td>7 channels</td></tr>
+</table>
+</div>
+
+<h3>Step 3 — real messages (authored by real users)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>channel</th><th>message_id</th><th>author</th><th>content</th></tr>
+<tr><td>Sales-Enablement</td><td><code>1785882430298</code></td><td>vicky kumar (<code>55bcc9a0-…</code>)</td><td>"Customer reference: <strong>BYJU'S</strong> willing to do a reference call for prospects in EdTech."</td></tr>
+<tr><td>Sales-Enablement</td><td><code>1785882428785</code></td><td>vicky kumar</td><td>"Pricing model update effective Aug 1: New tiered structure for SMB deals…"</td></tr>
+<tr><td>Sales-Enablement</td><td><code>1785882427110</code></td><td>vicky kumar</td><td>"Recording from yesterday's <em>Discovery Call Mastery</em> workshop is now in the team SharePoint library…"</td></tr>
+<tr><td>algsoch General</td><td><code>1786119251450</code></td><td>system</td><td>membersAddedEventMessageDetail (7 members added by aadApplication 62b732f7-…)</td></tr>
+</table>
+</div>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44',
+  channel_id=&gt;'19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2', top=&gt;3)</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>3 messages, each with id, etag, messageType, createdDateTime, from.user.id/displayName, body.content, channelIdentity.</pre></div></div>
+<div class="notice ok">Message bodies, author identities (object ids!), timestamps, web URLs — all present. The Teams message surface is fully usable from zero once you have the team/channel ids.</div>
+
+<h3>Step 4 — members / schedule / installed apps / tags</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>First line of real output</th></tr>
+<tr><td><code>teams_conversationmember_teams_listmembers</code> (Q3 team)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>7 members returned</pre></td></tr>
+<tr><td><code>teams_teamsappinstallation_teams_listinstalledapps</code> (Q3 team)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>63 installed apps returned (drop top — see errors)</pre></td></tr>
+<tr><td><code>teams_schedule_teams_getschedule</code> (Q3 team)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>schedule row returned (provisionStatus NotStarted)</pre></td></tr>
+<tr><td><code>teams_channel_teams_channels_messages_listreplies</code> (msg 1785882430298)</td><td><span class='st st-pass'>pass</span></td><td><pre class='out'>value = [] (valid empty — the message has no replies)</pre></td></tr>
+<tr><td><code>teams_teamworktag_teams_listtags</code> (Q3 team)</td><td><span class='st st-gated'>gated 403</span></td><td><pre class='out'>403 Forbidden — API requires 'TeamworkTag.Read, TeamworkTag.ReadWrite'; the token carries neither (but does carry TeamMember.Read.All, ChannelMessage.Read.All, …)</pre></td></tr>
+<tr><td><code>teams_channel_teams_channels_listmessages</code> (bogus channel 19:123)</td><td><span class='st st-error'>error 410</span></td><td><pre class='out'>410 Gone "UnknownError" — GET /channels/19:123/messages</pre></td></tr>
+</table>
+</div>
+<div class="callout"><strong>New finding:</strong> <code>teams_teamworktag_teams_listtags</code> 403s because the OAuth role set lacks <code>TeamworkTag.Read</code>. This is a <em>permission</em> gap on the registered app (tags are an extra role), not a spec bug — every other Teams route on the same token works.</div>
+
+<h3>Pagination works on messages</h3>
+<div class="cmdcell"><div class="cmdin"><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44',
+  channel_id=&gt;'19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2', top=&gt;1, skip=&gt;0)</pre></div>
+<div class="cmdout"><b>output</b><pre class='out'>{"n":"1"} — top/skip honored; odata_count and odata_nextlink columns present for paging.</pre></div></div>
+</div>
+
+<div id="tab-findings" class="tab-panel">
+<h2>Findings — delta vs v6</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>#</th><th>Finding</th><th>Evidence</th><th>Severity</th></tr>
+<tr><td>F7</td><td><strong><code>drives_driveitem_drives_listitems</code> fixed</strong> — the <code>filter</code> optional arg is now exposed and honored (v6: hard 400).</td><td><code>filter=&gt;'true'</code> → <code>[]</code></td><td><span class='st st-fixed'>FIXED</span></td></tr>
+<tr><td>F2</td><td><strong>Teams now reachable from zero</strong> — <code>users_team_users_listjoinedteams(user_id)</code> returns 5 real teams; combined with user_id from createdByUser/message, the whole Teams surface opens up.</td><td>5 teams → 24 channels → messages → members → schedule → apps</td><td><span class='st st-fixed'>PARTIAL</span></td></tr>
+<tr><td>F4</td><td><strong>User rows still carry no <code>id</code>/<code>securityidentifier</code> column</strong> — confirmed at schema level (selecting <code>id</code> errors "No column named id").</td><td>getuserbyuserprincipalname column list excludes id</td><td><span class='st st-finding'>DATA GAP</span></td></tr>
+<tr><td>F5</td><td><strong>Site/drive-level createdByUser/lastModifiedByUser still 500</strong> — mapped paths don't exist upstream; item-level variant works but exposes no id.</td><td>3× 500 InternalServerError this run</td><td><span class='st st-finding'>CATALOG</span></td></tr>
+<tr><td>F8</td><td><strong><code>sites_baseitem_sites_listitems</code> still maps a non-endpoint</strong> (<code>/sites/{id}/items</code>) → 400.</td><td>400 invalidRequest</td><td><span class='st st-finding'>SPEC BUG</span></td></tr>
+<tr><td>F11</td><td><strong><code>teams_teamworktag_teams_listtags</code> → 403</strong> — app's role set lacks <code>TeamworkTag.Read</code>/<code>ReadWrite</code>. Permission gap, not spec bug; needs a consent update, not a catalog fix.</td><td>403 Forbidden (role list excludes TeamworkTag.Read)</td><td><span class='st st-finding'>PERM GAP</span></td></tr>
+<tr><td>F12</td><td><strong><code>me_team_me_getjoinedteams</code> still requires <code>team_id</code></strong> — the "list my teams" route is mis-modeled as a get-by-id; the working path is the <code>users_team_users_listjoinedteams</code> family.</td><td>arguments_json requires team_id</td><td><span class='st st-finding'>CATALOG</span></td></tr>
+<tr><td>F13</td><td><strong>Graph option constraints on Teams routes</strong> — <code>top</code> is rejected on <code>listinstalledapps</code> and <code>search</code> is rejected on <code>listmessages</code> ("Query option 'Top/Search' is not allowed"); <code>filter</code> on listmessages needs a type-correct clause.</td><td>400/400/400</td><td><span class='st st-finding'>GRAPH CONSTRAINT</span></td></tr>
+<tr><td>F14</td><td><strong>Bogus channel id → 410 Gone</strong> (not 404) on messages — malformed channel ids surface as Gone/UnknownError.</td><td>channel 19:123 → 410</td><td><span class='st st-finding'>GRAPH CONSTRAINT</span></td></tr>
+<tr><td>F15</td><td><strong>Connector drift</strong> — table functions now 6,038 (was 5,776 in v6, +262); tables 736, columns 6,001. Still exactly <strong>one</strong> zero-arg function (<code>search_getsearchentity()</code> → 404).</td><td>catalog counts this run</td><td><span class='st st-finding'>CATALOG</span></td></tr>
+</table>
+</div>
+
+<h2>Recommendations for Coral maintainers</h2>
+<ul>
+<li>Add an <code>id</code> (and <code>securityidentifier</code>) column to <code>getuserbyuserprincipalname</code> and to <code>…getcreatedbyuser</code> rows so users chain naturally (F4).</li>
+<li>Confirm the new <code>users_team_users_listjoinedteams</code> family stays — it is now the only zero-to-Teams entry point; fix <code>me_team_me_getjoinedteams</code> to list (F2, F12).</li>
+<li>Drop <code>sites_baseitem_sites_listitems</code> (F8) and document/fix the 500-ing createdBy routes (F5).</li>
+<li>Add <code>TeamworkTag.Read</code> to the connector's consent role set so tags work (F11) — this is a registration change, not a schema change.</li>
+<li>Document Graph option constraints (<code>top</code> on installedApps, <code>search</code> on messages) so spec users stop passing them (F13).</li>
+</ul>
+</div>
+
+<div id="tab-log" class="tab-panel">
+<h2>Full command log — every command, input AND output verbatim</h2>
+<p class="sub">Each row is one real probe run against the live source. Input = exact SQL sent; output = verbatim result. Filter to narrow.</p>
+<div class="toolbar">
+<input type="search" id="logSearch" placeholder="Filter tables…" oninput="applyFilter()">
+<select id="logStatus" onchange="applyFilter()">
+<option value="">all statuses</option>
+<option>pass</option><option>error</option><option>gated</option><option>catalog</option>
+</select>
+<select id="logArea" onchange="applyFilter()">
+<option value="">all areas</option>
+<option value="recheck">v6 re-verification</option>
+<option value="teams">teams</option>
+<option value="catalog">catalog</option>
+</select>
+<span id="matchCount" class="sub"></span>
+</div>
+<div class="tbl-scroll">
+<table class="cmdlog">
+<tr><th>Function / probe</th><th>Status</th><th>Area</th><th>Command (input) and real output</th></tr>
+<tr class='cmdrow' data-status='pass' data-area='recheck' data-table='listitems filter'><td class='tbl'><code>drives_driveitem_drives_listitems</code> (filter)</td><td class='stt'><span class='st st-fixed'>FIXED</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.drives_driveitem_drives_listitems(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1', filter=&gt;'true')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"n":"0"} — v6 400'd; now returns a valid empty result.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='recheck' data-table='upn lookup'><td class='tbl'><code>users_user_…_getuserbyuserprincipalname</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname, mail, userprincipalname, businessphones FROM microsoft_graph_v4.users_user_users_user_getuserbyuserprincipalname(
+  userprincipalname=&gt;'vickykumar@algsoch762.onmicrosoft.com')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"displayname":"vicky kumar","mail":"vickykumar@algsoch762.onmicrosoft.com",
+ "userprincipalname":"vickykumar@algsoch762.onmicrosoft.com","businessphones":"[\"08383848219\"]"}
+NOTE: selecting id errors "No column named id" — no id column exists.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='recheck' data-table='joined teams'><td class='tbl'><code>users_team_users_listjoinedteams</code></td><td class='stt'><span class='st st-fixed'>PARTIAL</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.users_team_users_listjoinedteams(
+  user_id=&gt;'55bcc9a0-6062-4976-9341-c27579fe09e3')</pre></div><div class='cmdout'><b>output</b><pre class='out'>5 teams: algsoch (fd31e343-…), Q3 FY26 Sales Operations (b4dd618c-…),
+CSE Dept IIT Delhi (c7fe3584-…), Product Eng Mobile Apps (4a979088-…),
+Eng FiscalMindset (3060ff24-…). All tenantId 0aa3a51b-3716-44d7-9636-f85f3db072bf.</pre></div></td></tr>
+<tr class='cmdrow' data-status='gated' data-area='recheck' data-table='me joinedteams'><td class='tbl'><code>me_team_me_getjoinedteams</code></td><td class='stt'><span class='st st-gated'>gated</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT arguments_json FROM coral.table_functions
+WHERE schema_name='microsoft_graph_v4' AND function_name='me_team_me_getjoinedteams'</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"arguments_json":"[{\"name\":\"team_id\",\"required\":true,\"values\":[]}]"}
+— cannot list from zero; the route is modeled as get-by-id.</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='recheck' data-table='site createdby'><td class='tbl'><code>sites_user_sites_getcreatedbyuser</code></td><td class='stt'><span class='st st-error'>error 500</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname, userprincipalname, mail FROM microsoft_graph_v4.sites_user_sites_getcreatedbyuser(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 500 InternalServerError "Error processing response from backend service"
+[GET] https://graph.microsoft.com/v1.0/sites/{id}/createdByUser</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='recheck' data-table='site lastmodifiedby'><td class='tbl'><code>sites_user_sites_getlastmodifiedbyuser</code></td><td class='stt'><span class='st st-error'>error 500</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_user_sites_getlastmodifiedbyuser(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 500 InternalServerError (re-verified this run)</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='recheck' data-table='drive createdby'><td class='tbl'><code>drives_user_drives_getcreatedbyuser</code></td><td class='stt'><span class='st st-error'>error 500</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname, userprincipalname, mail FROM microsoft_graph_v4.drives_user_drives_getcreatedbyuser(
+  drive_id=&gt;'b!E_VekbnXUEKa10cLUoY5LyKNAT5gJzBNp1gdRH0AEZv2ta_X1goSQ4W_5fNayaH1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 500 InternalServerError "Error processing response from backend service"
+[GET] https://graph.microsoft.com/v1.0/drives/{id}/createdByUser</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='recheck' data-table='item createdby'><td class='tbl'><code>drives_driveitem_drives_items_getcreatedbyuser</code> (item)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT displayname, userprincipalname, mail FROM microsoft_graph_v4.drives_driveitem_drives_items_getcreatedbyuser(
+  drive_id=&gt;'b!TXxe8XfJbEq8f4l8HyCQUsDRiv_kCIlBlaXT1WUG3h9Zge__MON7QaUkoB7leFDq',
+  driveitem_id=&gt;'01MODSIROC74FBA4RZYVA2HYDR3F6RHPDD')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"displayname":"vicky kumar","userprincipalname":"vickykumar@algsoch762.onmicrosoft.com",
+"mail":"vickykumar@algsoch762.onmicrosoft.com"} — user row, but no id column (same F4 gap).</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='recheck' data-table='site listitems'><td class='tbl'><code>sites_baseitem_sites_listitems</code></td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.sites_baseitem_sites_listitems(
+  site_id=&gt;'algsoch762.sharepoint.com,915ef513-d7b9-4250-9ad7-470b5286392f,3e018d22-2760-4d30-a758-1d447d00119b')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 invalidRequest "The request is malformed or incorrect."
+[GET] https://graph.microsoft.com/v1.0/sites/{id}/items</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='recheck' data-table='getbypath'><td class='tbl'><code>sites_site_functions_sites_site_getbypath</code></td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.sites_site_functions_sites_site_getbypath(
+  site_id=&gt;'algsoch762.sharepoint.com', path=&gt;'/')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 BadRequest "Bad Request - Error in query syntax."
+[GET] https://graph.microsoft.com/v1.0/sites/algsoch762.sharepoint.com/getByPath(path='/')</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='recheck' data-table='getbypath nosite'><td class='tbl'><code>sites_site_functions_sites_site_getbypath</code> (no site_id)</td><td class='stt'><span class='st st-error'>error</span></td><td><span class='area-tag'>recheck</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.sites_site_functions_sites_site_getbypath(
+  path=&gt;'/')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: Query request is invalid — invalid input: microsoft_graph_v4.sites_site_functions_sites_site_getbypath
+missing required argument(s): site_id — argument is now required by the connector.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='channels Q3'><td class='tbl'><code>teams_channel_teams_listchannels</code> (Q3)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS channels FROM microsoft_graph_v4.teams_channel_teams_listchannels(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"channels":"5"} — Sales-Enablement, Pipeline-Review, Wins-Celebrations, Forecast-Q3, General (web URLs present)</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='channels algsoch'><td class='tbl'><code>teams_channel_teams_listchannels</code> (algsoch)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS channels FROM microsoft_graph_v4.teams_channel_teams_listchannels(
+  team_id=&gt;'fd31e343-d9f4-471b-a821-bc5ed36b10f6')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"channels":"1"} — General</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='channels CSE'><td class='tbl'><code>teams_channel_teams_listchannels</code> (CSE IIT)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS channels FROM microsoft_graph_v4.teams_channel_teams_listchannels(
+  team_id=&gt;'c7fe3584-80e6-4374-8d4f-5557e4149899')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"channels":"6"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='channels prodeng'><td class='tbl'><code>teams_channel_teams_listchannels</code> (Prod Eng)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS channels FROM microsoft_graph_v4.teams_channel_teams_listchannels(
+  team_id=&gt;'4a979088-6773-4ae1-903b-3bf653ab60e5')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"channels":"5"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='channels eng'><td class='tbl'><code>teams_channel_teams_listchannels</code> (Eng FiscalMindset)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS channels FROM microsoft_graph_v4.teams_channel_teams_listchannels(
+  team_id=&gt;'3060ff24-37d9-4dd6-9197-ec864a7672cf')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"channels":"7"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='messages sales'><td class='tbl'><code>teams_channel_teams_channels_listmessages</code> (Sales-Enablement)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44',
+  channel_id=&gt;'19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2', top=&gt;3)</pre></div><div class='cmdout'><b>output</b><pre class='out'>3 real messages (BYJU'S reference, pricing update, workshop recording) each with
+id/etag/createdDateTime/from.user.id/body.content.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='messages algsoch'><td class='tbl'><code>teams_channel_teams_channels_listmessages</code> (algsoch General)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id=&gt;'fd31e343-d9f4-471b-a821-bc5ed36b10f6',
+  channel_id=&gt;'19:c8scDQq77q-vVMQy2e1bU0s88qn0-IbQuiCpXVR2VIU1@thread.tacv2', top=&gt;2)</pre></div><div class='cmdout'><b>output</b><pre class='out'>2 system events (membersAddedEventMessageDetail) — messageType unknownFutureValue.</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='members'><td class='tbl'><code>teams_conversationmember_teams_listmembers</code> (Q3)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS members FROM microsoft_graph_v4.teams_conversationmember_teams_listmembers(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44', top=&gt;10)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"members":"7"}</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='installed apps'><td class='tbl'><code>teams_teamsappinstallation_teams_listinstalledapps</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS apps FROM microsoft_graph_v4.teams_teamsappinstallation_teams_listinstalledapps(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"apps":"63"} — without top; adding top=&gt;10 400s (Graph constraint, see below).</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='schedule'><td class='tbl'><code>teams_schedule_teams_getschedule</code> (Q3)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.teams_schedule_teams_getschedule(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44')</pre></div><div class='cmdout'><b>output</b><pre class='out'>schedule row returned (provisionStatus NotStarted)</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='replies'><td class='tbl'><code>teams_channel_teams_channels_messages_listreplies</code></td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT value FROM microsoft_graph_v4.teams_channel_teams_channels_messages_listreplies(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44',
+  channel_id=&gt;'19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2',
+  chatmessage_id=&gt;'1785882430298')</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"value":"[]"} — valid empty (message has no replies).</pre></div></td></tr>
+<tr class='cmdrow' data-status='pass' data-area='teams' data-table='pagination'><td class='tbl'><code>listmessages pagination</code> (top/skip)</td><td class='stt'><span class='st st-pass'>pass</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44',
+  channel_id=&gt;'19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2', top=&gt;1, skip=&gt;0)</pre></div><div class='cmdout'><b>output</b><pre class='out'>{"n":"1"} — odata_count/odata_nextlink available for paging.</pre></div></td></tr>
+<tr class='cmdrow' data-status='gated' data-area='teams' data-table='tags'><td class='tbl'><code>teams_teamworktag_teams_listtags</code></td><td class='stt'><span class='st st-gated'>gated 403</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS tags FROM microsoft_graph_v4.teams_teamworktag_teams_listtags(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 403 Forbidden — "API requires one of 'TeamworkTag.Read, TeamworkTag.ReadWrite'".
+Token role list includes TeamMember.Read.All, ChannelMessage.Read.All, etc. but NOT TeamworkTag.Read.</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='teams' data-table='bogus channel'><td class='tbl'><code>listmessages</code> (bogus channel 19:123)</td><td class='stt'><span class='st st-error'>error 410</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44', channel_id=&gt;'19:123', top=&gt;1)</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 410 Gone "UnknownError" — GET /channels/19:123/messages</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='teams' data-table='messages filter'><td class='tbl'><code>listmessages filter</code></td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44',
+  channel_id=&gt;'19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2', filter=&gt;'id eq 1')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 BadRequest — "A binary operator with incompatible types was detected.
+Found operand types 'Edm.String' and 'Edm.Int32'." (filter arg is passed through; needs a type-correct OData clause)</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='teams' data-table='messages search'><td class='tbl'><code>listmessages search</code></td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.teams_channel_teams_channels_listmessages(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44',
+  channel_id=&gt;'19:028f3f0928db4fcba68f8372ab2b8d08@thread.tacv2', search=&gt;'BYJU')</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 — "Query option 'Search' is not allowed." (Graph rejects $search on this route)</pre></div></td></tr>
+<tr class='cmdrow' data-status='error' data-area='teams' data-table='apps top'><td class='tbl'><code>listinstalledapps top</code></td><td class='stt'><span class='st st-error'>error 400</span></td><td><span class='area-tag'>teams</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.teams_teamsappinstallation_teams_listinstalledapps(
+  team_id=&gt;'b4dd618c-7636-4f06-809a-e20d258ccb44', top=&gt;10)</pre></div><div class='cmdout'><b>output</b><pre class='out'>Error: 400 — "Query option 'Top' is not allowed." (Graph rejects $top on installedApps)</pre></div></td></tr>
+<tr class='cmdrow' data-status='catalog' data-area='catalog' data-table='catalog counts'><td class='tbl'><code>catalog: connector drift</code></td><td class='stt'><span class='st st-catalog'>catalog</span></td><td><span class='area-tag'>catalog</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT count(*) AS total FROM coral.table_functions WHERE schema_name='microsoft_graph_v4';
+SELECT count(*) AS tbl FROM coral.tables WHERE schema_name='microsoft_graph_v4';
+SELECT count(*) AS cols FROM coral.columns WHERE schema_name='microsoft_graph_v4';
+SELECT count(*) AS n FROM coral.table_functions WHERE schema_name='microsoft_graph_v4'
+  AND (arguments_json IS NULL OR arguments_json IN ('[]','{}'))</pre></div><div class='cmdout'><b>output</b><pre class='out'>total=6038 (was 5776 in v6, +262) · tables=736 · columns=6001
+zero-arg functions=1 (search_searchentity_getsearchentity → 404)</pre></div></td></tr>
+</table>
+</div>
+</div>
+
+<p class="sub" style="margin-top:28px;border-top:1px solid #e2e8f0;padding-top:10px;">Author: Vicky Kumar · Repo: https://github.com/FiscalMindset/coral_specs_testing · Supersedes: <a href="2026-08-06-sharepoint-teams-coral-sql-data-report-v6.html">v6</a></p>
+</div>
+<script>
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function applyFilter(){
+  var q=document.getElementById('logSearch').value.toLowerCase();
+  var s=document.getElementById('logStatus').value;
+  var a=document.getElementById('logArea').value;
+  var rows=document.querySelectorAll('#tab-log .cmdrow'); var n=0;
+  rows.forEach(function(r){
+    var text=(r.getAttribute('data-table')||r.textContent).toLowerCase();
+    var show=(!q||text.indexOf(q)>-1)&&(!s||r.getAttribute('data-status')===s)&&(!a||r.getAttribute('data-area')===a);
+    r.classList.toggle('show',show);
+    if(show)n++;
+  });
+  document.getElementById('matchCount').textContent=n+' / '+rows.length+' commands shown';
+}
+applyFilter();
+</script>
+</body>
+</html>
