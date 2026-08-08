@@ -17,7 +17,7 @@ window.CORAL_REPORTS = [
       "F4/F5 persist — user rows carry no id column; site/drive createdByUser routes still 500 upstream",
       "F8 persists — sites_baseitem_sites_listitems still maps non-endpoint → 400; getByPath now requires site_id",
       "F11 — teams listtags → 403: app role set lacks TeamworkTag.Read (permission gap, needs consent update)",
-      "F13/F14 — Graph option constraints: top rejected on listinstalledapps, search rejected on listmessages; bogus channel → 410 Gone",
+      "F13/F14 — Graph option constraints: filter/search/top all rejected on listmessages/listinstalledapps (filter re-verified type-correct, still 400); bogus channel → 410 Gone",
       "F15 — connector drift: 6,038 table functions (+262 vs v6), 736 tables, still exactly one zero-arg function"
     ],
     md: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v7.html",
