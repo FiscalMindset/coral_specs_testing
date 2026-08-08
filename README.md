@@ -48,7 +48,27 @@
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Most reports ship a `.md` (raw) and a responsive `.html`; a few early ones are `.md`-only (rendered by the hub).
 
-### 🆕 2026-08-08 — v6 recommendations re-verified + Teams deep walk (v7): Teams unlocked from one user id
+### 🆕 2026-08-08 — 161-probe consolidated battery (v8): every probe re-verified live, one matrix
+
+| | |
+|---|---|
+| **Date** | 2026-08-08 |
+| **Probes** | **161** — 48 v6 + 21 v7 + 15 deep (A1–E3) + 77 T-series, merged from all prior batteries |
+| **Result** | 79 pass / 80 error / 2 catalog facts |
+
+Every probe run to date merged into a single 161-probe matrix, all re-verified live against the current `microsoft_graph_v4` source. The data is there and reachable: Teams walkable from one `user_id` (5 teams → 24 channels → messages → members → schedule → 63 apps), chats from zero (11 real messages), OneDrive root (14 items), followed sites (Viva Home). But **80 probes error — and 69 of those 80 are Microsoft-side** (ms-scope 24, ms-upstream 22, graph-constraint 10, aad-account 8, delegated-context 5); only **7 are test-side** stale IDs and **3–4 are Coral-fixable** catalog issues. **Retesting cannot turn any of the 80 into a pass.** Findings:
+
+- 161 probes: 79 pass / 80 error / 2 catalog facts — all four batteries merged, counts verified from `results.json`
+- Error attribution sums to 80 — 69 Microsoft-side, 7 test-side, 4 spec/catalog (only 3–4 Coral-fixable)
+- Teams + chats + OneDrive + followed sites all return real rows from seeded IDs; the data IS on the tenant
+- backupRestore surface (28 probes) 100% gated — M365 Backup unprovisioned (403); admin endpoints → 400 "not supported for AAD accounts"
+- F8 catalog drift (T11) FIXED — `chats_chat_chats_chat_listchat` confirmed live
+- Full 7-bucket error attribution table + per-probe verbatim outputs in the reports
+
+- **[HTML](reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8.html)** — 161-probe matrix with filter UI and verbatim inputs/outputs.
+- **[MD](reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8.md)** — full 161-probe command log (raw).
+
+### 2026-08-08 — v6 recommendations re-verified + Teams deep walk (v7): Teams unlocked from one user id
 
 | | |
 |---|---|

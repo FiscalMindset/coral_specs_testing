@@ -3,12 +3,35 @@
    Do not invent values; update only when a new report is committed. */
 window.CORAL_REPORTS = [
   {
+    id: "2026-08-08-sharepoint-teams-coral-sql-data-report-v8",
+    date: "2026-08-08",
+    title: "161-probe consolidated battery (v8)",
+    short: "161 probes · 79 pass / 80 error / 2 catalog facts",
+    category: "sharepoint-teams",
+    status: "latest",
+    stats: { pass: 79, error: 80, gated: 0, catalog: 2, total: 161 },
+    headline: "Every probe run to date merged into one 161-probe matrix, all re-verified live: 48 v6 + 21 v7 + 15 deep + 77 T-series. 79 pass / 80 error / 2 catalog facts. 69 of 80 errors are Microsoft-side (ms-scope 24, ms-upstream 22, graph-constraint 10, aad-account 8, delegated-context 5); only 7 test-side and 3-4 Coral-fixable. Retesting cannot turn any of the 80 into a pass.",
+    findings: [
+      "161 probes: 79 pass / 80 error / 2 catalog facts (79 pass = real data or valid empty)",
+      "Teams fully walkable from one user_id: 5 teams → 24 channels → messages → members → schedule → 63 apps",
+      "Chats from zero: 1:1 chat = 11 real messages (calendar-conflict note, SDR/BDR idea, SOC2 call notes); meeting chat = 2 events",
+      "OneDrive root = 14 real items; followed sites = Viva Home + 3 lists + 25TiB site drive",
+      "Error attribution (sums to 80): ms-scope 24, ms-upstream 22, graph-constraint 10, aad-account 8, test-data 7, delegated-context 5, spec/catalog 4",
+      "backupRestore surface (28 probes) 100% gated — M365 Backup unprovisioned; admin endpoints 400 'not supported for AAD accounts'",
+      "Only 7 test-side stale-ID errors and 3-4 Coral modeling bugs; 69 Microsoft-side → retesting cannot fix any of the 80",
+      "F8 catalog drift (T11) FIXED — chats_chat_chats_chat_listchat confirmed live"
+    ],
+    md: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8.md",
+    html: "reports/2026-08-08-sharepoint-teams-coral-sql-data-report-v8.html",
+    tags: ["coral-sql", "sharepoint", "teams", "consolidated", "161-probes"]
+  },
+  {
     id: "2026-08-08-sharepoint-teams-coral-sql-data-report-v7",
     date: "2026-08-08",
     title: "v6 recommendations re-verified + Teams deep walk (v7)",
     short: "29 probes · 16 pass / 10 error / 2 gated / 1 catalog fact",
     category: "sharepoint-teams",
-    status: "latest",
+    status: "superseded",
     stats: { pass: 16, error: 10, gated: 2, catalog: 1, total: 29 },
     headline: "Teams unlocked from one user id (55bcc9a0-…): 5 teams → 24 channels → real messages → members → schedule → 63 installed apps. F7 FIXED (drives listitems filter now exposed); F2 PARTIALLY RESOLVED (users_team_users_listjoinedteams opens the surface). New: listtags 403 perm gap, me_getjoinedteams arg bug, Graph top/search option constraints, 410 on bogus channel id.",
     findings: [
