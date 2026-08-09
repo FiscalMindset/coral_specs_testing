@@ -1,42 +1,114 @@
-/* Dashboard page (index.html). Renders the overview widgets. */
+/* Dashboard page (index.html). Renders the overview widgets.
+   Single source of truth: window.Coral.REPORTS (report registry) + window.Coral.META
+   (tables/funcs/attribution/passSeries) — every number below is derived, never hardcoded. */
 (function () {
   "use strict";
 
   var REPORTS = window.Coral.REPORTS;
+  var META = window.Coral.META;
 
-  function renderHeroRange() {
-    var el = document.getElementById("heroRange");
-    if (!el) return;
+  function latest() {
+    var hit = REPORTS.filter(function (r) { return r.status === "latest"; })[0];
+    return hit || REPORTS[0];
+  }
+
+  function passSum() {
+    var sum = 0, counted = 0;
+    REPORTS.forEach(function (r) {
+      if (r.stats && r.stats.pass != null) { sum += r.stats.pass; counted++; }
+    });
+    return { sum: sum, counted: counted };
+  }
+
+  function categoryCount() {
+    var cats = {};
+    REPORTS.forEach(function (r) { cats[r.category] = (cats[r.category] || 0) + 1; });
+    return Object.keys(cats).length;
+  }
+
+  function coverage() {
     var dates = REPORTS.map(function (r) { return r.date; });
     var min = dates.reduce(function (a, b) { return a < b ? a : b; });
     var max = dates.reduce(function (a, b) { return a > b ? a : b; });
-    el.textContent = min + " → " + max;
+    var first = REPORTS[REPORTS.length - 1];
+    var last = REPORTS[0];
+    var days = Math.round((new Date(last.date) - new Date(first.date)) / 86400000) + 1;
+    return { min: min, max: max, days: days };
+  }
+
+  function coralBugShare() {
+    var a = META.attribution || [];
+    var total = a.reduce(function (s, d) { return s + d.value; }, 0);
+    var bugs = a.filter(function (d) { return d.label === "Coral bugs"; })[0];
+    return total && bugs ? Math.round((bugs.value / total) * 100) + "%" : "n/a";
+  }
+
+  function reportCard(r) {
+    var links = window.Coral.fileLink(r);
+    var foot = [];
+    if (links.html) foot.push('<a class="mini-link" href="' + window.Coral.esc(links.html) + '">Open report ↗</a>');
+    if (links.md && !links.same) foot.push('<a class="mini-link" href="' + window.Coral.esc(links.md) + '">.md</a>');
+    foot.push('<a class="mini-link" href="frontend/report.html?id=' + encodeURIComponent(r.id) + '">detail ↗</a>');
+    var tags = (r.tags || []).map(function (t) {
+      return '<span class="badge badge--cat">' + window.Coral.esc(t) + "</span>";
+    }).join("");
+    return (
+      '<article class="report-card card">' +
+        '<div class="report-card__head">' +
+          '<span class="report-card__date">' + window.Coral.esc(r.date) + "</span>" +
+          '<span class="badge badge--' + window.Coral.esc(r.status || "canonical") + '">' + window.Coral.esc(r.status || "canonical") + "</span>" +
+        "</div>" +
+        '<h3><a class="report-card__title" href="frontend/report.html?id=' + encodeURIComponent(r.id) + '">' + window.Coral.esc(r.title) + "</a></h3>" +
+        '<p class="report-card__stats">' + window.Coral.statLine(r) + "</p>" +
+        '<div class="report-card__tags">' + tags + "</div>" +
+        '<div class="report-card__foot">' + foot.join("") + "</div>" +
+      "</article>"
+    );
+  }
+
+  function sorted(list) {
+    return list.slice().sort(function (a, b) {
+      if (a.date !== b.date) return a.date > b.date ? -1 : 1;
+      return a.id > b.id ? -1 : a.id < b.id ? 1 : 0;
+    });
+  }
+
+  function renderHeroBadges() {
+    var el = document.getElementById("heroBadges");
+    var range = document.getElementById("heroRange");
+    var l = latest();
+    var c = coverage();
+    if (range) range.textContent = c.min + " → " + c.max;
+    if (!el) return;
+    var badges = [
+      { t: META.tables + " tables", cls: "canonical" },
+      { t: META.funcs + " table funcs", cls: "canonical" },
+      { t: (l.stats && l.stats.pass != null ? l.stats.pass : "—") + " pass", cls: "latest" },
+      { t: "latest " + l.date, cls: "latest" },
+      { t: c.min + " → " + c.max, cls: "canonical" },
+      { t: "reports frozen", cls: "superseded" }
+    ];
+    el.innerHTML = badges.map(function (b) {
+      return '<span class="badge badge--' + b.cls + '">' + window.Coral.esc(b.t) + "</span>";
+    }).join("");
   }
 
   function renderStats() {
     var grid = document.getElementById("statGrid");
     if (!grid) return;
-    var first = REPORTS[REPORTS.length - 1];
-    var last = REPORTS[0];
-    var days = Math.round((new Date(last.date) - new Date(first.date)) / 86400000) + 1;
-
-    var latest = REPORTS.filter(function (r) { return r.status === "latest"; })[0] || REPORTS[0];
-    var passSum = 0, counted = 0;
-    REPORTS.forEach(function (r) {
-      if (r.stats && r.stats.pass != null) { passSum += r.stats.pass; counted++; }
-    });
-    var cats = {};
-    REPORTS.forEach(function (r) { cats[r.category] = (cats[r.category] || 0) + 1; });
-
+    var p = passSum();
+    var l = latest();
+    var c = coverage();
     var items = [
       { v: REPORTS.length, l: "Reports", cls: "" },
-      { v: days, l: "Test days", cls: "stat__value--accent" },
-      { v: passSum, l: "Pass rows (" + counted + " batteries)", cls: "stat__value--pass" },
-      { v: Object.keys(cats).length, l: "Categories", cls: "stat__value--info" },
-      { v: 733, l: "Tables covered", cls: "stat__value--purple" },
-      { v: 5776, l: "Table functions", cls: "stat__value--warn" },
-      { v: latest.stats && latest.stats.pass != null ? latest.stats.pass : "—", l: "Latest pass (" + latest.date + ")", cls: "stat__value--pass" },
-      { v: "56%", l: "Failures = Coral bugs", cls: "stat__value--bad" }
+      { v: c.min + " → " + c.max, l: "Coverage window", cls: "stat__value--accent" },
+      { v: c.days, l: "Test days", cls: "stat__value--info" },
+      { v: p.sum, l: "Pass rows (" + p.counted + " batteries)", cls: "stat__value--pass" },
+      { v: categoryCount(), l: "Categories", cls: "stat__value--purple" },
+      { v: META.tables, l: "Tables covered", cls: "stat__value--purple" },
+      { v: META.funcs, l: "Table functions", cls: "stat__value--warn" },
+      { v: l.stats && l.stats.pass != null ? l.stats.pass : "—", l: "Latest pass (" + l.date + ")", cls: "stat__value--pass" },
+      { v: coralBugShare(), l: "Failures = Coral bugs", cls: "stat__value--bad" }
     ];
     grid.innerHTML = items.map(function (i) {
       return '<div class="stat"><div class="stat__value ' + i.cls + '">' + window.Coral.esc(i.v) + '</div><div class="stat__label">' + window.Coral.esc(i.l) + "</div></div>";
@@ -46,19 +118,14 @@
   function renderAttribution() {
     var el = document.getElementById("attributionBars");
     if (!el) return;
-    var data = [
-      { label: "Coral bugs", value: 338, pct: 56.0, color: "var(--bad)" },
-      { label: "Our setup", value: 185, pct: 30.6, color: "var(--info)" },
-      { label: "Graph limits", value: 24, pct: 4.0, color: "var(--purple)" },
-      { label: "Expected", value: 8, pct: 1.3, color: "var(--pass)" },
-      { label: "Possibly Coral", value: 49, pct: 8.1, color: "var(--warn)" }
-    ];
-    el.innerHTML = data.map(function (d) {
+    var total = (META.attribution || []).reduce(function (s, d) { return s + d.value; }, 0) || 1;
+    el.innerHTML = (META.attribution || []).map(function (d) {
+      var pct = (d.value / total) * 100;
       return (
         '<div class="bar__row">' +
           '<span class="bar__label">' + window.Coral.esc(d.label) + "</span>" +
-          '<span class="bar__track"><span class="bar__fill" style="width:' + d.pct + '%;background:' + d.color + '"></span></span>' +
-          '<span class="bar__value">' + d.value + " (" + d.pct.toFixed(1) + "%)</span>" +
+          '<span class="bar__track"><span class="bar__fill" style="width:' + pct + "%;background:" + d.color + '"></span></span>' +
+          '<span class="bar__value">' + d.value + " (" + pct.toFixed(1) + "%)</span>" +
         "</div>"
       );
     }).join("");
@@ -67,16 +134,7 @@
   function renderPassChart() {
     var el = document.getElementById("passChart");
     if (!el) return;
-    var series = [
-      { date: "07-28", label: "07-28 az token", pass: 117, total: 733 },
-      { date: "07-31", label: "07-31 reauth v1", pass: 122, total: 733 },
-      { date: "07-31", label: "07-31 reauth v2", pass: 129, total: 733 },
-      { date: "08-04", label: "08-04 keychain", pass: 109, total: 733 },
-      { date: "08-04", label: "08-04 licensed", pass: 70, total: 733 },
-      { date: "08-05", label: "08-05 all-scope", pass: 146, total: 733 },
-      { date: "08-05", label: "08-05 95-scope", pass: 229, total: 733 },
-      { date: "08-06", label: "08-06 SP+Teams v6", pass: 29, total: 48 }
-    ];
+    var series = META.passSeries || [];
     var W = 720, H = 220, padL = 44, padB = 34, padT = 16, padR = 12;
     var iw = W - padL - padR, ih = H - padT - padB;
     var maxP = 733;
@@ -115,21 +173,37 @@
   function renderLatestFinding() {
     var el = document.getElementById("latestFinding");
     if (!el) return;
-    var v6 = REPORTS.filter(function (r) { return r.id.indexOf("v6") !== -1; })[0];
-    if (!v6) return;
+    var l = latest();
     el.innerHTML =
-      '<a class="report-detail__title-link" href="report.html?id=' + window.Coral.esc(v6.id) + '"><h3>' + window.Coral.esc(v6.title) + "</h3></a>" +
-      "<p>" + window.Coral.esc(v6.headline) + "</p>" +
-      "<ul>" + (v6.findings || []).map(function (f) { return "<li>" + window.Coral.esc(f) + "</li>"; }).join("") + "</ul>" +
-      '<a class="btn btn--primary" href="../' + window.Coral.esc(v6.html) + '">Read the full report ↗</a>';
+      '<a class="report-detail__title-link" href="report.html?id=' + window.Coral.esc(l.id) + '"><h3>' + window.Coral.esc(l.title) + "</h3></a>" +
+      "<p>" + window.Coral.esc(l.headline) + "</p>" +
+      "<ul>" + (l.findings || []).map(function (f) { return "<li>" + window.Coral.esc(f) + "</li>"; }).join("") + "</ul>" +
+      '<a class="btn btn--primary" href="../' + window.Coral.esc(l.html) + '">Read the full report ↗</a>';
+  }
+
+  function renderReports() {
+    var grid = document.getElementById("reportGrid");
+    var count = document.getElementById("reportCount");
+    if (!grid || !REPORTS.length) return;
+    grid.innerHTML = sorted(REPORTS).map(reportCard).join("");
+    if (count) count.textContent = REPORTS.length;
+  }
+
+  function renderFooterDate() {
+    var el = document.getElementById("footerUpdated");
+    if (!el) return;
+    var l = latest();
+    el.textContent = l.date + " (" + l.title + ")";
   }
 
   function render() {
-    renderHeroRange();
+    renderHeroBadges();
     renderStats();
     renderAttribution();
     renderPassChart();
     renderLatestFinding();
+    renderReports();
+    renderFooterDate();
   }
 
   window.CoralIndex = { render: render };

@@ -40,13 +40,7 @@
     <p class="hero__kicker">Microsoft Graph v4 connector · withcoral / coral</p>
     <h1 class="hero__title">Real-world testing of the <span class="accent">Coral</span> <code>microsoft_graph_v4</code> source</h1>
     <p class="hero__lede">Every report runs a real <code>coral</code> CLI against a live AAD tenant and verifies results against the real Microsoft Graph API — by <a href="https://github.com/FiscalMindset">Vicky Kumar (@FiscalMindset)</a>.</p>
-    <p>
-      <span class="badge badge--canonical">733 tables</span>
-      <span class="badge badge--canonical">5,776 table funcs</span>
-      <span class="badge badge--latest">129 pass · 0 timeouts</span>
-      <span class="badge badge--latest">0 expired_token</span>
-      <span class="badge badge--superseded">reports frozen</span>
-    </p>
+    <p id="heroBadges" class="hero__badges" aria-label="Headline facts"></p>
     <div class="hero__links">
       <a class="btn btn--primary" href="frontend/reports.html">Browse all reports</a>
       <a class="btn" href="frontend/timeline.html">Timeline</a>
@@ -55,6 +49,30 @@
   </div>
 
   <div id="statGrid" class="stat-grid" aria-label="Headline statistics"></div>
+
+  <div class="section">
+    <div class="section__head">
+      <h2>🔥 Latest finding</h2>
+      <span class="section__sub">Auto-derived from the most recent report in <code>data.js</code></span>
+    </div>
+    <div id="latestFinding" class="card report-detail"></div>
+  </div>
+
+  <div class="section">
+    <div class="section__head">
+      <h2>📈 Pass trend</h2>
+      <span class="section__sub">Pass counts per battery run, from committed reports</span>
+    </div>
+    <div id="passChart" class="card chart"></div>
+  </div>
+
+  <div class="section">
+    <div class="section__head">
+      <h2>🧭 Error attribution</h2>
+      <span class="section__sub">Failures bucketed by root cause (failure-attribution report)</span>
+    </div>
+    <div id="attributionBars" class="card bar-chart"></div>
+  </div>
 
   <div class="section">
     <div class="section__head">
@@ -128,7 +146,7 @@
 
 <footer class="footer">
   <div class="footer__inner">
-    <span>Microsoft Graph v4 · Coral source QA · last updated 2026-08-07 (v6)</span>
+    <span>Microsoft Graph v4 · Coral source QA · last updated <span id="footerUpdated"></span></span>
     <span class="footer__links">
       <a href="https://github.com/FiscalMindset/coral_specs_testing" target="_blank" rel="noopener">GitHub</a>
       <span class="dot">·</span>
@@ -139,87 +157,6 @@
 
 <script src="frontend/js/data.js"></script>
 <script src="frontend/js/common.js"></script>
-<script>
-(function () {
-  "use strict";
-  var REPORTS = window.Coral.REPORTS;
-
-  function reportCard(r) {
-    var links = window.Coral.fileLink(r);
-    var foot = [];
-    if (links.html) foot.push('<a class="mini-link" href="' + window.Coral.esc(links.html) + '">Open report ↗</a>');
-    if (links.md && !links.same) foot.push('<a class="mini-link" href="' + window.Coral.esc(links.md) + '">.md</a>');
-    foot.push('<a class="mini-link" href="frontend/report.html?id=' + encodeURIComponent(r.id) + '">detail ↗</a>');
-    var tags = (r.tags || []).map(function (t) {
-      return '<span class="badge badge--cat">' + window.Coral.esc(t) + "</span>";
-    }).join("");
-    return (
-      '<article class="report-card card">' +
-        '<div class="report-card__head">' +
-          '<span class="report-card__date">' + window.Coral.esc(r.date) + "</span>" +
-          '<span class="badge badge--' + window.Coral.esc(r.status || "canonical") + '">' + window.Coral.esc(r.status || "canonical") + "</span>" +
-        "</div>" +
-        '<h3><a class="report-card__title" href="frontend/report.html?id=' + encodeURIComponent(r.id) + '">' + window.Coral.esc(r.title) + "</a></h3>" +
-        '<p class="report-card__stats">' + window.Coral.statLine(r) + "</p>" +
-        '<div class="report-card__tags">' + tags + "</div>" +
-        '<div class="report-card__foot">' + foot.join("") + "</div>" +
-      "</article>"
-    );
-  }
-
-  function sorted(list) {
-    return list.slice().sort(function (a, b) {
-      if (a.date !== b.date) return a.date > b.date ? -1 : 1;
-      return a.id > b.id ? -1 : a.id < b.id ? 1 : 0;
-    });
-  }
-
-  function renderReports() {
-    var grid = document.getElementById("reportGrid");
-    var count = document.getElementById("reportCount");
-    if (!grid || !REPORTS.length) return;
-    grid.innerHTML = sorted(REPORTS).map(reportCard).join("");
-    if (count) count.textContent = REPORTS.length;
-  }
-
-  function renderStats() {
-    var grid = document.getElementById("statGrid");
-    if (!grid || !REPORTS.length) return;
-    var dates = REPORTS.map(function (r) { return r.date; });
-    var min = dates.reduce(function (a, b) { return a < b ? a : b; });
-    var max = dates.reduce(function (a, b) { return a > b ? a : b; });
-    var first = REPORTS[REPORTS.length - 1];
-    var last = REPORTS[0];
-    var days = Math.round((new Date(last.date) - new Date(first.date)) / 86400000) + 1;
-    var passSum = 0, counted = 0;
-    REPORTS.forEach(function (r) {
-      if (r.stats && r.stats.pass != null) { passSum += r.stats.pass; counted++; }
-    });
-    var cats = {};
-    REPORTS.forEach(function (r) { cats[r.category] = (cats[r.category] || 0) + 1; });
-    var latest = REPORTS.filter(function (r) { return r.status === "latest"; })[0] || REPORTS[0];
-    var items = [
-      { v: REPORTS.length, l: "Reports", cls: "" },
-      { v: min + " → " + max, l: "Coverage window", cls: "stat__value--accent" },
-      { v: days, l: "Test days", cls: "stat__value--info" },
-      { v: passSum, l: "Pass rows (" + counted + " batteries)", cls: "stat__value--pass" },
-      { v: Object.keys(cats).length, l: "Categories", cls: "stat__value--purple" },
-      { v: 733, l: "Tables covered", cls: "stat__value--purple" },
-      { v: 5776, l: "Table functions", cls: "stat__value--warn" },
-      { v: latest.stats && latest.stats.pass != null ? latest.stats.pass : "—", l: "Latest pass (" + latest.date + ")", cls: "stat__value--pass" }
-    ];
-    grid.innerHTML = items.map(function (i) {
-      return '<div class="stat"><div class="stat__value ' + i.cls + '">' + window.Coral.esc(i.v) + '</div><div class="stat__label">' + window.Coral.esc(i.l) + "</div></div>";
-    }).join("");
-  }
-
-  function render() {
-    renderStats();
-    renderReports();
-  }
-
-  document.addEventListener("DOMContentLoaded", render);
-})();
-</script>
+<script src="frontend/js/index.js"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@
   "use strict";
 
   var REPORTS = window.CORAL_REPORTS || [];
+  var META = window.CORAL_META || {};
   var REPO_URL = "https://github.com/FiscalMindset/coral_specs_testing";
   var PAGES_URL = "https://fiscalmindset.github.io/coral_specs_testing/";
   var RENDER_URL = "https://coral-specs-testing.onrender.com/frontend/";
@@ -59,6 +60,7 @@
 
   window.Coral = {
     REPORTS: REPORTS,
+    META: META,
     REPO_URL: REPO_URL,
     PAGES_URL: PAGES_URL,
     RENDER_URL: RENDER_URL,

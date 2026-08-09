@@ -1,0 +1,12 @@
+{
+  "name": "coral-specs-testing-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static multi-page report hub + headless smoke tests for the Coral microsoft_graph_v4 connector testing project.",
+  "scripts": {
+    "test": "node frontend/test/smoke.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

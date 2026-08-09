@@ -84,19 +84,21 @@ console.log("== Overview (index.js) ==");
     const hay = (el ? el.innerHTML + "\n" + el.textContent : "");
     assert(hay.indexOf(expect) !== -1, label);
   };
-  check("statGrid", "27", "stat grid shows report count");
+  check("statGrid", ">30<", "stat grid shows report count");
   check("statGrid", "733", "stat grid shows 733 tables");
   check("statGrid", "5776", "stat grid shows 5,776 functions");
   check("statGrid", "56%", "stat grid shows Coral-bug share");
-  check("heroRange", "2026-07-14 → 2026-08-06", "hero range spans all dates");
+  check("heroRange", "2026-07-14 → 2026-08-08", "hero range spans all dates");
+  check("heroBadges", "733 tables", "hero badge shows table count");
+  check("heroBadges", "79 pass", "hero badge shows latest pass count");
   check("attributionBars", "338 (56.0%)", "Coral bugs bar");
   check("attributionBars", "185 (30.6%)", "our setup bar");
   check("attributionBars", "49 (8.1%)", "ambiguous bar");
   check("passChart", "<svg", "SVG chart rendered");
   check("passChart", "229", "95-scope peak shown");
   check("passChart", "146", "all-scope pass shown");
-  check("latestFinding", "Every surface function probed", "v6 headline present");
-  check("latestFinding", "report.html?id=2026-08-06-sharepoint-teams-coral-sql-data-report-v6", "v6 links to detail page");
+  check("latestFinding", "161-probe consolidated battery", "v8 headline present");
+  check("latestFinding", "report.html?id=2026-08-08-sharepoint-teams-coral-sql-data-report-v8", "v8 links to detail page");
 }
 
 /* ---------------- reports catalog ---------------- */
@@ -109,7 +111,7 @@ console.log("== Reports (reports.js) ==");
   documentShimOf(ctx)._dcl();
   const grid = elements["reportGrid"];
   assert(grid && grid.innerHTML.indexOf("report-card") !== -1, "report cards rendered");
-  assert(String(elements["reportCount"].textContent) === "27", "report count set to 27");
+  assert(String(elements["reportCount"].textContent) === "30", "report count set to 30");
   assert(grid.innerHTML.indexOf("report.html?id=") !== -1, "cards link to detail pages");
   assert(grid.innerHTML.indexOf("Open report") !== -1, "cards keep raw ../reports/ links");
   const catHtml = elements["categoryFilter"].innerHTML;
@@ -136,7 +138,7 @@ console.log("== Timeline (timeline.js) ==");
   documentShimOf(ctx)._dcl();
   const hay = elements["timeline"].innerHTML;
   assert(hay.indexOf("2026-07-14") !== -1, "timeline starts at first date");
-  assert(hay.indexOf("2026-08-06") !== -1, "timeline ends at latest date");
+  assert(hay.indexOf("2026-08-08") !== -1, "timeline ends at latest date");
   assert(hay.indexOf("report.html?id=") !== -1, "timeline entries link to detail pages");
   assert(hay.indexOf("../reports/") !== -1, "timeline keeps raw report links");
 }
@@ -193,6 +195,52 @@ console.log("== Report detail (report.js) ==");
   win.CoralReport.render();
   hay = elements["reportDetail"].innerHTML;
   assert(hay.indexOf("rel=\"next\"") !== -1 || hay.indexOf("rel=\"prev\"") !== -1, "pager prev/next points at real neighbours");
+}
+
+/* ---------------- registry integrity ---------------- */
+console.log("== Registry integrity ==");
+{
+  const { ctx, win } = makeContext();
+  load(ctx, "frontend/js/data.js");
+  const REPORTS = win.CORAL_REPORTS;
+  const META = win.CORAL_META;
+
+  const ids = new Set();
+  REPORTS.forEach(r => ids.add(r.id));
+  assert(ids.size === REPORTS.length, "report ids unique (" + REPORTS.length + " reports)");
+
+  const latest = REPORTS.filter(r => r.status === "latest");
+  assert(latest.length === 1, "exactly one report marked latest");
+  assert(REPORTS[0].status === "latest", "REPORTS[0] is the latest report");
+
+  let missing = 0;
+  REPORTS.forEach(r => {
+    [r.md, r.html].forEach(p => {
+      if (p && !fs.existsSync(path.join(ROOT, p))) { missing++; console.error("  MISSING FILE -> " + p + " (" + r.id + ")"); }
+    });
+  });
+  assert(missing === 0, "every r.md/r.html path exists on disk");
+
+  let badStat = 0;
+  const BUCKETS = ["pass", "error", "not_found", "gated", "catalog"];
+  REPORTS.forEach(r => {
+    const s = r.stats || {};
+    if (s.total == null) return;
+    const set = BUCKETS.filter(b => s[b] != null);
+    const sum = set.reduce((a, b) => a + s[b], 0);
+    if (sum > s.total) { badStat++; console.error("  BUCKETS > TOTAL " + r.id + ": " + set.join("+") + " = " + sum + " > " + s.total); }
+    if (set.length === BUCKETS.length && sum !== s.total) { badStat++; console.error("  MISMATCH " + r.id + ": " + set.join("+") + " = " + sum + " != " + s.total); }
+  });
+  assert(badStat === 0, "stats buckets never exceed total; complete bucket sets sum to total");
+
+  const attr = META.attribution || [];
+  const attrTotal = attr.reduce((a, d) => a + d.value, 0);
+  assert(attrTotal === META.attributionTotal, "attribution buckets sum to " + META.attributionTotal + " failures");
+  let badSeries = 0;
+  (META.passSeries || []).forEach(s => {
+    if (!(s.pass >= 0 && s.pass <= s.total)) { badSeries++; console.error("  BAD SERIES POINT " + s.label + ": " + s.pass + "/" + s.total); }
+  });
+  assert(badSeries === 0, "passSeries points within 0..total");
 }
 
 /* ---------------- every rendered ../reports/ link resolves ---------------- */

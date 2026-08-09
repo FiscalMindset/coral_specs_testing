@@ -74,7 +74,7 @@ window.CORAL_REPORTS = [
     short: "48 probes · 29 pass / 9 error / 7 not_found / 2 gated",
     category: "sharepoint-teams",
     status: "superseded",
-    stats: { pass: 29, error: 9, not_found: 7, gated: 2, total: 48 },
+    stats: { pass: 29, error: 9, not_found: 7, gated: 2, catalog: 1, total: 48 },
     headline: "Every surface function probed against the live source: site → list → item → drive → drives-as-list walk with two seeded IDs; Teams surface proven unexecutable-from-zero (spec gap, not token gap).",
     findings: [
       "SP hierarchy fully walkable from 2 seeds (site triple + Code Snippets list id)",
@@ -542,3 +542,32 @@ window.CORAL_REPORTS = [
     tags: ["baseline", "directory"]
   }
 ];
+
+/* Hub meta facts — real numbers transcribed from committed reports (same rule
+   as REPORTS: never invent; update only when a report/connector run changes them).
+   attribution = failure-attribution buckets (338 + 185 + 24 + 8 + 49 = 604);
+   passSeries  = pass counts per battery run from each dated report. */
+window.CORAL_META = {
+  tables: 733,
+  funcs: 5776,
+  attributionTotal: 604,
+  attribution: [
+    { label: "Coral bugs", value: 338, color: "var(--bad)" },
+    { label: "Our setup", value: 185, color: "var(--info)" },
+    { label: "Graph limits", value: 24, color: "var(--purple)" },
+    { label: "Expected", value: 8, color: "var(--pass)" },
+    { label: "Possibly Coral", value: 49, color: "var(--warn)" }
+  ],
+  passSeries: [
+    { date: "07-28", label: "07-28 az token", pass: 117, total: 733 },
+    { date: "07-31", label: "07-31 reauth v1", pass: 122, total: 733 },
+    { date: "07-31", label: "07-31 reauth v2", pass: 129, total: 733 },
+    { date: "08-04", label: "08-04 keychain", pass: 109, total: 733 },
+    { date: "08-04", label: "08-04 licensed", pass: 70, total: 733 },
+    { date: "08-05", label: "08-05 all-scope", pass: 146, total: 733 },
+    { date: "08-05", label: "08-05 95-scope", pass: 229, total: 733 },
+    { date: "08-06", label: "08-06 SP+Teams v6", pass: 29, total: 48 },
+    { date: "08-08", label: "08-08 re-verify v7", pass: 16, total: 29 },
+    { date: "08-08", label: "08-08 161-probe v8", pass: 79, total: 161 }
+  ]
+};
