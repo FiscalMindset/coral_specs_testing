@@ -1,6 +1,25 @@
 /* Coral Specs Testing — report registry (real data from committed reports).
    Every stat below is transcribed from the actual report files in /reports.
-   Do not invent values; update only when a new report is committed. */
+   Do not invent values; update only when a new report is committed.
+
+   Schema for each entry in CORAL_REPORTS (validated at load time — see
+   __validateRegistry below, throws on missing/invalid required fields):
+     id       string, unique, used as the ?id= query param by report.html
+     date     string, YYYY-MM-DD
+     title    string
+     category string
+     status   one of latest | addendum | superseded | canonical | guide
+     md       repo-relative path to the .md (or .html for HTML-only reports)
+     html     repo-relative path to the .html (or .md for md-only reports)
+     stats    { total: number, [pass,error,not_found,gated,catalog]?: number|null }
+   Optional: short, headline, findings (string[]), tags (string[]), addendum (id)
+
+   Schema for CORAL_META (validated at load time):
+     tables           number
+     funcs            number
+     attributionTotal number  (sum of all attribution[*].value)
+     attribution      { label, value, color }[]
+     passSeries       { date, label, pass, total }[]   (0 <= pass <= total) */
 window.CORAL_REPORTS = [
   {
     id: "2026-08-08-sharepoint-teams-coral-sql-data-report-v8",
@@ -571,3 +590,38 @@ window.CORAL_META = {
     { date: "08-08", label: "08-08 161-probe v8", pass: 79, total: 161 }
   ]
 };
+
+/* Runtime registry shape-check. Throws on the first missing/invalid required
+   field so a malformed entry fails LOUDLY at load time (not silently during a
+   smoke run hours later). Soft issues (extra fields, null bucket stats) are
+   tolerated — only schema-breaking issues throw. Called immediately below. */
+(function __validateRegistry() {
+  var STATUSES = ["latest", "addendum", "superseded", "canonical", "guide"];
+  var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  function fail(r, msg) {
+    throw new Error("data.js: [" + (r && r.id || "?") + "] " + msg);
+  }
+  function numOrNull(v) { return v === null || typeof v === "number"; }
+  window.CORAL_REPORTS.forEach(function (r, i) {
+    if (!r || typeof r !== "object") fail(r, "entry #" + i + " is not an object");
+    ["id", "date", "title", "category", "status", "md", "html"].forEach(function (k) {
+      if (typeof r[k] !== "string" || !r[k]) fail(r, "missing/invalid required string field '" + k + "'");
+    });
+    if (!DATE_RE.test(r.date)) fail(r, "date '" + r.date + "' does not match YYYY-MM-DD");
+    if (STATUSES.indexOf(r.status) === -1) fail(r, "status '" + r.status + "' not in " + STATUSES.join("|"));
+    var s = r.stats;
+    if (!s || typeof s !== "object") fail(r, "missing stats object");
+    if (!numOrNull(s.total)) fail(r, "stats.total must be number or null (null = qualitative report, not a quantified battery)");
+    ["pass", "error", "not_found", "gated", "catalog"].forEach(function (b) {
+      if (s[b] !== undefined && !numOrNull(s[b])) fail(r, "stats." + b + " must be number, null, or undefined");
+    });
+  });
+  var m = window.CORAL_META;
+  if (!m || typeof m !== "object") throw new Error("data.js: CORAL_META missing");
+  if (typeof m.tables !== "number" || typeof m.funcs !== "number") throw new Error("data.js: CORAL_META.tables/funcs must be numbers");
+  if (typeof m.attributionTotal !== "number") throw new Error("data.js: CORAL_META.attributionTotal missing");
+  if (!Array.isArray(m.attribution)) throw new Error("data.js: CORAL_META.attribution must be an array");
+  var attrSum = m.attribution.reduce(function (s, d) { return s + (d && d.value || 0); }, 0);
+  if (attrSum !== m.attributionTotal) throw new Error("data.js: CORAL_META attribution sum " + attrSum + " != attributionTotal " + m.attributionTotal);
+  if (!Array.isArray(m.passSeries)) throw new Error("data.js: CORAL_META.passSeries must be an array");
+})();

@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/identity_tests-6/6_PASS-22c55e" alt="6/6 PASS">
   <img src="https://img.shields.io/badge/timeouts-0_(resolved)-22c55e" alt="0 timeouts (resolved)">
   <img src="https://img.shields.io/badge/reports_frozen-✓-8b5cf6" alt="reports frozen">
-  <img src="https://img.shields.io/badge/last_updated-2026--08--07-6b7280" alt="last updated 2026-08-07">
+  <img src="https://img.shields.io/badge/last_updated-2026--08--08-6b7280" alt="last updated 2026-08-08">
 </p>
 
 ---
@@ -27,6 +27,66 @@
 | **Reporting repo** | [FiscalMindset/coral_specs_testing](https://github.com/FiscalMindset/coral_specs_testing) (public) |
 | **Live hub** | [Render](https://coral-specs-testing.onrender.com/) · [GitHub Pages](https://fiscalmindset.github.io/coral_specs_testing/) |
 | **Contacts** | Matt Henderson (hired) · Andrea Ambu (engineer; receives reports) |
+
+---
+
+## 🏃 Running this hub
+
+The hub is a **static multi-page site** plus a tiny headless test suite (`frontend/test/smoke.js`) that guards every dashboard/link before deploy. Both Render and GitHub Pages just serve the repo root.
+
+### One-time
+
+```sh
+git clone https://github.com/FiscalMindset/coral_specs_testing.git
+cd coral_specs_testing
+npm install         # no-op for now — the test suite is pure Node 18+ stdlib
+```
+
+### Run the tests
+
+```sh
+npm test            # runs frontend/test/smoke.js (no jsdom, no deps)
+```
+
+The smoke test loads every page's JS in a `vm` sandbox, fires `DOMContentLoaded`, and asserts the rendered HTML — plus a registry integrity block (unique ids, exactly one `latest`, every `r.md`/`r.html` on disk, stats buckets never exceed `total`, attribution sums to 604, etc). Runs in ~1s; **CI fails the deploy if any check fails**.
+
+### Preview the hub locally
+
+```sh
+npx serve .                                 # any static server works
+# then open http://localhost:3000/frontend/  (NOT / — the static UI lives in frontend/)
+```
+
+The hub expects to be served from a directory where `frontend/` and `reports/` are siblings — Render YAML and `npm test` both rely on that layout. Quickest path: `python3 -m http.server` from the repo root and open `frontend/` (GitHub Pages and Render both serve the same way).
+
+### Architecture
+
+```
+frontend/js/
+  data.js      ← single source of truth (report registry + hub meta)
+  common.js    ← shared helpers (esc, fileLink, statLine, catLabel)
+  index.js     ← dashboard (index.html) — derives all stats from CORAL_REPORTS + CORAL_META
+  reports.js   ← reports catalog (search/filter/sort)
+  report.js    ← single-report detail page
+  timeline.js  ← chronological view
+  findings.js  ← key findings
+  guides.js    ← guides & repros
+frontend/test/smoke.js  ← headless render + integrity checks
+```
+
+**All dashboard numbers are derived from `data.js` — there is no hardcoded "27 reports" / "733 tables" anywhere in the renderers.** Update `data.js` (or `CORAL_META`) to change the hub; the smoke test will catch stale transcriptions.
+
+### Required script-tag order (per HTML page)
+
+Every dynamic page loads exactly three scripts **in this order** — load order is fragile, no globals are auto-wired:
+
+```html
+<script src="js/data.js"></script>     <!-- MUST come first: publishes CORAL_REPORTS + CORAL_META -->
+<script src="js/common.js"></script>   <!-- depends on data.js (reads CORAL_REPORTS into Coral.REPORTS) -->
+<script src="js/<page>.js"></script>   <!-- depends on Coral.REPORTS / Coral.META / Coral.esc etc. -->
+```
+
+The smoke test (`frontend/test/smoke.js`) parses each page's `<script src=...>` tags in order and asserts the exact sequence above — change load order in any of the six dynamic pages and the smoke test will fail.
 
 ---
 
@@ -468,4 +528,4 @@ Step-by-step guide for acquiring a new OAuth token with the 36-scope admin grant
 
 ---
 
-<p align="center"><sub>Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-08-07</sub></p>
+<p align="center"><sub>Public on GitHub · maintained by <a href="https://github.com/FiscalMindset">Vicky Kumar</a> · last updated 2026-08-08</sub></p>

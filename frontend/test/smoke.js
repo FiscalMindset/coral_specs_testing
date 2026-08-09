@@ -287,6 +287,28 @@ console.log("== Static pages reference real assets ==");
   assert(bad === 0, "every static page references existing files + valid nav");
 }
 
+/* ---------------- required script-tag order (data -> common -> page) ---------------- */
+console.log("== Script tag order (data.js → common.js → page.js) ==");
+{
+  const PAGE_SCRIPT = {
+    "index.html": "js/index.js",
+    "reports.html": "js/reports.js",
+    "report.html": "js/report.js",
+    "timeline.html": "js/timeline.js",
+    "findings.html": "js/findings.js",
+    "guides.html": "js/guides.js"
+  };
+  Object.entries(PAGE_SCRIPT).forEach(([page, pageScript]) => {
+    const html = fs.readFileSync(path.join(FRONTEND, page), "utf8");
+    const scripts = [...html.matchAll(/<script src="([^"]+)"\s*><\/script>/g)].map(m => m[1]);
+    const expected = ["js/data.js", "js/common.js", pageScript];
+    const got = scripts.filter(s => s.startsWith("js/"));
+    assert(JSON.stringify(got) === JSON.stringify(expected),
+      page + " loads " + expected.join(", ") + " (got " + (got.join(", ") || "nothing") + ")");
+  });
+  assert(true, "static pages (about.html, 404.html) intentionally load no scripts");
+}
+
 console.log(failed === 0 ? "\nALL SMOKE TESTS PASSED" : "\n" + failed + " TEST(S) FAILED");
 process.exit(failed === 0 ? 0 : 1);
 
