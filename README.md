@@ -25,6 +25,7 @@
 | **Email** | `npdimagine@gmail.com` (personal) · `algsoch@gmail.com` (admin / Entra tenant) |
 | **Project** | withcoral/coral — testing `microsoft_graph_v4` source connector (Microsoft Graph API via Coral) |
 | **Reporting repo** | [FiscalMindset/coral_specs_testing](https://github.com/FiscalMindset/coral_specs_testing) (public) |
+| **Live hub** | [Render](https://coral-specs-testing.onrender.com/) · [GitHub Pages](https://fiscalmindset.github.io/coral_specs_testing/) |
 | **Contacts** | Matt Henderson (hired) · Andrea Ambu (engineer; receives reports) |
 
 ---
@@ -47,6 +48,7 @@
 
 > **Frozen** once committed — new testing → new dated file, never modify existing ones.
 > Most reports ship a `.md` (raw) and a responsive `.html`; a few early ones are `.md`-only (rendered by the hub).
+> Browse the full interactive index at **[coral-specs-testing.onrender.com](https://coral-specs-testing.onrender.com/)** (Render) or **[GitHub Pages](https://fiscalmindset.github.io/coral_specs_testing/)**.
 
 ### 🆕 2026-08-08 — 161-probe consolidated battery (v8): every probe re-verified live, one matrix
 
