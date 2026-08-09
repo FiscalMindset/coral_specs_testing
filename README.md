@@ -22,7 +22,7 @@
 |---|---|
 | **Name** | Vicky Kumar |
 | **GitHub** | [@FiscalMindset](https://github.com/FiscalMindset) (commits also authored as `npdimagine`) |
-| **Email** | `npdimagine@gmail.com` (personal) · `algsoch@gmail.com` (admin / Entra tenant) |
+| **Email** | `npdimagine@gmail.com` (personal) — operational contact details are not committed to the public repo; see [Reporting rules](#-reporting-rules-enforced) |
 | **Project** | withcoral/coral — testing `microsoft_graph_v4` source connector (Microsoft Graph API via Coral) |
 | **Reporting repo** | [FiscalMindset/coral_specs_testing](https://github.com/FiscalMindset/coral_specs_testing) (public) |
 | **Live hub** | [Render](https://coral-specs-testing.onrender.com/) · [GitHub Pages](https://fiscalmindset.github.io/coral_specs_testing/) |
@@ -92,14 +92,12 @@ The smoke test (`frontend/test/smoke.js`) parses each page's `<script src=...>` 
 
 ## 🔐 Microsoft account in use
 
+The specifics of the test tenant (tenant name, tenant ID, admin email, test-user UPN, and Coral app client ID) are **not committed to this public repo** — the same disclosure standard this repo's [commit-email-exposure report](reports/2026-08-02-commit-email-exposure.md) applies to upstream-maintainer emails applies here to operational credentials. A maintainer reproducing a battery needs the values from the maintainer's out-of-band notes; the public record only needs to confirm a Business-Premium Entra tenant with admin consent, keychain OAuth, and an `az` admin token were used.
+
 | | |
 |---|---|
-| **Tenant** | `algsoch762.onmicrosoft.com` (Business Premium) |
-| **Tenant ID** | `0aa3a51b-3716-44d7-9636-f85f3db072bf` |
-| **Admin account** | `algsoch@gmail.com` (Global Administrator) |
-| **Test user** | `vickykumar@algsoch762.onmicrosoft.com` |
+| **Tenant kind** | Microsoft Entra test tenant (Business Premium) |
 | **Sign-in methods** | Interactive OAuth (keychain) · non-interactive `az` admin token (1h) |
-| **Coral app client ID** | `4eedabf0-b27e-4c98-ac7b-4c7f5d504bee` |
 | **License state** | O365_BUSINESS_PREMIUM (1 of 25 units, licensed 2026-08-04) — Teams/Chat/Drive/Site/license-gated tables unlocked |
 
 ---

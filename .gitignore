@@ -1,3 +1,5 @@
 reports/email-draft.txt
 reports/prompt-next-agent.txt
 node_modules/
+docs/OPERATIONS.md
+docs/OPERATIONS.local.md
