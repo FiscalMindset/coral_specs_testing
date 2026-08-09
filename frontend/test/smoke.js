@@ -46,7 +46,7 @@ function makeContext(extra) {
     _dcl: null,
     addEventListener(evt, cb) { if (evt === "DOMContentLoaded") this._dcl = cb; },
   };
-  documentShim.documentElement.getAttribute = () => null;
+  documentShim.documentElement.getAttribute = function (k) { return k in this.attrs ? this.attrs[k] : null; };
   const win = Object.assign({
     document: documentShim,
     localStorage: { getItem: () => null, setItem: () => {} },
@@ -195,6 +195,83 @@ console.log("== Report detail (report.js) ==");
   win.CoralReport.render();
   hay = elements["reportDetail"].innerHTML;
   assert(hay.indexOf("rel=\"next\"") !== -1 || hay.indexOf("rel=\"prev\"") !== -1, "pager prev/next points at real neighbours");
+}
+
+/* ---------------- common helpers (esc / fileLink / reportCard / theme) ---------------- */
+console.log("== Common helpers (esc, fileLink, reportCard, theme toggle) ==");
+{
+  const { ctx, win, elements } = makeContext();
+  load(ctx, "frontend/js/data.js");
+  load(ctx, "frontend/js/common.js");
+
+  // esc() — every special char must round-trip
+  assert(win.Coral.esc("<script>") === "&lt;script&gt;", "esc escapes < and >");
+  assert(win.Coral.esc("a & b") === "a &amp; b", "esc escapes &");
+  assert(win.Coral.esc('he said "hi"') === "he said &quot;hi&quot;", 'esc escapes "');
+  assert(win.Coral.esc(null) === "", "esc converts null to empty string");
+  assert(win.Coral.esc(undefined) === "", "esc converts undefined to empty string");
+  assert(win.Coral.esc(42) === "42", "esc stringifies numbers");
+  assert(win.Coral.esc("plain") === "plain", "esc passes plain strings through");
+
+  // fileLink() — decides whether the .md link is suppressed as a duplicate of .html
+  const same = win.Coral.fileLink({ html: "x.md", md: "x.md" });
+  assert(same.html === "x.md" && same.md === "x.md" && same.same === true, "fileLink marks html===md as same=true");
+  const diff = win.Coral.fileLink({ html: "x.html", md: "x.md" });
+  assert(diff.same === false && diff.html === "x.html" && diff.md === "x.md", "fileLink marks different paths as same=false");
+  const onlyHtml = win.Coral.fileLink({ html: "x.html" });
+  assert(onlyHtml.html === "x.html" && !onlyHtml.md && onlyHtml.same === false,
+    "fileLink returns html set, md falsy, same=false when only html is set");
+
+  // reportCard() — dashboard variant (rawPrefix='', detailPath='frontend/report.html')
+  const r = {
+    id: "2026-08-08-x",
+    date: "2026-08-08",
+    title: "T",
+    status: "latest",
+    html: "reports/x.html",
+    md: "reports/x.md",
+    tags: ["x"]
+  };
+  const card = win.Coral.reportCard(r, { rawPrefix: "", detailPath: "frontend/report.html" });
+  assert(card.indexOf('<article class="report-card card">') !== -1, "reportCard opens with <article>");
+  assert(card.indexOf('href="reports/x.html"') !== -1, 'dashboard rawPrefix="" leaves html href unprefixed');
+  assert(card.indexOf('href="reports/x.md"') !== -1, 'dashboard rawPrefix="" leaves md href unprefixed');
+  assert(card.indexOf('href="frontend/report.html?id=' + encodeURIComponent(r.id) + '"') !== -1,
+    "dashboard detailPath uses frontend/report.html with encodeURIComponent id");
+  assert(card.indexOf("detail ↗") !== -1, "dashboard includes the detail footer link");
+  // catalog variant (rawPrefix='../', detailPath='report.html', showDetail=false, formatId=esc)
+  const cat = win.Coral.reportCard(r, {
+    rawPrefix: "../",
+    detailPath: "report.html",
+    showDetail: false,
+    formatId: win.Coral.esc
+  });
+  assert(cat.indexOf('href="../reports/x.html"') !== -1, "catalog prefixes raw html link with ../");
+  assert(cat.indexOf('href="../reports/x.md"') !== -1, "catalog prefixes raw md link with ../");
+  assert(cat.indexOf('href="report.html?id=' + win.Coral.esc(r.id) + '"') !== -1,
+    "catalog detailPath uses bare report.html with esc-encoded id (byte-for-byte parity)");
+  assert(cat.indexOf("detail ↗") === -1, "catalog suppresses the detail footer link");
+
+  // Theme toggle — the common.js theme IIFE registers initTheme on DOMContentLoaded
+  // when document.readyState === 'loading'. Re-load common.js in a fresh context
+  // with a fake #themeToggle stub and a pre-shared html documentElement, fire
+  // DOMContentLoaded, then click the toggle and verify data-theme flips dark
+  // (default cur=light since matchMedia.matches=false in the shim).
+  const fresh = makeContext();
+  const toggleStub = makeEl("themeToggle");
+  fresh.elements["themeToggle"] = toggleStub;
+  fresh.elements["html"] = documentShimOf(fresh.ctx).documentElement;
+  load(fresh.ctx, "frontend/js/data.js");
+  load(fresh.ctx, "frontend/js/common.js");
+  documentShimOf(fresh.ctx)._dcl();
+  const onClick = toggleStub._listeners["click"];
+  assert(typeof onClick === "function", "theme toggle wires a click handler on #themeToggle");
+  onClick();
+  assert(fresh.elements["html"].attrs["data-theme"] === "dark",
+    "first click sets data-theme='dark' (light is the fallback when matchMedia says no dark preference)");
+  onClick();
+  assert(fresh.elements["html"].attrs["data-theme"] === "light",
+    "second click toggles back to data-theme='light'");
 }
 
 /* ---------------- registry integrity ---------------- */
