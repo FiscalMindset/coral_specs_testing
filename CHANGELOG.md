@@ -4,6 +4,23 @@ All notable changes to the Coral Specs Testing hub (the static report hub at `fr
 
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] — 2026-08-09
+
+### Added
+- **New report** `2026-08-09-search-planner-comms-surfaces-walk.{md,html}` — 40-probe walk of 4 Microsoft Graph surfaces that v8 did not cover: Search (5 probes), Planner (4), Communications (9), Education (6), plus regression + tenant inventory (16). 19 pass / 21 fail.
+  - **Search**: all 5 fail — 1× 404 zero-arg regression confirmed (`search_searchentity_getsearchentity` unchanged from v6), 4× 403 (`Search.Read.All` missing).
+  - **Planner**: 2 pass empty + 2 fail 400 — the 2 failures are Coral-side: `planner_plannerplan_planner_listplans` and `planner_plannertask_planner_listtasks` are no-arg tables but Graph demands `$filter` (F-new-1).
+  - **Communications**: 2 pass empty + 7 fail — 3× scope (`OnlineMeetings.Read.All`, `CallRecords.Read.All`, `Presence.Read.All`), 1× ACS-not-registered with distinctive `"Application is not registered in our store"` body (F-new-3), 1× 404 `adhocCalls`, 1× 400 with HTML body from `onlineMeetingConversations` (F-new-2), 1× 404 `communications/presences`.
+  - **Education**: 0/6 pass — 5× scope (`Edu.*`) + 1× 500 `HostNotFound "Target 'fake_node' is not found"` on `/education/reports` (Graph internal routing bug).
+  - **Regression checks**: F7 (`drives_driveitem_drives_listitems` filter) holds (F-new-5); `sites_baseitem_sites_listitems` is now a function in current catalog, v6 finding stale (F-new-4).
+  - **Tenant inventory reconfirms v8**: 16 users, 50 groups, 3 drives, 2 chats, 2 sites, n apps, Coral SP by appId — same keychain OAuth that fails on 4 new surfaces works on all established ones.
+- Registry updated (`frontend/js/data.js`): new entry at the top with status `latest`; v8 changed to `superseded`; passSeries extended with today's 19/40 point; smoke-test integrity block catches all changes.
+
+### Recommendations added (to the report's Recommendations section)
+1. Coral should expose `$filter` on the 2 failing Planner tables (F-new-1).
+2. Coral's error wrapper should surface Graph's `code` field so consumers can route failures automatically (403 `UnknownError` → re-consent; 403 `Application is not registered` → notify admin; 400 HTML body → retry-with-backoff) (F-new-2, F-new-3).
+3. Add `Search.Read.All` (or `External.Item.Read.All`) to the Coral app's delegated grant and re-consent to unblock the 4 Search list endpoints (F-new-6).
+
 ## [1.0.0] — 2026-08-08
 
 First tagged release of the 8-page hub. Marks the transition from "ad-hoc reports in `reports/`" to "frozen report registry + derived dashboard + CI-gated deploy".

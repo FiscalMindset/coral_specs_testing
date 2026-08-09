@@ -22,12 +22,35 @@
      passSeries       { date, label, pass, total }[]   (0 <= pass <= total) */
 window.CORAL_REPORTS = [
   {
+    id: "2026-08-09-search-planner-comms-surfaces-walk",
+    date: "2026-08-09",
+    title: "Search + Planner + Communications + Education surface walk",
+    short: "40 probes · 19 pass (14 real + 5 empty) / 21 fail (10 ms-scope, 1 error, 2 api-config, 2 api-constraint, 3 api-not-supported, 1 upstream, 1 unknown, 1 catalog)",
+    category: "sharepoint-teams",
+    status: "latest",
+    stats: { pass: 19, error: 17, not_found: 3, gated: 0, catalog: 1, total: 40 },
+    headline: "First walk of 4 Microsoft Graph surfaces that v8 did not cover — Search, Planner, Communications, Education. 40 probes against the live source: 14 pass (real data) + 5 pass (200 OK empty) + 21 fail. Of the 21 failures only 2 are Coral-side (F-new-1: planner tables need filter args; F-new-4: sites_baseitem_sites_listitems catalog drift); the other 19 are Graph-side (ms-scope, api-config, api-not-supported, api-constraint, upstream, unknown). New findings: 1) F-new-1 planner listplans/listtasks 400 demanding $filter; 2) F-new-2 onlineMeetingConversations returns HTML body from Graph; 3) F-new-3 calls API needs ACS registration (not a missing scope); 4) F-new-4 catalog drift on sites_baseitem_sites_listitems; 5) F-new-5 F7 filter fix holds; 6) F-new-6 Search surface unchanged from v6 (zero-arg getsearchentity still 404).",
+    findings: [
+      "40 probes: 14 real-data pass + 5 empty-200-OK pass + 21 fail. Of 21 fails: 10 ms-scope (Search.Read.All, OnlineMeetings.Read.All, Edu.*), 1 error (F7 filter mandatory), 2 api-constraint (planner needs $filter), 3 api-not-supported (presence/adhoccalls/search zero-arg), 2 api-config (ACS not registered + P1+P2 licence), 1 upstream (education/reports HostNotFound), 1 unknown (onlineMeetingConversations HTML body), 1 catalog drift",
+      "Tenant inventory reconfirms v8: 16 users, 50 groups, 3 drives, 2 chats, 2 sites, n apps, n SPs — same keychain OAuth that fails on 4 new surfaces works on all the established ones. Failure wall is genuinely Graph-side, not a token problem.",
+      "F-new-1: planner_plannerplan_planner_listplans + planner_plannertask_planner_listtasks are exposed as no-arg tables; Graph rejects with 400 demanding $filter on owner/planId. Coral should expose the filter arg.",
+      "F-new-2: communications_onlinemeetingengagementconversation_communications_listonlinemeetingconversations returns 400 with HTML body (\"<html><body><h1>400 Bad request</h1>Your browser sent an invalid request.</body></html>\"). Graph-side malformed response bug — should report.",
+      "F-new-3: communications_call_communications_listcalls 403 with body \"Application is not registered in our store\" — ACS resource not provisioned. Different failure class from a missing scope; needs tenant admin to register ACS.",
+      "F-new-4: sites_baseitem_sites_listitems was a no-arg table in v6, now a function (renamed in current catalog build). v6's 'maps non-endpoint' finding is now stale — anyone re-running v6 should expect different output here.",
+      "F-new-5: F7 fix holds — drives_driveitem_drives_listitems(filter => 'name ne null') on OneDrive returns 15 items; without filter still 400. The fix is about exposing the arg, not making it optional.",
+      "F-new-6: Search surface unchanged from v6 — zero-arg search_searchentity_getsearchentity() still 404; the 4 list endpoints still 403 with UnknownError. Add Search.Read.All to the Coral app's delegated grant to unblock the list endpoints."
+    ],
+    md: "reports/2026-08-09-search-planner-comms-surfaces-walk.md",
+    html: "reports/2026-08-09-search-planner-comms-surfaces-walk.html",
+    tags: ["coral-sql", "sharepoint", "search", "planner", "communications", "education", "surface-walk", "regression"]
+  },
+  {
     id: "2026-08-08-sharepoint-teams-coral-sql-data-report-v8",
     date: "2026-08-08",
     title: "161-probe consolidated battery (v8)",
     short: "161 probes · 79 pass / 80 error / 2 catalog facts",
     category: "sharepoint-teams",
-    status: "latest",
+    status: "superseded",
     stats: { pass: 79, error: 80, gated: 0, catalog: 2, total: 161 },
     headline: "Every probe run to date merged into one 161-probe matrix, all re-verified live: 48 v6 + 21 v7 + 15 deep + 77 T-series. 79 pass / 80 error / 2 catalog facts. 69 of 80 errors are Microsoft-side (ms-scope 24, ms-upstream 22, graph-constraint 10, aad-account 8, delegated-context 5); only 7 test-side and 3-4 Coral-fixable. Retesting cannot turn any of the 80 into a pass.",
     findings: [
@@ -587,7 +610,8 @@ window.CORAL_META = {
     { date: "08-05", label: "08-05 95-scope", pass: 229, total: 733 },
     { date: "08-06", label: "08-06 SP+Teams v6", pass: 29, total: 48 },
     { date: "08-08", label: "08-08 re-verify v7", pass: 16, total: 29 },
-    { date: "08-08", label: "08-08 161-probe v8", pass: 79, total: 161 }
+    { date: "08-08", label: "08-08 161-probe v8", pass: 79, total: 161 },
+    { date: "08-09", label: "08-09 Search+Planner+Comms+Edu", pass: 19, total: 40 }
   ]
 };
 

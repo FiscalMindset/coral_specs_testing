@@ -108,7 +108,27 @@ The specifics of the test tenant (tenant name, tenant ID, admin email, test-user
 > Most reports ship a `.md` (raw) and a responsive `.html`; a few early ones are `.md`-only (rendered by the hub).
 > Browse the full interactive index at **[coral-specs-testing.onrender.com](https://coral-specs-testing.onrender.com/)** (Render) or **[GitHub Pages](https://fiscalmindset.github.io/coral_specs_testing/)**.
 
-### 🆕 2026-08-08 — 161-probe consolidated battery (v8): every probe re-verified live, one matrix
+### 🆕 2026-08-09 — Search + Planner + Communications + Education surface walk: 4 unexplored Graph surfaces
+
+| | |
+|---|---|
+| **Date** | 2026-08-09 (UTC) |
+| **Probes** | **40** — Search (5) · Planner (4) · Communications (9) · Education (6) · Regression + tenant inventory (16) |
+| **Result** | 19 pass (14 real + 5 empty 200 OK) · 21 fail (10 ms-scope, 1 error, 2 api-config, 2 api-constraint, 3 api-not-supported, 1 upstream, 1 unknown, 1 catalog drift) |
+
+The v8 consolidated battery covered SharePoint + Teams + chats + drives + backupRestore + fileStorage + teamwork only. This walk maps **4 Graph surfaces v8 did not touch**: Microsoft Search, Planner, Communications (calls/online-meetings), Education. The same keychain OAuth that fails on all 4 still reads 16 users, 50 groups, 3 drives, 2 chats, 2 sites, n apps, n SPs (incl. Coral by appId) — so the failure wall is **genuinely Graph-side**, not a token problem. 6 new findings (F-new-1…F-new-6); only 2 are Coral-side (planner tables need filter args; sites_baseitem_sites_listitems catalog drift). The other 4 are Microsoft issues: missing scopes (`Search.Read.All`, `OnlineMeetings.Read.All`, `Edu.*`), ACS resource not registered (F-new-3), Graph HTML-error response (F-new-2), Graph internal routing 500 on `/education/reports`. Findings:
+
+- **F-new-1** — `planner_plannerplan_planner_listplans` and `planner_plannertask_planner_listtasks` are exposed as no-arg tables; Graph rejects with 400 demanding `$filter` on owner/planId. Coral should expose the filter arg.
+- **F-new-2** — `communications_onlinemeetingengagementconversation_communications_listonlinemeetingconversations` returns **400 with HTML body** (`<html>…400 Bad request…</html>`) — Graph-side malformed response bug.
+- **F-new-3** — `communications_call_communications_listcalls` 403 with body `"Application is not registered in our store"` — ACS resource not provisioned. Different from a missing-scope 403.
+- **F-new-4** — `sites_baseitem_sites_listitems` was a no-arg table in v6, now a function (renamed in current catalog build). v6's "maps non-endpoint" finding is now stale.
+- **F-new-5** — F7 fix holds: `drives_driveitem_drives_listitems(filter => 'name ne null')` on OneDrive returns 15 items; without filter still 400.
+- **F-new-6** — Search surface unchanged from v6: zero-arg `search_searchentity_getsearchentity()` still 404; 4 list endpoints still 403 with `UnknownError`.
+
+- **[HTML](reports/2026-08-09-search-planner-comms-surfaces-walk.html)** — 8 tabs (Overview/Search/Planner/Comms/Education/Regression+Inventory/Findings/Log), filterable command log.
+- **[MD](reports/2026-08-09-search-planner-comms-surfaces-walk.md)** — raw.
+
+### 2026-08-08 — 161-probe consolidated battery (v8): every probe re-verified live, one matrix
 
 | | |
 |---|---|

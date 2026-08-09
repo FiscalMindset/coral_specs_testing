@@ -84,21 +84,21 @@ console.log("== Overview (index.js) ==");
     const hay = (el ? el.innerHTML + "\n" + el.textContent : "");
     assert(hay.indexOf(expect) !== -1, label);
   };
-  check("statGrid", ">30<", "stat grid shows report count");
+  check("statGrid", ">31<", "stat grid shows report count");
   check("statGrid", "733", "stat grid shows 733 tables");
   check("statGrid", "5776", "stat grid shows 5,776 functions");
   check("statGrid", "56%", "stat grid shows Coral-bug share");
-  check("heroRange", "2026-07-14 → 2026-08-08", "hero range spans all dates");
+  check("heroRange", "2026-07-14 → 2026-08-09", "hero range spans all dates");
   check("heroBadges", "733 tables", "hero badge shows table count");
-  check("heroBadges", "79 pass", "hero badge shows latest pass count");
+  check("heroBadges", "19 pass", "hero badge shows latest pass count");
   check("attributionBars", "338 (56.0%)", "Coral bugs bar");
   check("attributionBars", "185 (30.6%)", "our setup bar");
   check("attributionBars", "49 (8.1%)", "ambiguous bar");
   check("passChart", "<svg", "SVG chart rendered");
   check("passChart", "229", "95-scope peak shown");
   check("passChart", "146", "all-scope pass shown");
-  check("latestFinding", "161-probe consolidated battery", "v8 headline present");
-  check("latestFinding", "report.html?id=2026-08-08-sharepoint-teams-coral-sql-data-report-v8", "v8 links to detail page");
+  check("latestFinding", "Search + Planner + Communications", "today's headline present");
+  check("latestFinding", "report.html?id=2026-08-09-search-planner-comms-surfaces-walk", "today's links to detail page");
 }
 
 /* ---------------- reports catalog ---------------- */
@@ -111,7 +111,7 @@ console.log("== Reports (reports.js) ==");
   documentShimOf(ctx)._dcl();
   const grid = elements["reportGrid"];
   assert(grid && grid.innerHTML.indexOf("report-card") !== -1, "report cards rendered");
-  assert(String(elements["reportCount"].textContent) === "30", "report count set to 30");
+  assert(String(elements["reportCount"].textContent) === "31", "report count set to 31");
   assert(grid.innerHTML.indexOf("report.html?id=") !== -1, "cards link to detail pages");
   assert(grid.innerHTML.indexOf("Open report") !== -1, "cards keep raw ../reports/ links");
   const catHtml = elements["categoryFilter"].innerHTML;
@@ -138,7 +138,7 @@ console.log("== Timeline (timeline.js) ==");
   documentShimOf(ctx)._dcl();
   const hay = elements["timeline"].innerHTML;
   assert(hay.indexOf("2026-07-14") !== -1, "timeline starts at first date");
-  assert(hay.indexOf("2026-08-08") !== -1, "timeline ends at latest date");
+  assert(hay.indexOf("2026-08-09") !== -1, "timeline ends at latest date");
   assert(hay.indexOf("report.html?id=") !== -1, "timeline entries link to detail pages");
   assert(hay.indexOf("../reports/") !== -1, "timeline keeps raw report links");
 }
