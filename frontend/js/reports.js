@@ -5,25 +5,7 @@
   var REPORTS = window.Coral.REPORTS;
 
   function reportCard(r) {
-    var links = window.Coral.fileLink(r);
-    var foot = [];
-    if (links.html) foot.push('<a class="mini-link" href="../' + window.Coral.esc(links.html) + '">Open report ↗</a>');
-    if (links.md && !links.same) foot.push('<a class="mini-link" href="../' + window.Coral.esc(links.md) + '">.md</a>');
-    var tags = (r.tags || []).map(function (t) {
-      return '<span class="badge badge--cat">' + window.Coral.esc(t) + "</span>";
-    }).join("");
-    return (
-      '<article class="report-card card">' +
-        '<div class="report-card__head">' +
-          '<span class="report-card__date">' + window.Coral.esc(r.date) + "</span>" +
-          '<span class="badge badge--' + window.Coral.esc(r.status || "canonical") + '">' + window.Coral.esc(r.status || "canonical") + "</span>" +
-        "</div>" +
-        '<h3><a class="report-card__title" href="report.html?id=' + window.Coral.esc(r.id) + '">' + window.Coral.esc(r.title) + "</a></h3>" +
-        '<p class="report-card__stats">' + window.Coral.statLine(r) + "</p>" +
-        '<div class="report-card__tags">' + tags + "</div>" +
-        '<div class="report-card__foot">' + foot.join("") + "</div>" +
-      "</article>"
-    );
+    return window.Coral.reportCard(r, { rawPrefix: "../", detailPath: "report.html", showDetail: false, formatId: window.Coral.esc });
   }
 
   var state = { search: "", category: "all", status: "all", sort: "date-desc" };

@@ -58,6 +58,48 @@
     }).join("");
   }
 
+  /* Shared report-card markup, parameterised so the dashboard (index.html) and
+     reports.html (catalog) can produce byte-for-byte equivalent output despite
+     living at different relative paths in the site.
+       opts.rawPrefix    prefix prepended to links.html / links.md hrefs
+                         ("" when the page is at the repo root, "../" when it's
+                         one directory down — frontend/reports.html).
+       opts.detailPath   path stem for the detail-page link
+                         ("frontend/report.html" from index.html, "report.html"
+                         from frontend/reports.html).
+       opts.showDetail   whether to append a "detail ↗" mini-link to the footer
+                         (default true; reports.html suppresses it).
+       opts.formatId     encoder for the report id in the detail href
+                         (default encodeURIComponent; reports.html historically
+                         used esc() — preserved here for byte-for-byte parity). */
+  function reportCard(r, opts) {
+    opts = opts || {};
+    var rawPrefix = opts.rawPrefix || "";
+    var detailPath = opts.detailPath || "report.html";
+    var showDetail = opts.showDetail !== false;
+    var formatId = opts.formatId || encodeURIComponent;
+    var links = fileLink(r);
+    var foot = [];
+    if (links.html) foot.push('<a class="mini-link" href="' + rawPrefix + esc(links.html) + '">Open report ↗</a>');
+    if (links.md && !links.same) foot.push('<a class="mini-link" href="' + rawPrefix + esc(links.md) + '">.md</a>');
+    if (showDetail) foot.push('<a class="mini-link" href="' + detailPath + '?id=' + formatId(r.id) + '">detail ↗</a>');
+    var tags = (r.tags || []).map(function (t) {
+      return '<span class="badge badge--cat">' + esc(t) + "</span>";
+    }).join("");
+    return (
+      '<article class="report-card card">' +
+        '<div class="report-card__head">' +
+          '<span class="report-card__date">' + esc(r.date) + "</span>" +
+          '<span class="badge badge--' + esc(r.status || "canonical") + '">' + esc(r.status || "canonical") + "</span>" +
+        "</div>" +
+        '<h3><a class="report-card__title" href="' + detailPath + '?id=' + formatId(r.id) + '">' + esc(r.title) + "</a></h3>" +
+        '<p class="report-card__stats">' + statLine(r) + "</p>" +
+        '<div class="report-card__tags">' + tags + "</div>" +
+        '<div class="report-card__foot">' + foot.join("") + "</div>" +
+      "</article>"
+    );
+  }
+
   window.Coral = {
     REPORTS: REPORTS,
     META: META,
@@ -69,7 +111,8 @@
     statLine: statLine,
     catLabel: catLabel,
     findById: findById,
-    statChips: statChips
+    statChips: statChips,
+    reportCard: reportCard
   };
 })();
 
