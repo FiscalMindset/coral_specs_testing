@@ -15,7 +15,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Lint (syntax-check every JS file)
-        run: for f in $(git ls-files 'frontend/js/*.js'); do node --check "$f"; done
+          cache: npm
+      - name: Install dev dependencies (eslint)
+        run: npm ci
+      - name: Lint (ESLint flat config over frontend/js)
+        run: npm run lint
       - name: Run hub smoke tests
         run: npm test
