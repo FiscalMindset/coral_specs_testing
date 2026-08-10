@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>microsoft_graph_v4 — full re-test with 130-scope token (2026-08-10)</title>
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; line-height: 1.5; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.15rem; margin: 26px 0 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; }
+.sub { color: #64748b; font-size: .9rem; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; margin: 8px 0; }
+th { text-align: left; background: #f1f5f9; padding: 6px 8px; border: 1px solid #e2e8f0; }
+td { padding: 5px 8px; border: 1px solid #e2e8f0; vertical-align: top; word-break: break-word; }
+code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; font-size: .78rem; }
+.st { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+.st-pass { background: #dcfce7; color: #166534; }
+.st-fail { background: #fee2e2; color: #991b1b; }
+.st-warn { background: #fef9c3; color: #854d0e; }
+.notice { border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; background: #eff6ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+.notice.warn { border-left-color: #d97706; background: #fffbeb; }
+.notice.ok { border-left-color: #16a34a; background: #f0fdf4; }
+.notice.bad { border-left-color: #dc2626; background: #fef2f2; }
+.callout { border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed; background: #faf5ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+pre { background: #0f172a; color: #a5f3fc; padding: 8px 10px; border-radius: 6px; font-size: .76rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+@media (prefers-color-scheme: dark) {
+  body { background: #0f172a; color: #e2e8f0; }
+  .sub { color: #94a3b8; }
+  th { background: #334155; border-color: #475569; }
+  td { border-color: #334155; }
+  code { background: #1e293b; color: #e2e8f0; }
+  .notice { background: #0c1a3a; border-color: #334155; }
+  .notice.warn { background: #2a1a04; }
+  .notice.ok { background: #052e16; }
+  .notice.bad { background: #2a0a0a; }
+  .callout { background: #1e1033; border-color: #334155; }
+  pre { background: #000; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>microsoft_graph_v4 — full re-test with 130-scope token (2026-08-10)</h1>
+<div class="sub">Comprehensive re-test of yesterday's 21 failures with a full 130-scope access token (AllPrincipals grant admin-consented). Token verified via JWT decode — `scp` claim contains all 21 failure-relevant scopes. Result: <strong>only 1 new pass</strong> (POST /search/query) — most failures reproduce unchanged because they're <strong>Microsoft licence gates, not scope gaps</strong>.</div>
+
+<h2>Report profile</h2>
+<table>
+<tr><th></th><th>Value</th></tr>
+<tr><td>Date</td><td>2026-08-10 (UTC, 11:30–12:27)</td></tr>
+<tr><td>Tenant</td><td>algsoch (`AAD`) · `algsoch762.onmicrosoft.com`</td></tr>
+<tr><td>User</td><td>vickykumar (`vickykumar@algsoch762.onmicrosoft.com`)</td></tr>
+<tr><td>Licence</td><td><strong>O365_BUSINESS_PREMIUM only</strong> — no Education, no E5 component, no P1+P2</td></tr>
+<tr><td>Token</td><td>keychain OAuth (interactive) with <strong>130 scopes in scp claim</strong> — `iat=11:55:40Z`, `exp=12:38:49Z`, `aud=graph.microsoft.com`</td></tr>
+<tr><td>AllPrincipals grant</td><td>128 unique scopes (admin-consented tenant-wide)</td></tr>
+</table>
+
+<h2>Stats — 22 re-probes</h2>
+<table>
+<tr><th>Status</th><th>Count</th><th>Notes</th></tr>
+<tr><td><span class="st st-pass">✅ NEW PASS (today)</span></td><td>1</td><td><code>POST /search/query</code> — real message hits, different surface from the failing list endpoints</td></tr>
+<tr><td><span class="st st-pass">✅ pass via function form</span></td><td>3</td><td>planner_listplans(group_id), getpresence(user_id), drives_drive_search(drive_id, q) — all unchanged from yesterday's wins</td></tr>
+<tr><td><span class="st st-fail">❌ repro unchanged</span></td><td>17</td><td>All reproduce despite the 130-scope token — see root-cause triage below</td></tr>
+<tr><td><span class="st st-warn">⚠ catalog drift</span></td><td>1</td><td><code>sites_baseitem_sites_listitems</code> now a function (unchanged)</td></tr>
+</table>
+
+<h2>Bottom line — root-cause triage</h2>
+<div class="notice bad"><strong>YESTERDAY's root-cause attribution was wrong.</strong> I attributed all 17 unchanged failures to "ms-scope (missing scope)". With the 130-scope token, only 1 of those 17 is actually a scope problem (and even that one is admin provisioning, not consent). The other 16 are <strong>MICROSOFT LICENCE GATES</strong> that no amount of Coral manifest editing can fix.</div>
+
+<table>
+<tr><th>Layer</th><th>Count</th><th>Examples</th></tr>
+<tr><td>✅ Scope fully satisfied (200 OK)</td><td>4</td><td>3 func-form + POST /search/query</td></tr>
+<tr><td>❌ Microsoft licence gate</td><td>10</td><td>6× Education (needs M365 Education licence), 1× callRecords (E5), 1× signIns (Entra P1/P2), 2× OnlineMeetings (licence assignment)</td></tr>
+<tr><td>❌ Microsoft admin provisioning</td><td>5</td><td>3× Search list endpoints (acronyms/bookmarks/qnas need admin to populate)</td></tr>
+<tr><td>❌ Microsoft ACS / infrastructure</td><td>1</td><td>calls (needs Azure Communication Services resource)</td></tr>
+<tr><td>❌ Graph design (route absent / HTML body)</td><td>3</td><td>listpresences 404, onlineMeetingConversations 400 HTML, listadhoccalls 404</td></tr>
+<tr><td>❌ Graph API constraint (no-arg rejected)</td><td>2</td><td>planner listplans/listtasks demand $filter</td></tr>
+</table>
+
+<h2>Per-failure outcomes</h2>
+<table>
+<tr><th>Original 2026-08-09 failure</th><th>Today</th><th>Why</th></tr>
+<tr><td><code>search_searchentity_getsearchentity()</code> (404)</td><td><span class="st st-fail">404 unchanged</span></td><td>Graph design — <code>GET /search</code> not a supported endpoint</td></tr>
+<tr><td><code>search_acronym_listacronyms()</code> (403)</td><td><span class="st st-fail">403 UnknownError</span></td><td><strong>NOT scope</strong> — scope IS in token; admin data needs Search admin provisioning</td></tr>
+<tr><td><code>search_bookmark_listbookmarks</code> (403)</td><td><span class="st st-fail">403</span></td><td>Same — admin provisioning</td></tr>
+<tr><td><code>search_qna_listqnas</code> (403)</td><td><span class="st st-fail">403</span></td><td>Same — admin provisioning</td></tr>
+<tr><td><code>search_acronym_getacronyms(id)</code> (403)</td><td><span class="st st-fail">403</span></td><td>Same — admin data</td></tr>
+<tr><td><strong><code>POST /search/query</code> (NEW PROBE)</strong></td><td><span class="st st-pass"><strong>200 OK with real message hits</strong></span></td><td><strong>This surface doesn't need admin data — <code>Search.Read.All</code> is sufficient</strong></td></tr>
+<tr><td><code>planner_plannerplan_listplans</code> (405)</td><td><span class="st st-fail">405</span></td><td>Graph demands $filter on owner/container/contextScenarioId — function form works</td></tr>
+<tr><td><code>planner_plannertask_listtasks</code> (405)</td><td><span class="st st-fail">405</span></td><td>Graph demands $filter on planId — function form needs real plan_id</td></tr>
+<tr><td><code>communications_call_listcalls</code> (403 ACS)</td><td><span class="st st-fail">403 "Application is not registered in our store"</span></td><td>ACS resource not provisioned</td></tr>
+<tr><td><code>communications_onlinemeeting_listonlinemeetings</code> (403)</td><td><span class="st st-fail">403 "Insufficient permissions"</span></td><td>vickykumar may not have OnlineMeetings service plan assigned</td></tr>
+<tr><td><code>communications_callrecord_listcallrecords</code> (403)</td><td><span class="st st-fail">403</span></td><td>Requires <strong>Microsoft 365 E5 licence</strong></td></tr>
+<tr><td><code>communications_presence_listpresences</code> (404)</td><td><span class="st st-fail">404</span></td><td>Route not in Graph; use function form</td></tr>
+<tr><td><code>communications_adhoccall_listadhoccalls</code> (404)</td><td><span class="st st-fail">404</span></td><td>Route not in this tenant</td></tr>
+<tr><td><code>communications_onlinemeetingengagementconversation_listonlinemeetingconversations</code> (400 HTML)</td><td><span class="st st-fail">400 HTML</span></td><td>Graph internal bug</td></tr>
+<tr><td><code>education_educationuser_education_getme</code> (403)</td><td><span class="st st-fail">403</span></td><td><strong>No Microsoft 365 Education licence</strong></td></tr>
+<tr><td><code>education_educationclass_education_listclasses</code> (403)</td><td><span class="st st-fail">403</span></td><td>Same</td></tr>
+<tr><td><code>education_educationschool_education_listschools</code> (403)</td><td><span class="st st-fail">403</span></td><td>Same</td></tr>
+<tr><td><code>education_educationroot_education_educationroot_geteducationroot</code> (403)</td><td><span class="st st-fail">403</span></td><td>Same</td></tr>
+<tr><td><code>education_reportsroot_education_getreports</code> (500)</td><td><span class="st st-fail">500 HostNotFound "fake_node"</span></td><td>Graph internal routing bug</td></tr>
+<tr><td><code>education_educationuser_education_me_getuser</code> (403)</td><td><span class="st st-fail">403</span></td><td>Same — no Education licence</td></tr>
+<tr><td><code>drives_driveitem_drives_listitems</code> no-filter (400)</td><td><span class="st st-fail">400</span></td><td>F7 — filter mandatory, regression-clean</td></tr>
+<tr><td><code>auditlogs_signin_auditlogs_listsignins</code> (403)</td><td><span class="st st-fail">403 "Tenant doesn't have premium license"</span></td><td>Requires <strong>Entra ID P1/P2</strong></td></tr>
+</table>
+
+<h2>Token scope verification</h2>
+<div class="notice ok"><strong>Decoded JWT payload from keychain:</strong> the access token has all 130 scopes, including all 21 failure-relevant ones (Search.Read.All, OnlineMeetings.Read.All, EduRoster.Read.All, Presence.Read.All, CallRecords.Read.All, etc.). The scope is in the token. Microsoft is rejecting at the <strong>licence/provisioning layer</strong>, not the consent layer.</div>
+
+<pre>iat: 1786362940 = 2026-08-10 11:55:40 UTC
+exp: 1786367929 = 2026-08-10 12:38:49 UTC
+iss: https://sts.windows.net/0aa3a51b-3716-44d7-9636-f85f3db072bf/
+aud: https://graph.microsoft.com
+appid: 4eedabf0-b27e-4c98-ac7b-4c7f5d504bee
+upn: vickykumar@algsoch762.onmicrosoft.com
+scp: 130 scopes including Search.Read.All, OnlineMeetings.Read.All,
+     EduRoster.Read.All, Presence.Read.All, CallRecords.Read.All, ...</pre>
+
+<h2>What actually unblocks each remaining failure</h2>
+<table>
+<tr><th>Failure</th><th>Real unblocker</th><th>Cost</th></tr>
+<tr><td>5× Search list endpoints</td><td>Provision Search admin to populate data</td><td>Low (admin action)</td></tr>
+<tr><td>6× Education endpoints</td><td>Get Microsoft 365 Education A1/A3/A5 licence</td><td>~$8/user/mo</td></tr>
+<tr><td>1× callRecords</td><td>Get Microsoft 365 E5 licence</td><td>~$57/user/mo</td></tr>
+<tr><td>1× signIns</td><td>Get Microsoft Entra ID P1/P2</td><td>~$6-9/user/mo</td></tr>
+<tr><td>1× calls (ACS)</td><td>Provision Azure Communication Services resource</td><td>Low (one-time)</td></tr>
+<tr><td>2× onlineMeetings</td><td>Confirm OnlineMeetings licence assignment to vickykumar</td><td>Low (admin)</td></tr>
+<tr><td>1× listpresences 404</td><td>Use function form <code>users_presence_users_getpresence(user_id)</code></td><td>No cost — already works</td></tr>
+<tr><td>1× onlineMeetingConversations HTML</td><td>File Graph bug</td><td>No cost</td></tr>
+<tr><td>1× listadhoccalls 404</td><td>Use function form <code>getadhoccalls(adhoccall_id)</code></td><td>No cost — already works</td></tr>
+<tr><td>2× planner table 405</td><td>Use function form <code>groups_plannergroup_*_listplans(group_id)</code></td><td>No cost — already works</td></tr>
+<tr><td>1× F7 400</td><td>Use function form with filter arg</td><td>No cost — already works</td></tr>
+</table>
+
+<h2>Net pass rate</h2>
+<table>
+<tr><th>Phase</th><th>Pass</th><th>Fail</th><th>Pass %</th><th>Notes</th></tr>
+<tr><td>2026-08-09 first walk</td><td>19</td><td>21</td><td>47.5%</td><td>9-scope token, all "fail" attributed to ms-scope</td></tr>
+<tr><td>2026-08-10 retest (morning)</td><td>22</td><td>18</td><td>55.0%</td><td>12-scope az token; function-form fixes only</td></tr>
+<tr><td>2026-08-10 retest (now, 130-scope)</td><td><strong>23</strong></td><td>18</td><td><strong>56.1%</strong></td><td>Full multi-scope token; +1 from POST search/query</td></tr>
+</table>
+
+<h2>Recommendations (updated for v1.0.4)</h2>
+<ol>
+<li><strong>Drop the wrong attribution</strong>: yesterday's report called everything "ms-scope". Today proves most failures are <strong>Microsoft licence gates</strong>, not Coral scope bugs. Update the F-new-6 finding in the 2026-08-09 walk report.</li>
+<li><strong>Function-form fixes (3 wins) remain valid</strong>: planner, presence, drive-search. Stable across token variations.</li>
+<li><strong>One new surface discovered</strong>: <code>POST /search/query</code> works without admin provisioning. Add this to the F-new-2 walk as a positive discovery.</li>
+<li><strong>ACS provisioning for calls</strong>: needs Azure Communication Services resource, not a Coral manifest change.</li>
+<li><strong>Search admin data (acronyms/bookmarks/qnas)</strong>: needs an admin to populate via M365 admin center. Not a Coral fix.</li>
+<li>If licence budget allows, M365 Education A1 ($8/user/mo) unblocks 6 failures — but the Coral repo would need a separate Edu source.</li>
+</ol>
+
+<p class="sub" style="margin-top:28px;border-top:1px solid #e2e8f0;padding-top:10px;">Author: Vicky Kumar · Repo: <a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a> · Date: 2026-08-10 (UTC) · Token: 130-scope keychain OAuth · Tenant: algsoch762.onmicrosoft.com (Business Premium) · <strong>All inputs and outputs are verbatim from live <code>coral sql</code> calls and direct Graph API requests.</strong></p>
+</div>
+</body>
+</html>

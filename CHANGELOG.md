@@ -4,6 +4,24 @@ All notable changes to the Coral Specs Testing hub (the static report hub at `fr
 
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.4] — 2026-08-10
+
+### Done
+- **Comprehensive 130-scope-token retest** of yesterday's 21 failures + 1 new probe. Decoded JWT confirms `scp` claim contains all 21 failure-relevant scopes. Result: **only 1 new pass** (`POST /search/query` returns 200 OK with real message hits — different surface from the failing list endpoints). The other 17 failures reproduce unchanged because the root cause is **Microsoft licence gates, not scope gaps**:
+  - 6× Education endpoints → tenant has no M365 Education licence
+  - 1× callRecords → tenant has no E5 licence
+  - 1× signIns → tenant has no Entra P1/P2
+  - 3× Search list endpoints → admin provisioning required (Search service admin needs to populate acronyms/bookmarks/qnas)
+  - 1× calls → ACS resource not provisioned (Azure Communication Services)
+  - 2× onlineMeetings → licence assignment issue
+  - 3× Graph design (route absent / HTML body bug)
+  - 2× Planner table → use function form (already works)
+  - 1× F7 → use function form with filter arg (already works)
+- **Correction to the 2026-08-09 walk**: the `ms-scope` attribution was wrong. The right label for most of those failures is "ms-licence" (Microsoft licence gates).
+
+### New report
+- `reports/2026-08-10-search-planner-comms-surfaces-retest-v2.{md,html}` — full retest with token verification + corrected triage table + recommendation matrix.
+
 ## [1.0.3] — 2026-08-10
 
 ### Done

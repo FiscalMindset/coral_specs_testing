@@ -84,21 +84,21 @@ console.log("== Overview (index.js) ==");
     const hay = (el ? el.innerHTML + "\n" + el.textContent : "");
     assert(hay.indexOf(expect) !== -1, label);
   };
-  check("statGrid", ">33<", "stat grid shows report count");
+  check("statGrid", ">34<", "stat grid shows report count");
   check("statGrid", "733", "stat grid shows 733 tables");
   check("statGrid", "5776", "stat grid shows 5,776 functions");
   check("statGrid", "56%", "stat grid shows Coral-bug share");
   check("heroRange", "2026-07-14 → 2026-08-10", "hero range spans all dates");
   check("heroBadges", "733 tables", "hero badge shows table count");
-  check("heroBadges", "3 pass", "hero badge shows latest pass count");
+  check("heroBadges", "4 pass", "hero badge shows latest pass count");
   check("attributionBars", "338 (56.0%)", "Coral bugs bar");
   check("attributionBars", "185 (30.6%)", "our setup bar");
   check("attributionBars", "49 (8.1%)", "ambiguous bar");
   check("passChart", "<svg", "SVG chart rendered");
   check("passChart", "229", "95-scope peak shown");
   check("passChart", "146", "all-scope pass shown");
-  check("latestFinding", "Manifest scope expansion", "today's headline present");
-  check("latestFinding", "report.html?id=2026-08-10-msgraph-surface-walk-v2", "today's links to detail page");
+  check("latestFinding", "Full re-test with 130-scope", "today's headline present");
+  check("latestFinding", "report.html?id=2026-08-10-search-planner-comms-surfaces-retest-v2", "today's links to detail page");
 }
 
 /* ---------------- reports catalog ---------------- */
@@ -111,7 +111,7 @@ console.log("== Reports (reports.js) ==");
   documentShimOf(ctx)._dcl();
   const grid = elements["reportGrid"];
   assert(grid && grid.innerHTML.indexOf("report-card") !== -1, "report cards rendered");
-  assert(String(elements["reportCount"].textContent) === "33", "report count set to 33");
+  assert(String(elements["reportCount"].textContent) === "34", "report count set to 34");
   assert(grid.innerHTML.indexOf("report.html?id=") !== -1, "cards link to detail pages");
   assert(grid.innerHTML.indexOf("Open report") !== -1, "cards keep raw ../reports/ links");
   const catHtml = elements["categoryFilter"].innerHTML;

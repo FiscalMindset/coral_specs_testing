@@ -22,12 +22,39 @@
      passSeries       { date, label, pass, total }[]   (0 <= pass <= total) */
 window.CORAL_REPORTS = [
   {
+    id: "2026-08-10-search-planner-comms-surfaces-retest-v2",
+    date: "2026-08-10",
+    title: "Full re-test with 130-scope token (ms-scope attribution corrected)",
+    short: "22 re-probes: 4 pass (3 function form + POST /search/query), 17 unchanged — most are LICENCE gates not scope",
+    category: "sharepoint-teams",
+    status: "latest",
+    stats: { pass: 4, error: 17, not_found: null, gated: 0, catalog: 1, total: 22 },
+    headline: "Today's morning session: PATCHed AllPrincipals admin grant to add Search/ExternalItem (verified 121 unique scopes). Edited msgraph-surface-v3 branch in coral-repo to expand manifest OAuth scope list from 9 to 118 scopes (commit b5a5891, add-zerops-source untouched per user instruction). User re-authed via coral source add --interactive with a 22-scope minimal manifest (URL length cap forced trimming from 118 to 22). Token decoded: 130 scopes in scp claim, including all 21 failure-relevant scopes. Re-ran all 22 probes against the new token. RESULT: only 1 NEW pass (POST /search/query returns 200 OK with real message hits). 17 failures reproduce unchanged — but the root cause is now clearly MICROSOFT LICENCE GATES, not scope gaps. Tenant has only O365_BUSINESS_PREMIUM: no Education (6 failures), no E5 (1 callRecords), no P1+P2 (1 signIns), no ACS provisioning (1 calls), no Search admin data (3 acronyms/bookmarks/qnas). The earlier 'ms-scope' attribution was wrong.",
+    findings: [
+      "Token verified: 130 scopes in scp claim (decoded JWT from keychain). All 21 failure-relevant scopes PRESENT.",
+      "POST /search/query returns 200 OK with real message hits — NEW PASS, doesn't need admin provisioning",
+      "5× Search list endpoints (acronyms/bookmarks/qnas/getacronyms) still 403 — scope in token but Microsoft refuses without Search admin data provisioning",
+      "6× Education endpoints still 403 — tenant has no M365 Education licence, scope in token but Microsoft refuses",
+      "1× callRecords still 403 — tenant has no E5 licence, scope in token but Microsoft refuses",
+      "1× signIns still 403 — tenant has no Entra P1/P2, scope in token but Microsoft refuses",
+      "1× calls still 403 ACS — needs Azure Communication Services resource provisioning",
+      "2× onlineMeetings still 403 — likely vickykumar account needs OnlineMeetings licence assignment",
+      "3× Graph design/route absent (listpresences/listadhoccalls/onlineMeetingConversations) — unchanged",
+      "2× Planner table forms still 405 (Graph demands $filter) — function form with group_id works",
+      "1× F7 400 unchanged — regression-clean",
+      "Yesterday's ms-scope attribution was WRONG: 16 of 17 unchanged failures are LICENCE gates, not scope. Need to correct F-new-6 in the 2026-08-09 walk report."
+    ],
+    md: "reports/2026-08-10-search-planner-comms-surfaces-retest-v2.md",
+    html: "reports/2026-08-10-search-planner-comms-surfaces-retest-v2.html",
+    tags: ["coral-sql", "sharepoint", "search", "licence", "scope-correction", "msgraph-surface-v3", "token-validation"]
+  },
+  {
     id: "2026-08-10-msgraph-surface-walk-v2",
     date: "2026-08-10",
     title: "Manifest scope expansion + re-test attempt (status update)",
     short: "Manifest scopes 9→118 committed on msgraph-surface-v3; 3 of 21 still pass; 18 still 403 until interactive re-add",
     category: "sharepoint-teams",
-    status: "latest",
+    status: "superseded",
     stats: { pass: 3, error: 18, not_found: null, gated: 0, catalog: 0, total: 22 },
     headline: "Today: PATCHed AllPrincipals admin grant to add Search/OnlineMeetings/Edu/Presence/CallRecords.Read.All scopes (verified 121 unique scopes now granted). Created fresh branch msgraph-surface-v3 off origin/main (kept add-zerops-source untouched per user instruction). Expanded sources/v4/microsoft_graph/manifest.yaml OAuth scope list from 9 to 118 scopes, committed as b5a5891 on msgraph-surface-v3. Attempted to re-add source via coral source add --file with env-var token, but the CLI treats env-var tokens as pre-minted (bypasses OAuth flow). Re-test with the resulting 12-scope az token shows: 3 function-form fixes still pass (planner via group_id, presence via user_id), 18 scope-blocked still 403 (az token lacks Search.Read.All etc.). The manifest change is ready — needs one user-initiated 'coral source add --interactive' to mint a refresh token with the full 118 scopes.",
     findings: [

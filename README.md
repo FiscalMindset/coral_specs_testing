@@ -108,7 +108,20 @@ The specifics of the test tenant (tenant name, tenant ID, admin email, test-user
 > Most reports ship a `.md` (raw) and a responsive `.html`; a few early ones are `.md`-only (rendered by the hub).
 > Browse the full interactive index at **[coral-specs-testing.onrender.com](https://coral-specs-testing.onrender.com/)** (Render) or **[GitHub Pages](https://fiscalmindset.github.io/coral_specs_testing/)**.
 
-### 🆕 2026-08-10 — Manifest scope expansion (9 → 118) + re-test attempt: 3 of 21 still pass, 18 still need interactive re-add
+### 🆕 2026-08-10 — Full re-test with 130-scope token: 4 of 22 pass, 17 unchanged because they're LICENCE gates not scope
+
+| | |
+|---|---|
+| **Date** | 2026-08-10 (UTC, 11:30–12:27) |
+| **Probes** | 22 (21 yesterday failures + 1 new) |
+| **Result** | 4 pass (3 function form + POST /search/query) · 17 unchanged (LICENCE gates, not scope) |
+
+Comprehensive re-test of yesterday's 21 failures against a **130-scope access token** (decoded JWT, all 21 failure-relevant scopes verified in the `scp` claim). Result: **only 1 new pass** (`POST /search/query` returns 200 OK with real message hits). 17 failures reproduce unchanged because the **scope is in the token but Microsoft is rejecting at the licence layer, not the consent layer**. Tenant has only `O365_BUSINESS_PREMIUM` — no Education, no E5, no P1+P2. So `Edu.*` (6 fails), `callRecords` (1 fail), `signIns` (1 fail) need licence upgrades, not Coral fixes. Search list endpoints (acronyms/bookmarks/qnas) need admin provisioning. ACS needs an Azure Communication Services resource. **Important correction**: yesterday's `2026-08-09-search-planner-comms-surfaces-walk` report attributed these to "ms-scope" — the right label is "ms-licence" for most. The 3 function-form fixes (planner + presence + drive-search) remain valid. Token side: PATCHed AllPrincipals admin grant + edited `coral-repo@msgraph-surface-v3@b5a5891` (kept `add-zerops-source` untouched per user instruction); user re-authed with a 22-scope minimal manifest (118-scope version hit AADSTS90015 "query string too long" — needed URL length trimming).
+
+- **[HTML](reports/2026-08-10-search-planner-comms-surfaces-retest-v2.html)** — formatted twin with full triage table.
+- **[MD](reports/2026-08-10-search-planner-comms-surfaces-retest-v2.md)** — raw.
+
+### 2026-08-10 — Manifest scope expansion (9 → 118) + re-test attempt: 3 of 21 still pass, 18 still need interactive re-add
 
 | | |
 |---|---|
