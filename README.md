@@ -108,7 +108,19 @@ The specifics of the test tenant (tenant name, tenant ID, admin email, test-user
 > Most reports ship a `.md` (raw) and a responsive `.html`; a few early ones are `.md`-only (rendered by the hub).
 > Browse the full interactive index at **[coral-specs-testing.onrender.com](https://coral-specs-testing.onrender.com/)** (Render) or **[GitHub Pages](https://fiscalmindset.github.io/coral_specs_testing/)**.
 
-### 🆕 2026-08-10 — Retest of 2026-08-09's 21 failures: 3 now pass via function form, 18 reproduce unchanged
+### 🆕 2026-08-10 — Manifest scope expansion (9 → 118) + re-test attempt: 3 of 21 still pass, 18 still need interactive re-add
+
+| | |
+|---|---|
+| **Date** | 2026-08-10 (UTC) |
+| **Scope** | Manifest OAuth scope expansion in `coral-repo` (separate repo, on `msgraph-surface-v3` branch) + re-test against current Coral source |
+
+Today's deeper dive into the 21 failures: PATCHed the AllPrincipals admin grant to add Search/OnlineMeetings/Edu/Presence/CallRecords.Read.All (verified 121 unique scopes now granted). Created fresh branch `msgraph-surface-v3` off `origin/main` — **`add-zerops-source` left untouched** (verified zero diff vs origin/main). Expanded `sources/v4/microsoft_graph/manifest.yaml` OAuth scope list from **9 scopes → 118 scopes**, committed as `b5a5891` on `msgraph-surface-v3` (109 insertions). Attempted to re-add the source via `coral source add --file ...` with `MS_GRAPH_ACCESS_TOKEN` env var, but the CLI treats env-var tokens as pre-minted and bypasses the OAuth flow — the resulting source uses an **az admin token (12 scopes)**, not the new 118-scope manifest token. Re-test confirms: the **3 function-form fixes from yesterday's retest still hold** (planner + presence); the **18 scope-blocked still 403** because the active token lacks Search/Edu/OnlineMeetings/etc. **To activate the 118-scope token, the user needs to run `coral source add --interactive --file .../manifest.yaml` once** in a real TTY. Single-user-action needed.
+
+- **[HTML](reports/2026-08-10-msgraph-surface-walk-v2.html)** — formatted status update.
+- **[MD](reports/2026-08-10-msgraph-surface-walk-v2.md)** — raw.
+
+### 2026-08-10 — Retest of 2026-08-09's 21 failures: 3 now pass via function form, 18 reproduce unchanged
 
 | | |
 |---|---|

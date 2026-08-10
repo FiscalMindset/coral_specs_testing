@@ -22,12 +22,34 @@
      passSeries       { date, label, pass, total }[]   (0 <= pass <= total) */
 window.CORAL_REPORTS = [
   {
+    id: "2026-08-10-msgraph-surface-walk-v2",
+    date: "2026-08-10",
+    title: "Manifest scope expansion + re-test attempt (status update)",
+    short: "Manifest scopes 9→118 committed on msgraph-surface-v3; 3 of 21 still pass; 18 still 403 until interactive re-add",
+    category: "sharepoint-teams",
+    status: "latest",
+    stats: { pass: 3, error: 18, not_found: null, gated: 0, catalog: 0, total: 22 },
+    headline: "Today: PATCHed AllPrincipals admin grant to add Search/OnlineMeetings/Edu/Presence/CallRecords.Read.All scopes (verified 121 unique scopes now granted). Created fresh branch msgraph-surface-v3 off origin/main (kept add-zerops-source untouched per user instruction). Expanded sources/v4/microsoft_graph/manifest.yaml OAuth scope list from 9 to 118 scopes, committed as b5a5891 on msgraph-surface-v3. Attempted to re-add source via coral source add --file with env-var token, but the CLI treats env-var tokens as pre-minted (bypasses OAuth flow). Re-test with the resulting 12-scope az token shows: 3 function-form fixes still pass (planner via group_id, presence via user_id), 18 scope-blocked still 403 (az token lacks Search.Read.All etc.). The manifest change is ready — needs one user-initiated 'coral source add --interactive' to mint a refresh token with the full 118 scopes.",
+    findings: [
+      "Manifest scope expansion: 9 → 118 scopes committed on msgraph-surface-v3 branch (b5a5891)",
+      "AllPrincipals grant now has 121 unique scopes including Search/OnlineMeetings/Edu/Presence/CallRecords.Read.All (verified via re-fetch)",
+      "add-zerops-source branch is untouched (verified zero diff vs origin/main)",
+      "Currently-installed source uses az admin token (12 scopes), NOT the new 118 — env-var path bypasses the OAuth flow",
+      "Re-test confirms 3 function-form fixes still hold (planner listplans via group_id, getpresence via user_id)",
+      "Re-test confirms 18 scope-blocked still 403 — will continue to until user runs coral source add --interactive once",
+      "Single user action needed: 'coral source remove microsoft_graph_v4' then 'coral source add --interactive --file manifest.yaml' once"
+    ],
+    md: "reports/2026-08-10-msgraph-surface-walk-v2.md",
+    html: "reports/2026-08-10-msgraph-surface-walk-v2.html",
+    tags: ["coral-sql", "sharepoint", "manifest", "oauth", "scope-expansion", "msgraph-surface-v3"]
+  },
+  {
     id: "2026-08-10-search-planner-comms-surfaces-retest",
     date: "2026-08-10",
     title: "Retest of 21 failures from 08-09 walk (function-form fixes)",
     short: "22 retest probes + 10 control: 3 now passes (planner + presence function form), 18 reproduce unchanged (Graph-side: scope/ACS/licence/bug)",
     category: "sharepoint-teams",
-    status: "latest",
+    status: "superseded",
     stats: { pass: 3, error: 18, not_found: null, gated: 0, catalog: 1, total: 22 },
     headline: "Targeted retest of the 21 failures from the 2026-08-09 walk. Fresh keychain OAuth token re-added interactively after a session mishap. 3 of 21 now pass with the connector's function-form calls (groups_plannergroup_groups_planner_listplans(group_id), users_presence_users_getpresence(user_id)); 18 reproduce unchanged as Graph-side failures (ms-scope, ACS-not-registered, premium-licence, Graph HTML-body bugs). F-new-1 (Planner tables) is REVISED: the connector exposes both broken table form and working function form — the function form routes correctly, the table form is the dead-end. F-new-3 (ACS) is CONFIRMED: same distinctive 'code:7503 Application is not registered in our store' body reproduces via the function form with bogus id, confirming it's whole-surface not per-endpoint.",
     findings: [

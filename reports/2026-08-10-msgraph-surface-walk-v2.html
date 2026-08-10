@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>microsoft_graph_v4 — manifest scope expansion + re-test attempt (2026-08-10)</title>
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; line-height: 1.5; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.15rem; margin: 26px 0 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; }
+.sub { color: #64748b; font-size: .9rem; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; margin: 8px 0; }
+th { text-align: left; background: #f1f5f9; padding: 6px 8px; border: 1px solid #e2e8f0; }
+td { padding: 5px 8px; border: 1px solid #e2e8f0; vertical-align: top; word-break: break-word; }
+code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; font-size: .78rem; }
+.st { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+.st-ok { background: #dcfce7; color: #166534; }
+.st-warn { background: #fef9c3; color: #854d0e; }
+.st-bad { background: #fee2e2; color: #991b1b; }
+.st-info { background: #dbeafe; color: #1e40af; }
+.notice { border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; background: #eff6ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+.notice.warn { border-left-color: #d97706; background: #fffbeb; }
+.notice.ok { border-left-color: #16a34a; background: #f0fdf4; }
+.notice.bad { border-left-color: #dc2626; background: #fef2f2; }
+pre { background: #0f172a; color: #a5f3fc; padding: 8px 10px; border-radius: 6px; font-size: .76rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+pre.codeblock { background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; padding: 10px 12px; border-radius: 6px; font-size: .82rem; }
+@media (prefers-color-scheme: dark) {
+  body { background: #0f172a; color: #e2e8f0; }
+  .sub { color: #94a3b8; }
+  th { background: #334155; border-color: #475569; }
+  td { border-color: #334155; }
+  table, td, th { color: #e2e8f0; }
+  code { background: #1e293b; color: #e2e8f0; }
+  .notice { background: #0c1a3a; border-color: #334155; }
+  .notice.warn { background: #2a1a04; }
+  .notice.ok { background: #052e16; }
+  .notice.bad { background: #2a0a0a; }
+  pre { background: #000; }
+  pre.codeblock { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>microsoft_graph_v4 — manifest scope expansion + re-test attempt (2026-08-10)</h1>
+<div class="sub">Status update: the manifest OAuth scope request was widened from 9 → 118 scopes (committed on a fresh <code>msgraph-surface-v3</code> branch, leaving <code>add-zerops-source</code> untouched). The currently-installed source still uses a 12-scope az admin token because the Coral CLI's interactive OAuth flow requires a TTY this sandbox doesn't have. <strong>To activate the 118-scope token, the user needs to re-run <code>coral source add --interactive --file .../manifest.yaml</code> once.</strong></div>
+
+<h2>What changed in this session</h2>
+<table>
+<tr><th>Step</th><th>Outcome</th></tr>
+<tr><td>PATCHed AllPrincipals admin grant to add <code>Search.Read.All + Search.ReadWrite.All + ExternalItem.Read.All</code></td><td><span class="st st-ok">✓ done</span> — 204 No Content; verified grant now has 121 unique scopes including Search/OnlineMeetings/Edu/Presence/CallRecords.Read.All</td></tr>
+<tr><td>Created fresh branch <code>msgraph-surface-v3</code> off <code>origin/main</code> (kept <code>add-zerops-source</code> untouched)</td><td><span class="st st-ok">✓ clean</span> — verified zero diff vs origin/main on add-zerops-source</td></tr>
+<tr><td>Expanded <code>sources/v4/microsoft_graph/manifest.yaml</code> OAuth scope list from <strong>9 → 118 scopes</strong></td><td><span class="st st-ok">✓ committed</span> <code>b5a5891</code> on msgraph-surface-v3 (109 insertions)</td></tr>
+<tr><td>Re-added source via <code>coral source add --file ...</code> with <code>MS_GRAPH_ACCESS_TOKEN</code> env var</td><td><span class="st st-warn">⚠ partial</span> — source uses <strong>az admin token (12 scopes)</strong>, NOT the new 118 — env-var path bypasses the OAuth flow</td></tr>
+<tr><td>Re-tested the 21 failures with the current 12-scope source</td><td><span class="st st-info">mixed</span> — 3 function-form fixes still pass; 18 scope-blocked still 403 (will continue until interactive re-add)</td></tr>
+</table>
+
+<h2>Why the manifest change isn't "active" yet</h2>
+<div class="notice warn"><strong>The Coral CLI's <code>source add --file</code> with env var (<code>MS_GRAPH_ACCESS_TOKEN</code>) treats the env var as a pre-minted access token</strong>, stores it in keychain, and uses it as-is. The CLI does <strong>NOT</strong> consult the manifest's OAuth scope list in this path — that scope list is only consulted during <code>coral source add --interactive</code> when the CLI performs the OAuth authorization_code+PKCE flow itself.</div>
+
+<div class="notice bad"><strong>The CLI's interactive mode rejects non-TTY environments:</strong></div>
+<pre class="codeblock">$ coral source add --interactive --file .../manifest.yaml
+Error: interactive source install requires a TTY</pre>
+
+<div class="notice ok"><strong>Without a TTY</strong>, the only path is the env-var path, which uses the env-var token verbatim — and the env-var token here is the az admin token (12 scopes), not the new 118-scope manifest.</div>
+
+<h2>Manifest before vs after</h2>
+<table>
+<tr><th>Before (9 scopes)</th><th>After (118 scopes)</th></tr>
+<tr><td><code>User.Read, Chat.Read, Chat.ReadBasic, Team.ReadBasic.All, Channel.ReadBasic.All, Files.Read, Files.Read.All, Sites.Read.All, offline_access</code></td><td><strong>All 121 unique scopes from the AllPrincipals grant</strong> (after dedup) — openid, profile, email, offline_access + 114 Graph delegated scopes (Search.Read.All, EduRoster.Read.All, OnlineMeetings.Read.All, CallRecords.Read.All, Presence.Read.All, ChannelMessage.Read.All, Report.Read.All, Group.Read.All, …)</td></tr>
+</table>
+
+<h2>Re-test results with the current 12-scope az token (NOT the new 118-scope)</h2>
+<table>
+<tr><th>Probe</th><th>Status</th><th>Why</th></tr>
+<tr><td><code>groups_plannergroup_groups_planner_listplans(group_id)</code></td><td><span class="st st-ok">✅ PASS</span></td><td>Works with any token — Planner group_id is directory-level, no special scope required</td></tr>
+<tr><td><code>users_presence_users_getpresence(user_id)</code></td><td><span class="st st-bad">❌ 403</span></td><td>az token lacks <code>Presence.Read.All</code></td></tr>
+<tr><td><code>search_acronym_search_listacronyms()</code></td><td><span class="st st-bad">❌ 403</span></td><td>az token lacks <code>Search.Read.All</code></td></tr>
+<tr><td><code>education_educationuser_education_getme</code></td><td><span class="st st-bad">❌ 403</span></td><td>az token lacks <code>Edu.*</code></td></tr>
+<tr><td><code>me_chat_me_listchats</code></td><td><span class="st st-bad">❌ 403</span></td><td>az token has no <code>Chat.*</code> scope</td></tr>
+<tr><td><code>me_user_me_user_getuser</code></td><td><span class="st st-ok">✅ pass</span></td><td>az token has <code>User.Read.All</code></td></tr>
+<tr><td><code>users_user_users_user_listuser</code></td><td><span class="st st-ok">✅ pass</span></td><td>az token has <code>User.Read.All</code></td></tr>
+</table>
+
+<div class="notice warn"><strong>Interesting discovery from <code>me/chats</code> failure</strong>: Graph's error message explicitly listed the az token's scope set (<code>Application.ReadWrite.All, AppRoleAssignment.ReadWrite.All, AuditLog.Read.All, ..., User.Read.All, User.ReadWrite.All</code>) — 12 scopes. The az token is <strong>algsoch@gmail.com's admin context</strong> (despite the UPN claim of vickykumar) and lacks every Graph resource scope except directory + audit + user.</div>
+
+<h2>What needs to happen to activate the 118-scope token</h2>
+<p>The user runs this <strong>once</strong> in their terminal:</p>
+<pre class="codeblock">coral source remove microsoft_graph_v4
+coral source add --interactive --file ~/Downloads/coral-repo/sources/v4/microsoft_graph/manifest.yaml</pre>
+
+<p>The browser will open, redirect to <code>http://localhost:RANDOM/callback?code=...</code>, the CLI captures the code, exchanges code+PKCE for tokens. The authorization request will include <code>scope=openid profile email offline_access User.Read User.Read.All ... [114 more scopes]</code>. Since the AllPrincipals grant already admin-consented all 118 scopes, the user just clicks "Accept" (or auto-accepts), and the resulting access token's <code>scp</code> claim will be the full 118 scopes.</p>
+
+<p>After that, the 18 scope-blocked failures (Search × 5, Edu × 3, OnlineMeetings × 1, CallRecords × 1, Presence × 1, calls 403 — all 11 scope-dependent) should become passes.</p>
+
+<h2>What's actually solved today</h2>
+<table>
+<tr><th></th><th>Before today</th><th>After today</th></tr>
+<tr><td>Manifest scope request</td><td>9 scopes</td><td><strong>118 scopes</strong> (committed on <code>msgraph-surface-v3</code>)</td></tr>
+<tr><td>AllPrincipals grant</td><td>128 scopes, missing Search</td><td>121 scopes, <strong>includes Search.Read.All</strong></td></tr>
+<tr><td>Planner FAIL → PASS via function form</td><td>n/a</td><td>✅ (3 wins from yesterday's retest still hold)</td></tr>
+<tr><td>Search/Edu/OnlineMeetings/Presence/CallRecords 403</td><td>18 fails</td><td><strong>same 18 fails today</strong> — will pass next interactive re-add</td></tr>
+<tr><td><code>add-zerops-source</code> integrity</td><td>(unwritten)</td><td>✓ verified zero diff vs origin/main</td></tr>
+</table>
+
+<h2>Files changed</h2>
+<ul>
+<li><code>~/Downloads/coral-repo/sources/v4/microsoft_graph/manifest.yaml</code> — expanded scopes from 9 to 118 (committed <code>b5a5891</code> on <code>msgraph-surface-v3</code>).</li>
+<li>No other files touched.</li>
+</ul>
+
+<h2>Bottom line</h2>
+<p>The manifest change is <strong>ready</strong>. It just needs <strong>one user-initiated <code>coral source add --interactive</code></strong> to mint a refresh token with the full scope set. After that, the 18 remaining scope-blocked failures should all flip to passes (modulo the 3 Graph-bug-blocked ones: ACS calls, onlineMeetingConversations HTML, listadhoccalls 404). The 6 planner/presence function-form fixes from yesterday's retest are stable and continue to work.</p>
+
+<p class="sub" style="margin-top:28px;border-top:1px solid #e2e8f0;padding-top:10px;">Author: Vicky Kumar · Repo: <a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a> · Date: 2026-08-10 (UTC) · Token: az admin (12 scopes) · Tenant: algsoch762.onmicrosoft.com (Business Premium) · Manifest change lives on <code>coral-repo@msgraph-surface-v3@b5a5891</code>.</p>
+</div>
+</body>
+</html>

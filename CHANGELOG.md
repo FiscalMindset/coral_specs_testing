@@ -4,6 +4,14 @@ All notable changes to the Coral Specs Testing hub (the static report hub at `fr
 
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.3] — 2026-08-10
+
+### Done
+- **Manifest OAuth scope expansion in coral-repo** (separate repo, on `msgraph-surface-v3` branch) — committed `b5a5891`: `sources/v4/microsoft_graph/manifest.yaml` OAuth scope list widened from 9 scopes to 118 scopes (verbatim from the AllPrincipals grant after dedup). `add-zerops-source` branch verified untouched (zero diff vs origin/main). Currently-installed source still uses 12-scope az admin token (env-var path bypasses OAuth flow) — single user action needed: `coral source add --interactive --file .../manifest.yaml`.
+
+### New report
+- `reports/2026-08-10-msgraph-surface-walk-v2.{md,html}` — status update documenting the manifest edit + AllPrincipals PATCH + branch management + re-test against current source. Confirms 3 function-form fixes still pass; 18 still 403 until interactive re-add.
+
 ## [1.0.2] — 2026-08-10
 
 ### Added

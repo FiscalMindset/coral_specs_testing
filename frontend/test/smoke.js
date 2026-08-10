@@ -84,7 +84,7 @@ console.log("== Overview (index.js) ==");
     const hay = (el ? el.innerHTML + "\n" + el.textContent : "");
     assert(hay.indexOf(expect) !== -1, label);
   };
-  check("statGrid", ">32<", "stat grid shows report count");
+  check("statGrid", ">33<", "stat grid shows report count");
   check("statGrid", "733", "stat grid shows 733 tables");
   check("statGrid", "5776", "stat grid shows 5,776 functions");
   check("statGrid", "56%", "stat grid shows Coral-bug share");
@@ -97,8 +97,8 @@ console.log("== Overview (index.js) ==");
   check("passChart", "<svg", "SVG chart rendered");
   check("passChart", "229", "95-scope peak shown");
   check("passChart", "146", "all-scope pass shown");
-  check("latestFinding", "Retest of 21 failures", "today's headline present");
-  check("latestFinding", "report.html?id=2026-08-10-search-planner-comms-surfaces-retest", "today's links to detail page");
+  check("latestFinding", "Manifest scope expansion", "today's headline present");
+  check("latestFinding", "report.html?id=2026-08-10-msgraph-surface-walk-v2", "today's links to detail page");
 }
 
 /* ---------------- reports catalog ---------------- */
@@ -111,7 +111,7 @@ console.log("== Reports (reports.js) ==");
   documentShimOf(ctx)._dcl();
   const grid = elements["reportGrid"];
   assert(grid && grid.innerHTML.indexOf("report-card") !== -1, "report cards rendered");
-  assert(String(elements["reportCount"].textContent) === "32", "report count set to 32");
+  assert(String(elements["reportCount"].textContent) === "33", "report count set to 33");
   assert(grid.innerHTML.indexOf("report.html?id=") !== -1, "cards link to detail pages");
   assert(grid.innerHTML.indexOf("Open report") !== -1, "cards keep raw ../reports/ links");
   const catHtml = elements["categoryFilter"].innerHTML;
