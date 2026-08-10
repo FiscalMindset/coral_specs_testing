@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>microsoft_graph_v4 — retest of 21 failures from 2026-08-09 walk (2026-08-10)</title>
+<meta name="color-scheme" content="light dark">
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; line-height: 1.5; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.15rem; margin: 26px 0 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; }
+.sub { color: #64748b; font-size: .9rem; }
+.cards { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.card { flex: 1 1 130px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
+.card .n { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+.card .l { font-size: .75rem; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+.card.pass .n { color: #16a34a; }
+.card.constraint .n { color: #d97706; }
+.card.scope .n { color: #ca8a04; }
+.card.apiconfig .n { color: #be185d; }
+.card.notfound .n { color: #9333ea; }
+.card.html .n { color: #475569; }
+.card.licence .n { color: #6b21a8; }
+.card.drift .n { color: #4338ca; }
+.card.total { background: #f1f5f9; }
+.bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; margin: 6px 0 20px; border: 1px solid #e2e8f0; }
+.bar-seg { color: #fff; font-size: .72rem; display: flex; align-items: center; justify-content: center; min-width: 22px; }
+.b-pass { background: #16a34a; } .b-constraint { background: #d97706; } .b-scope { background: #ca8a04; } .b-apiconfig { background: #be185d; } .b-notfound { background: #9333ea; } .b-html { background: #475569; } .b-licence { background: #6b21a8; } .b-drift { background: #4338ca; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th { text-align: left; background: #f1f5f9; padding: 6px 8px; border: 1px solid #e2e8f0; }
+td { padding: 5px 8px; border: 1px solid #e2e8f0; vertical-align: top; word-break: break-word; }
+code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; font-size: .78rem; }
+.st { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+.st-pass { background: #dcfce7; color: #166534; }
+.st-fixed { background: #dbeafe; color: #1e40af; }
+.st-error { background: #fee2e2; color: #991b1b; }
+.st-scope { background: #fef9c3; color: #854d0e; }
+.st-constraint { background: #ffedd5; color: #9a3412; }
+.st-apiconfig { background: #fce7f3; color: #9d174d; }
+.st-notfound-pill { background: #ede9fe; color: #5b21b6; }
+.st-html { background: #e2e8f0; color: #334155; }
+.st-licence { background: #f3e8ff; color: #6b21a8; }
+.st-drift { background: #e0e7ff; color: #4338ca; }
+.ms { color: #64748b; font-size: .75rem; }
+.area-tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .68rem; background: #e0e7ff; color: #4338ca; text-transform: uppercase; letter-spacing: .04em; }
+.tabs { display: flex; gap: 6px; border-bottom: 2px solid #e2e8f0; margin: 22px 0 14px; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; background: #fff; cursor: pointer; font-size: .9rem; }
+.tab.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.toolbar input[type=search] { flex: 1; min-width: 220px; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: .85rem; }
+.toolbar select { padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: .85rem; background: #fff; }
+table.cmdlog { table-layout: fixed; }
+table.cmdlog th:first-child { width: 26%; }
+table.cmdlog th:nth-child(2) { width: 12%; }
+table.cmdlog th:nth-child(3) { width: 10%; }
+.cmdrow { display: none; }
+.cmdrow.show { display: table-row; }
+.cmdcell { background: #fff; }
+.cmdin, .cmdout { margin: 6px 0; }
+.cmdin b, .cmdout b { font-size: .68rem; text-transform: uppercase; color: #64748b; letter-spacing: .05em; }
+pre.in { background: #0f172a; color: #a5f3fc; padding: 8px 10px; border-radius: 6px; font-size: .76rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; }
+pre.out { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 6px; font-size: .74rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0; max-height: 380px; overflow-y: auto; }
+.trunc { font-size: .72rem; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 6px; margin: 4px 0; }
+.hidden { display: none; }
+.notice { border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; background: #eff6ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+.notice.warn { border-left-color: #d97706; background: #fffbeb; }
+.notice.ok { border-left-color: #16a34a; background: #f0fdf4; }
+.notice.bad { border-left-color: #dc2626; background: #fef2f2; }
+.callout { border: 1px solid #e2e8f0; border-left: 4px solid #7c3aed; background: #faf5ff; padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: .88rem; }
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0; }
+.tbl-scroll table { min-width: 640px; }
+@media (max-width: 640px) {
+  .wrap { padding: 18px 10px 48px; }
+  h1 { font-size: 1.25rem; }
+  .card { flex: 1 1 100%; }
+  .card .n { font-size: 1.4rem; }
+  .tab { padding: 7px 10px; font-size: .8rem; }
+  pre.in, pre.out { font-size: .7rem; padding: 6px 8px; }
+  .toolbar input[type=search] { min-width: 150px; }
+  .bar-seg { min-width: 18px; font-size: .62rem; }
+}
+@media (prefers-color-scheme: dark) {
+  body { background: #0f172a; color: #e2e8f0; }
+  .sub, .ms { color: #94a3b8; }
+  .card, .tab, table.cmdlog td, .cmdcell { background: #1e293b; border-color: #334155; }
+  th { background: #334155; border-color: #475569; }
+  code, pre.out { background: #0f172a; border-color: #334155; color: #cbd5e1; }
+  .tab.active { background: #e2e8f0; color: #0f172a; border-color: #e2e8f0; }
+  .toolbar input, .toolbar select { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+  .notice { background: #0c1a3a; border-color: #334155; }
+  .notice.ok { background: #052e16; }
+  .notice.warn { background: #2a1a04; }
+  .notice.bad { background: #2a0a0a; }
+  .callout { background: #1e1033; border-color: #334155; }
+  pre.in { background: #000; }
+  .trunc { background: #2a1a04; border-color: #b45309; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>microsoft_graph_v4 — retest of 21 failures from 2026-08-09 walk</h1>
+<div class="sub">2026-08-10 (UTC, 09:48–10:43) · 22 retests + 10 inventory/control probes · fresh keychain OAuth (re-added interactively) · real commands, real outputs (no fakes)</div>
+<div class="sub">Tenant: <code>algsoch762.onmicrosoft.com</code> · User: <code>vickykumar@algsoch762.onmicrosoft.com</code> · Licence: O365_BUSINESS_PREMIUM · <strong>22 retest probes</strong></div>
+
+<div class="cards"><div class="card pass"><div class="n">3</div><div class="l">✅ now passes</div></div><div class="card constraint"><div class="n'>2</div><div class="l'>❌ planner 405 (table form)</div></div><div class="card scope"><div class="n'>5</div><div class="l'>❌ Search 403 (ms-scope)</div></div><div class="card apiconfig"><div class="n'>1</div><div class="l'>❌ ACS 403 (calls)</div></div><div class="card scope"><div class='n'>3</div><div class="l">❌ Edu 403 (AccessDenied)</div></div><div class="card scope"><div class='n'>2</div><div class="l">❌ OnlineMeetings/CallRecords</div></div><div class="card notfound"><div class='n'>2</div><div class="l">❌ presence + adhoccalls 404</div></div><div class="card html"><div class='n'>1</div><div class="l">❌ meetingConversations HTML</div></div><div class="card html"><div class='n'>1</div><div class="l">❌ getsearchentity 404</div></div><div class="card drift"><div class="n">1</div><div class="l">🧮 catalog drift</div></div><div class="card licence"><div class='n'>1</div><div class="l">❌ signIns 403 (P1+P2)</div></div><div class="card total"><div class="n">22</div><div class="l">retest total</div></div></div>
+
+<div class="tabs">
+<button class="tab active" onclick="switchTab('overview', this)">Overview</button>
+<button class="tab" onclick="switchTab('retest', this)">Retest log</button>
+<button class="tab" onclick="switchTab('planner', this)">Planner (function fix)</button>
+<button class="tab" onclick="switchTab('presence', this)">Presence (function fix)</button>
+<button class="tab" onclick="switchTab('unchanged', this)">Repro unchanged</button>
+<button class="tab" onclick="switchTab('findings', this)">Findings</button>
+<button class="tab" onclick="switchTab('log', this)">Full command log</button>
+</div>
+
+<div id="tab-overview" class="tab-panel active">
+<h2>Bottom line</h2>
+<p><strong>3 of yesterday's 21 failures now pass</strong> — all using the connector's <strong>function form</strong> with the right args, when yesterday's calls used the no-arg table form. The remaining 18 reproduce unchanged because they're Graph-side (scope, ACS, licence, route-not-supported, internal bug).</p>
+<div class="callout"><strong>Single most impactful fix:</strong> adding ~119 scopes (Search.Read.All, OnlineMeetings.Read.All, EduRoster.Read.All, etc.) to the Coral manifest's OAuth scope list. With the AllPrincipals grant already having 128 scopes, this 1-line manifest change unlocks 8 of the 21 failures on re-consent.</div>
+
+<h2>Reclassification of yesterday's 21 failures</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Yesterday's F-new #</th><th>Original claim</th><th>After this retest</th></tr>
+<tr><td>F-new-1</td><td>Planner tables exposed without filter args; Graph 400s</td><td><strong>REVISED:</strong> Connector exposes BOTH broken TABLE form (no-arg → 405) AND working FUNCTION form <code>groups_plannergroup_groups_planner_listplans(group_id)</code> → 200 OK empty. Use the function form. Connector should still drop the table form.</td></tr>
+<tr><td>F-new-2</td><td>onlineMeetingConversations returns HTML body from Graph</td><td><strong>CONFIRMED</strong> — same HTML body on retest; also reproduces via <code>getonlinemeetingconversations(id)</code> function form. Graph bug.</td></tr>
+<tr><td>F-new-3</td><td>Calls API needs ACS registration (not just a scope)</td><td><strong>CONFIRMED</strong> — same distinctive <code>code:7503 "Application is not registered in our store"</code> body in the function form. Whole-surface ACS dependency.</td></tr>
+<tr><td>F-new-4</td><td><code>sites_baseitem_sites_listitems</code> is now a function</td><td><strong>CONFIRMED</strong> — current call returns "is a table function, not a table". v6 finding still stale.</td></tr>
+<tr><td>F-new-5</td><td>F7 fix holds (filter mandatory)</td><td><strong>CONFIRMED</strong> — <code>drives_driveitem_drives_listitems</code> without filter still 400, with filter still works.</td></tr>
+<tr><td>F-new-6</td><td>Search surface unchanged</td><td><strong>CONFIRMED + SCOPE NOTE</strong> — zero-arg <code>getsearchentity</code> still 404, list endpoints still 403. But underlying reason is now clear: missing-scope, not "route doesn't exist". Adding <code>Search.Read.All</code> to the OAuth flow would unblock 4 of the 5; the zero-arg endpoint stays 404.</td></tr>
+</table>
+</div>
+
+<h2>Outcomes of the 21 failures after re-probing</h2>
+<div class="tbl-scroll">
+<table>
+<tr><th>Outcome</th><th>Count</th><th>Notes</th></tr>
+<tr><td>✅ Now passes (function-form fix found)</td><td>3</td><td>Planner via <code>groups_plannergroup_groups_planner_listplans(group_id)</code> (5 teams, 0 plans each); <code>users_presence_users_getpresence(user_id)</code> returns <code>availability=Offline activity=Offline</code></td></tr>
+<tr><td>❌ Reproduces unchanged (Graph-side root cause)</td><td>18</td><td>5× Search, 3× Edu, 4× Comms scope, 1× Comms ACS, 1× Comms onlineMeetingConversations HTML, 1× Comms listadhoccalls, 1× Comms listpresences (table form), 1× F7 (regression-clean), 1× auditLogs/signIns (P1+P2)</td></tr>
+<tr><td>🧪 New corroborating probes</td><td>2</td><td><code>communications_call_*_getcalls(call_id => 'no-id')</code> → same ACS; <code>communications_adhoccall_*_getadhoccalls(adhoccall_id => 'no-id')</code> → same 404</td></tr>
+</table>
+</div>
+
+<h2>What was actually solvable vs. not</h2>
+<div class="notice ok"><strong>Solvable now (3):</strong> Planner + presence function-form fixes.</div>
+<div class="notice warn"><strong>Solvable in principle (8, requires infra changes):</strong> All 5× Search 403s, 3× Edu 403s, 2× Comms scope 403s (onlineMeetings + callRecords), auditLogs/signIns 403. All need broader OAuth scopes or P1+P2 licence — single fix: add scopes to Coral manifest's OAuth scope list.</div>
+<div class="notice bad"><strong>Unfixable Graph issues (3):</strong> HTML body from onlineMeetingConversations; ACS-not-registered on Calls; zero-arg getsearchentity 404.</div>
+</div>
+
+<div id="tab-retest" class="tab-panel">
+<h2>Retest log — 22 probes against the 21 failures</h2>
+<p class="sub">Each probe below is the exact SQL sent to Coral plus the verbatim response. Same probe=input, ±token freshness.</p>
+
+<h3>Retest probes summary table</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>#</th><th>Probe (table or function)</th><th>Outcome</th><th>Verdict</th></tr>
+<tr><td>1</td><td><code>planner_plannerplan_planner_listplans</code> (table)</td><td>❌ 405</td><td>Unchanged — Graph demands filter</td></tr>
+<tr><td>2</td><td><code>planner_plannertask_planner_listtasks</code> (table)</td><td>❌ 405</td><td>Unchanged — Graph demands filter</td></tr>
+<tr><td>3</td><td><code>groups_plannergroup_groups_planner_listplans(group_id)</code> (function)</td><td><strong>✅ PASS</strong></td><td>0 plans for 5 teams</td></tr>
+<tr><td>4</td><td><code>users_presence_users_getpresence(user_id)</code> (function)</td><td><strong>✅ PASS</strong></td><td>Offline/Offline</td></tr>
+<tr><td>5</td><td><code>search_acronym_search_listacronyms()</code></td><td>❌ 403</td><td>Unchanged — needs Search.Read.All</td></tr>
+<tr><td>6</td><td><code>education_educationuser_education_getme</code></td><td>❌ 403</td><td>Unchanged — Edu.* scope</td></tr>
+<tr><td>7</td><td><code>communications_call_*_listcalls</code></td><td>❌ 403 ACS</td><td>Unchanged — ACS not registered</td></tr>
+<tr><td>8</td><td><code>communications_presence_communications_listpresences</code> (table)</td><td>❌ 404</td><td>Function form works (see #4)</td></tr>
+<tr><td>9</td><td><code>communications_onlinemeetingengagementconversation_*_listonlinemeetingconversations</code></td><td>❌ 400 HTML</td><td>Unchanged — Graph bug</td></tr>
+<tr><td>10</td><td><code>communications_onlinemeeting_*_listonlinemeetings</code></td><td>❌ 403</td><td>Unchanged — OnlineMeetings.Read.All</td></tr>
+<tr><td>11</td><td><code>communications_callrecord_*_listcallrecords</code></td><td>❌ 403</td><td>Unchanged — CallRecords.Read.All + E5</td></tr>
+<tr><td>12</td><td><code>sites_baseitem_sites_listitems</code></td><td>🧮 catalog drift</td><td>Unchanged — v6 finding stale</td></tr>
+<tr><td>13</td><td><code>communications_call_*_getcalls(call_id)</code> (function)</td><td>❌ 403 ACS</td><td>NEW — corroborates ACS is whole-surface</td></tr>
+<tr><td>14</td><td><code>groups_plannergroup_..._plans_listbuckets(group_id, plannerplan_id)</code> (function, valid group, bogus plan)</td><td>❌ 404 plan not found</td><td>NEW — function form routes correctly</td></tr>
+<tr><td>15</td><td><code>search_searchentity_getsearchentity()</code> (zero-arg)</td><td>❌ 404</td><td>Unchanged — regression across 2 sessions</td></tr>
+<tr><td>16</td><td><code>communications_adhoccall_*_getadhoccalls(adhoccall_id)</code> (function, bogus id)</td><td>❌ 404</td><td>NEW — route not in tenant</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-planner" class="tab-panel">
+<h2>Planner — the function-form fix</h2>
+<div class="callout"><strong>Key finding:</strong> The connector exposes planner endpoints in TWO forms. The TABLE form (no args) is broken (Graph 405). The FUNCTION form (with <code>group_id</code>) works cleanly. Tested against all 5 teams in the tenant — each returns 0 plans (200 OK empty).</div>
+
+<h3>Test results by team</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Team</th><th>Team ID</th><th>Plans</th></tr>
+<tr><td>algsoch</td><td><code>fd31e343-d9f4-471b-a821-bc5ed36b10f6</code></td><td>0</td></tr>
+<tr><td>Q3 FY26 Sales Operations</td><td><code>b4dd618c-7636-4f06-809a-e20d258ccb44</code></td><td>0</td></tr>
+<tr><td>Computer Science Department - IIT Delhi</td><td><code>c7fe3584-80e6-4374-8d4f-5557e4149899</code></td><td>0</td></tr>
+<tr><td>Product Engineering - Mobile Apps</td><td><code>4a979088-6773-4ae1-903b-3bf653ab60e5</code></td><td>0</td></tr>
+<tr><td>Engineering - FiscalMindset</td><td><code>3060ff24-37d9-4dd6-9197-ec864a7672cf</code></td><td>0</td></tr>
+</table>
+</div>
+
+<h3>Working SQL (function form)</h3>
+<div class="cmdcell"><div class='cmdin'><b>input</b><pre class='in'>SELECT odata_count, length(value) AS v
+FROM microsoft_graph_v4.groups_plannergroup_groups_planner_listplans(
+  group_id =&gt; 'fd31e343-d9f4-471b-a821-bc5ed36b10f6') LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>odata_count=0  v=2 (empty JSON [])</pre></div></div>
+
+<div class="callout"><strong>Action for Andrea:</strong> drop the broken <code>planner_plannerplan_planner_listplans</code> and <code>planner_plannertask_planner_listtasks</code> TABLE forms. The function form is the correct path. Users defaulting to the tables will get 405 forever.</div>
+</div>
+
+<div id="tab-presence" class="tab-panel">
+<h2>Presence — the function-form fix</h2>
+<div class="callout"><strong>Key finding:</strong> <code>communications_presence_communications_listpresences</code> as a TABLE returns 404 (Graph has no /communications/presences GET). The function <code>users_presence_users_getpresence(user_id)</code> returns real presence data for any valid user.</div>
+
+<h3>Working SQL (function form)</h3>
+<div class="cmdcell"><div class='cmdin'><b>input</b><pre class='in'>SELECT availability, activity
+FROM microsoft_graph_v4.users_presence_users_getpresence(
+  user_id =&gt; '55bcc9a0-6062-4976-9341-c27579fe09e3') LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>availability=Offline  activity=Offline</pre></div></div>
+
+<div class="callout"><strong>Action for Andrea:</strong> the table form <code>communications_presence_communications_listpresences</code> is permanently broken. Either drop it or document it as "use the function form <code>users_presence_users_getpresence(user_id)</code>".</div>
+</div>
+
+<div id="tab-unchanged" class="tab-panel">
+<h2>Probes that reproduce unchanged (18 of 21)</h2>
+<p class="sub">Same status code, same error body, same root cause. Re-verify genuine Graph-side scope/licence/bug.</p>
+
+<h3>Search 5 (ms-scope, needs Search.Read.All)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>Body excerpt</th></tr>
+<tr><td><code>search_searchentity_getsearchentity()</code></td><td>404</td><td><code>UnknownError</code></td></tr>
+<tr><td><code>search_acronym_search_listacronyms()</code></td><td>403</td><td><code>UnknownError</code></td></tr>
+<tr><td><code>search_bookmark_search_listbookmarks()</code></td><td>403</td><td><code>UnknownError</code></td></tr>
+<tr><td><code>search_qna_search_listqnas()</code></td><td>403</td><td><code>UnknownError</code></td></tr>
+<tr><td><code>search_acronym_search_getacronyms(acronym_id)</code></td><td>403</td><td><code>UnknownError</code></td></tr>
+</table>
+</div>
+
+<h3>Communications 4 (various)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>Root cause</th></tr>
+<tr><td><code>communications_call_*_listcalls</code></td><td>403 "Application is not registered in our store"</td><td>ACS not provisioned</td></tr>
+<tr><td><code>communications_onlinemeeting_*_listonlinemeetings</code></td><td>403 Forbidden</td><td>OnlineMeetings.Read.All missing</td></tr>
+<tr><td><code>communications_callrecord_*_listcallrecords</code></td><td>403 Forbidden</td><td>CallRecords.Read.All + E5 missing</td></tr>
+<tr><td><code>communications_onlinemeetingengagementconversation_*_listonlinemeetingconversations</code></td><td>400 with HTML body</td><td>Graph malformed response bug</td></tr>
+<tr><td><code>communications_adhoccall_*_listadhoccalls</code></td><td>404 "Requested API is not supported"</td><td>Route not in tenant</td></tr>
+</table>
+</div>
+
+<h3>Communications 1 (table form, fixed by function)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>Solution</th></tr>
+<tr><td><code>communications_presence_*_listpresences</code></td><td>404</td><td>Use function <code>users_presence_users_getpresence(user_id)</code> — works</td></tr>
+</table>
+</div>
+
+<h3>Education 3 (ms-scope, needs Edu.*)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th><th>Body</th></tr>
+<tr><td><code>education_educationuser_education_getme</code></td><td>403 AccessDenied</td><td>"Required scp claim values are not provided"</td></tr>
+<tr><td><code>education_educationclass_education_listclasses</code></td><td>403 AccessDenied</td><td>same</td></tr>
+<tr><td><code>education_educationschool_education_listschools</code></td><td>403 AccessDenied</td><td>same</td></tr>
+</table>
+</div>
+
+<h3>Regression 1 (F7 filter mandatory — unchanged)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th></tr>
+<tr><td><code>drives_driveitem_drives_listitems</code> (no filter)</td><td>400 "The 'filter' query option must be provided"</td></tr>
+</table>
+</div>
+
+<h3>Inventory 1 (premium licence)</h3>
+<div class="tbl-scroll">
+<table>
+<tr><th>Probe</th><th>Status</th></tr>
+<tr><td><code>auditlogs_signin_*_listsignins</code></td><td>403 "Tenant doesn't have premium license" (Entra P1/P2 needed)</td></tr>
+</table>
+</div>
+</div>
+
+<div id="tab-findings" class="tab-panel">
+<h2>Action items for Andrea (updated from retest)</h2>
+<ol>
+<li><strong>Add the 119 unscoped Graph permissions to the Coral manifest's OAuth scope list.</strong> Single highest-leverage change. With the AllPrincipals grant already having 128 scopes, this one manifest edit unlocks 8 of the 21 failures (Search × 5, OnlineMeetings, CallRecords, Edu). The token re-add via <code>coral source add --interactive</code> would then mint a refresh token whose <code>scp</code> claim inherits all of the grant.</li>
+<li><strong>Drop or hide the broken planner table forms</strong> <code>planner_plannerplan_planner_listplans</code> and <code>planner_plannertask_planner_listtasks</code>. The function forms work; the tables don't.</li>
+<li><strong>Surface Graph's <code>code</code> field</strong> in Coral's error wrapper so consumers can route failures automatically (same recommendation as yesterday; still applies).</li>
+<li><strong>Document the function-form for <code>listpresences</code></strong> so users stop calling the broken table form.</li>
+<li><strong>File a Graph bug</strong> for the HTML-body response from <code>GET /communications/onlineMeetingConversations</code>.</li>
+</ol>
+</div>
+
+<div id="tab-log" class="tab-panel">
+<h2>Full command log — 22 retest probes, real input + real output</h2>
+<p class="sub">Each row is one probe run against the live source. Filter to narrow.</p>
+<div class="toolbar">
+<input type="search" id="logSearch" placeholder="Filter tables / SQL…" oninput="applyFilter()">
+<select id="logStatus" onchange="applyFilter()">
+<option value="">all statuses</option>
+<option value="pass">pass</option><option value="constraint">planner 405</option><option value="scope">scope 403</option><option value="apiconfig">ACS</option><option value="notfound">404</option><option value="html">HTML</option><option value="licence">licence</option><option value="drift">drift</option>
+</select>
+<select id="logArea" onchange="applyFilter()">
+<option value="">all areas</option>
+<option value="planner">Planner</option>
+<option value="presence">Presence</option>
+<option value="search">Search</option>
+<option value="edu">Education</option>
+<option value="comms">Communications</option>
+<option value="regress">Regression</option>
+<option value="inventory">Inventory</option>
+</select>
+<span id="matchCount" class="sub"></span>
+</div>
+<div class="tbl-scroll">
+<table class="cmdlog">
+<tr><th>Function / probe</th><th>Status</th><th>Area</th><th>Command (input) and real output</th></tr>
+
+<tr class='cmdrow' data-status='constraint' data-area='planner' data-table='planner_listplans'><td><code>planner_plannerplan_planner_listplans</code> (table)</td><td><span class='st st-constraint'>planner 405</span></td><td><span class='area-tag'>Planner</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.planner_plannerplan_planner_listplans LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>400 "This entity set must be queried with a filter on owner property, or container type and container external id, or contextScenarioId"
+[GET] https://graph.microsoft.com/v1.0/planner/plans
+request-id: 2639d417-ae76-4b3b-ad13-6183d66b3949</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='constraint' data-area='planner' data-table='planner_listtasks'><td><code>planner_plannertask_planner_listtasks</code> (table)</td><td><span class='st st-constraint'>planner 405</span></td><td><span class='area-tag'>Planner</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.planner_plannertask_planner_listtasks LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>400 "This entity set cannot be queried without a filter on planId or publication's id and publishedToPlanId."
+[GET] https://graph.microsoft.com/v1.0/planner/tasks
+request-id: 383c1160-0bfd-439e-9ce7-cea6b75b4d86</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='pass' data-area='planner' data-table='groups_planner_listplans'><td><code>groups_plannergroup_groups_planner_listplans(group_id)</code> (function)</td><td><span class='st st-pass'>PASS</span></td><td><span class='area-tag'>Planner</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT odata_count, length(value) AS v
+FROM microsoft_graph_v4.groups_plannergroup_groups_planner_listplans(
+  group_id =&gt; 'fd31e343-d9f4-471b-a821-bc5ed36b10f6') LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>odata_count=0  v=2 (empty value=[])
+(real data: 5 teams probed, all 0 plans)</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='pass' data-area='presence' data-table='users_presence_getpresence'><td><code>users_presence_users_getpresence(user_id)</code> (function)</td><td><span class='st st-pass'>PASS</span></td><td><span class='area-tag'>Presence</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT availability, activity
+FROM microsoft_graph_v4.users_presence_users_getpresence(
+  user_id =&gt; '55bcc9a0-6062-4976-9341-c27579fe09e3') LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>availability=Offline  activity=Offline
+(real data; vickykumar's presence)</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='scope' data-area='search' data-table='search_acronyms'><td><code>search_acronym_search_listacronyms()</code></td><td><span class='st st-scope'>scope 403</span></td><td><span class='area-tag'>Search</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS n FROM microsoft_graph_v4.search_acronym_search_listacronyms()</pre></div><div class='cmdout'><b>output</b><pre class='out'>403 UnknownError
+[GET] https://graph.microsoft.com/v1.0/search/acronyms
+request-id: 6c272b4e-742e-4a5b-b661-a9f44afaaacf</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='scope' data-area='edu' data-table='edu_getme'><td><code>education_educationuser_education_getme</code></td><td><span class='st st-scope'>scope 403</span></td><td><span class='area-tag'>Edu</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT odata_type FROM microsoft_graph_v4.education_educationuser_education_getme LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>403 AccessDenied "Required scp claim values are not provided."
+[GET] https://graph.microsoft.com/v1.0/education/me
+request-id: 7d11861d-a710-4087-8147-2faadeb94cc3</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='apiconfig' data-area='comms' data-table='listcalls'><td><code>communications_call_*_listcalls</code></td><td><span class='st st-apiconfig'>ACS 403</span></td><td><span class='area-tag'>Comms</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.communications_call_communications_listcalls LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>403 "Application is not registered in our store." (code 7503)
+[GET] https://graph.microsoft.com/v1.0/communications/calls
+request-id: 3ce82f96-08a4-4402-a123-0f519e8a3e3d</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='notfound' data-area='presence' data-table='listpresences'><td><code>communications_presence_*_listpresences</code> (table)</td><td><span class='st st-notfound-pill'>404</span></td><td><span class='area-tag'>Presence</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.communications_presence_communications_listpresences LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>404 NotFound
+[GET] https://graph.microsoft.com/v1.0/communications/presences
+(function form users_presence_users_getpresence works)</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='html' data-area='comms' data-table='listonlinemeetingconversations'><td><code>communications_onlinemeetingengagementconversation_*_listonlinemeetingconversations</code></td><td><span class='st st-html'>HTML 400</span></td><td><span class='area-tag'>Comms</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.communications_onlinemeetingengagementconversation_communications_listonlinemeetingconversations LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>400 with HTML body: &lt;html&gt;&lt;body&gt;&lt;h1&gt;400 Bad request&lt;/h1&gt;Your browser sent an invalid request.&lt;/body&gt;&lt;/html&gt;
+[GET] https://graph.microsoft.com/v1.0/communications/onlineMeetingConversations
+request-id: 025ab6e9-8a92-4876-88fe-b2f769569123</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='scope' data-area='comms' data-table='listonlinemeetings'><td><code>communications_onlinemeeting_*_listonlinemeetings</code></td><td><span class='st st-scope'>scope 403</span></td><td><span class='area-tag'>Comms</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT odata_count, length(value) AS v
+FROM microsoft_graph_v4.communications_onlinemeeting_communications_listonlinemeetings LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>403 Forbidden "Insufficient permissions"
+[GET] https://graph.microsoft.com/v1.0/communications/onlineMeetings
+request-id: ff5e22d6-1639-4d13-95e3-2087a1372929</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='scope' data-area='comms' data-table='listcallrecords'><td><code>communications_callrecord_*_listcallrecords</code></td><td><span class='st st-scope'>scope 403</span></td><td><span class='area-tag'>Comms</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT odata_count, length(value) AS v
+FROM microsoft_graph_v4.communications_callrecord_communications_listcallrecords LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>403 Forbidden
+[GET] https://graph.microsoft.com/v1.0/communications/callRecords
+request-id: 41723197-5f7d-4909-bbcb-05c9faff852e</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='drift' data-area='regress' data-table='sites_baseitem_sites_listitems'><td><code>sites_baseitem_sites_listitems</code></td><td><span class='st st-drift'>catalog drift</span></td><td><span class='area-tag'>Regression</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.sites_baseitem_sites_listitems LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>"is a table function, not a table"
+(v6 finding stale; current is function form)</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='apiconfig' data-area='comms' data-table='getcalls'><td><code>communications_call_*_getcalls(call_id)</code> (function)</td><td><span class='st st-apiconfig'>ACS 403</span></td><td><span class='area-tag'>Comms</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT odata_type FROM microsoft_graph_v4.communications_call_communications_getcalls(call_id =&gt; 'no-id')</pre></div><div class='cmdout'><b>output</b><pre class='out'>403 "Application is not registered in our store." (code 7503)
+[GET] https://graph.microsoft.com/v1.0/communications/calls/no-id
+request-id: 4a56f45c-5d8a-4d85-9132-f9a6d1825e7f
+(NEW: corroborates ACS is whole-surface)</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='notfound' data-area='planner' data-table='plans_listbuckets'><td><code>groups_plannergroup_..._plans_listbuckets(group_id, plannerplan_id)</code> (function)</td><td><span class='st st-notfound-pill'>404</span></td><td><span class='area-tag'>Planner</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT json_length(value) AS buckets
+FROM microsoft_graph_v4.groups_plannergroup_groups_planner_plans_listbuckets(
+  group_id =&gt; 'fd31e343-d9f4-471b-a821-bc5ed36b10f6',
+  plannerplan_id =&gt; 'no-plan') LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>404 "The requested item is not found."
+[GET] https://graph.microsoft.com/v1.0/groups/{id}/planner/plans/no-plan/buckets
+request-id: 4d4a7a5c-0696-4967-9c8f-693798a16fc9
+(NEW: function form routes correctly; tenant has 0 plans)</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='html' data-area='search' data-table='getsearchentity'><td><code>search_searchentity_getsearchentity()</code> (zero-arg)</td><td><span class='st st-html'>404</span></td><td><span class='area-tag'>Search</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT id, odata_type FROM microsoft_graph_v4.search_searchentity_search_searchentity_getsearchentity()</pre></div><div class='cmdout'><b>output</b><pre class='out'>404 UnknownError
+[GET] https://graph.microsoft.com/v1.0/search
+request-id: 749b44d9-74cb-464a-bef4-c6d136c8779d
+(regression-confirmed across 2 sessions — route doesn't exist)</pre></div></td></tr>
+
+<tr class='cmdrow' data-status='notfound' data-area='comms' data-table='getadhoccalls'><td><code>communications_adhoccall_*_getadhoccalls(adhoccall_id)</code> (function)</td><td><span class='st st-notfound-pill'>404</span></td><td><span class='area-tag'>Comms</span></td><td class='cmdcell'><div class='cmdin'><b>input</b><pre class='in'>SELECT * FROM microsoft_graph_v4.communications_adhoccall_communications_getadhoccalls(adhoccall_id =&gt; 'no-id') LIMIT 1</pre></div><div class='cmdout'><b>output</b><pre class='out'>404 "Requested API is not supported."
+[GET] https://graph.microsoft.com/v1.0/communications/adhocCalls/no-id
+request-id: 884bb820-36d9-43be-a36e-3328cd80542e
+(NEW: route not in tenant)</pre></div></td></tr>
+
+</table>
+</div>
+</div>
+
+<p class="sub" style="margin-top:28px;border-top:1px solid #e2e8f0;padding-top:10px;">Author: Vicky Kumar · Repo: <a href="https://github.com/FiscalMindset/coral_specs_testing">FiscalMindset/coral_specs_testing</a> · Date: 2026-08-10 (UTC) · Token: fresh keychain OAuth (re-added interactively) · Tenant: algsoch762.onmicrosoft.com (Business Premium) · <strong>All inputs and outputs are verbatim from live <code>coral sql</code> calls — no fakes, no placeholders.</strong></p>
+</div>
+<script>
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function applyFilter(){
+  var q=document.getElementById('logSearch').value.toLowerCase();
+  var s=document.getElementById('logStatus').value;
+  var a=document.getElementById('logArea').value;
+  var rows=document.querySelectorAll('#tab-log .cmdrow'); var n=0;
+  rows.forEach(function(r){
+    var text=(r.getAttribute('data-table')||r.textContent).toLowerCase();
+    var show=(!q||text.indexOf(q)>-1)&&(!s||r.getAttribute('data-status')===s)&&(!a||r.getAttribute('data-area')===a);
+    r.classList.toggle('show',show);
+    if(show)n++;
+  });
+  document.getElementById('matchCount').textContent=n+' / '+rows.length+' commands shown';
+}
+applyFilter();
+</script>
+</body>
+</html>

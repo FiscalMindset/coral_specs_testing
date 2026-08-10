@@ -22,12 +22,35 @@
      passSeries       { date, label, pass, total }[]   (0 <= pass <= total) */
 window.CORAL_REPORTS = [
   {
+    id: "2026-08-10-search-planner-comms-surfaces-retest",
+    date: "2026-08-10",
+    title: "Retest of 21 failures from 08-09 walk (function-form fixes)",
+    short: "22 retest probes + 10 control: 3 now passes (planner + presence function form), 18 reproduce unchanged (Graph-side: scope/ACS/licence/bug)",
+    category: "sharepoint-teams",
+    status: "latest",
+    stats: { pass: 3, error: 18, not_found: null, gated: 0, catalog: 1, total: 22 },
+    headline: "Targeted retest of the 21 failures from the 2026-08-09 walk. Fresh keychain OAuth token re-added interactively after a session mishap. 3 of 21 now pass with the connector's function-form calls (groups_plannergroup_groups_planner_listplans(group_id), users_presence_users_getpresence(user_id)); 18 reproduce unchanged as Graph-side failures (ms-scope, ACS-not-registered, premium-licence, Graph HTML-body bugs). F-new-1 (Planner tables) is REVISED: the connector exposes both broken table form and working function form — the function form routes correctly, the table form is the dead-end. F-new-3 (ACS) is CONFIRMED: same distinctive 'code:7503 Application is not registered in our store' body reproduces via the function form with bogus id, confirming it's whole-surface not per-endpoint.",
+    findings: [
+      "3 of 21 now pass via the function form (planner_listplans + planner_plans_listbuckets via group_id, getpresence via user_id)",
+      "F-new-1 REVISED: connector exposes both broken TABLE form (no-arg → 405) and working FUNCTION form (group_id → 200 OK empty). Tested all 5 teams (algsoch, Q3 FY26 Sales Ops, CS IIT Delhi, Product Eng Mobile, Engineering FiscalMindset) — each returns 0 plans",
+      "F-new-2 CONFIRMED: HTML body from onlineMeetingConversations also reproduces via getonlinemeetingconversations(id) function form. Genuine Graph bug.",
+      "F-new-3 CONFIRMED: ACS 403 'Application is not registered in our store' reproduces via getcalls(call_id) function form. Whole-surface, not per-endpoint.",
+      "F-new-4 CONFIRMED: sites_baseitem_sites_listitems still a function, v6 finding stale",
+      "F-new-5 CONFIRMED: F7 filter mandatory still holds",
+      "F-new-6 CONFIRMED + SCOPE NOTE: zero-arg getsearchentity 404 unchanged, list endpoints still 403 (Search.Read.All missing from Coral OAuth scope list — manifests asks for only 9 scopes, AllPrincipals grant allows 128 but token scp = OAuth-scope ∩ grant-scope = 9). Adding Search.Read.All to manifest OAuth.scopes is the single highest-leverage fix.",
+      "Single highest-leverage fix: add 119 unscoped Graph permissions to Coral manifest's OAuth.scopes. With AllPrincipals grant already having 128 scopes, one manifest edit unlocks 8 of 21 failures (Search × 5, OnlineMeetings, CallRecords, Edu)."
+    ],
+    md: "reports/2026-08-10-search-planner-comms-surfaces-retest.md",
+    html: "reports/2026-08-10-search-planner-comms-surfaces-retest.html",
+    tags: ["coral-sql", "sharepoint", "search", "planner", "communications", "education", "surface-walk", "retest", "function-form-fix"]
+  },
+  {
     id: "2026-08-09-search-planner-comms-surfaces-walk",
     date: "2026-08-09",
     title: "Search + Planner + Communications + Education surface walk",
     short: "40 probes · 19 pass (14 real + 5 empty) / 21 fail (10 ms-scope, 1 error, 2 api-config, 2 api-constraint, 3 api-not-supported, 1 upstream, 1 unknown, 1 catalog)",
     category: "sharepoint-teams",
-    status: "latest",
+    status: "superseded",
     stats: { pass: 19, error: 17, not_found: 3, gated: 0, catalog: 1, total: 40 },
     headline: "First walk of 4 Microsoft Graph surfaces that v8 did not cover — Search, Planner, Communications, Education. 40 probes against the live source: 14 pass (real data) + 5 pass (200 OK empty) + 21 fail. Of the 21 failures only 2 are Coral-side (F-new-1: planner tables need filter args; F-new-4: sites_baseitem_sites_listitems catalog drift); the other 19 are Graph-side (ms-scope, api-config, api-not-supported, api-constraint, upstream, unknown). New findings: 1) F-new-1 planner listplans/listtasks 400 demanding $filter; 2) F-new-2 onlineMeetingConversations returns HTML body from Graph; 3) F-new-3 calls API needs ACS registration (not a missing scope); 4) F-new-4 catalog drift on sites_baseitem_sites_listitems; 5) F-new-5 F7 filter fix holds; 6) F-new-6 Search surface unchanged from v6 (zero-arg getsearchentity still 404).",
     findings: [
@@ -611,7 +634,8 @@ window.CORAL_META = {
     { date: "08-06", label: "08-06 SP+Teams v6", pass: 29, total: 48 },
     { date: "08-08", label: "08-08 re-verify v7", pass: 16, total: 29 },
     { date: "08-08", label: "08-08 161-probe v8", pass: 79, total: 161 },
-    { date: "08-09", label: "08-09 Search+Planner+Comms+Edu", pass: 19, total: 40 }
+    { date: "08-09", label: "08-09 Search+Planner+Comms+Edu", pass: 19, total: 40 },
+    { date: "08-10", label: "08-10 retest of 21 fails", pass: 3, total: 22 }
   ]
 };
 

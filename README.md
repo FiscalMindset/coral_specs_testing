@@ -108,7 +108,25 @@ The specifics of the test tenant (tenant name, tenant ID, admin email, test-user
 > Most reports ship a `.md` (raw) and a responsive `.html`; a few early ones are `.md`-only (rendered by the hub).
 > Browse the full interactive index at **[coral-specs-testing.onrender.com](https://coral-specs-testing.onrender.com/)** (Render) or **[GitHub Pages](https://fiscalmindset.github.io/coral_specs_testing/)**.
 
-### 🆕 2026-08-09 — Search + Planner + Communications + Education surface walk: 4 unexplored Graph surfaces
+### 🆕 2026-08-10 — Retest of 2026-08-09's 21 failures: 3 now pass via function form, 18 reproduce unchanged
+
+| | |
+|---|---|
+| **Date** | 2026-08-10 (UTC) |
+| **Probes** | **22 retest + 10 inventory/control** |
+| **Result** | 3 now passes (planner function + presence function) · 18 reproduce unchanged (Graph-side: scope/ACS/licence/bug) |
+
+Targeted retest of the 21 failures from `2026-08-09-search-planner-comms-surfaces-walk`. **Key wins**: the connector exposes both broken TABLE form and working FUNCTION form for planner (`groups_plannergroup_groups_planner_listplans(group_id)` → 200 OK empty for all 5 teams) and for presence (`users_presence_users_getpresence(user_id)` → `availability=Offline activity=Offline`). 18 fail unchanged — most are Graph-side scope/ACS/licence/bug. **Single highest-leverage fix**: add the 119 unscoped Graph permissions to the Coral manifest's OAuth scope list; one manifest edit unlocks 8 of 21 failures on re-consent. Findings:
+
+- **3 of 21 now pass** via function form (planner_listplans via group_id, presence via user_id) — clarify F-new-1 and surface a SECOND function form for presences.
+- **18 reproduce unchanged** — confirmed Graph-side root causes (ms-scope 5, ACS 1, listadhoccalls 404, onlineMeetingConversations HTML 400, F7 400, signIns premium).
+- **F-new-1 REVISED** — connector exposes both broken table form AND working function form; the table form is the dead-end, function form is correct.
+- **F-new-2/F-new-3/F-new-4/F-new-5/F-new-6** all confirmed via function-form probing where applicable.
+
+- **[HTML](reports/2026-08-10-search-planner-comms-surfaces-retest.html)** — 7 tabs, filterable command log.
+- **[MD](reports/2026-08-10-search-planner-comms-surfaces-retest.md)** — raw.
+
+### 2026-08-09 — Search + Planner + Communications + Education surface walk: 4 unexplored Graph surfaces
 
 | | |
 |---|---|

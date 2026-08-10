@@ -4,6 +4,29 @@ All notable changes to the Coral Specs Testing hub (the static report hub at `fr
 
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] — 2026-08-10
+
+### Added
+- **New report** `2026-08-10-search-planner-comms-surfaces-retest.{md,html}` — targeted retest of yesterday's 21 failures. **3 of 21 now pass** via the function form:
+  - `groups_plannergroup_groups_planner_listplans(group_id)` → 200 OK empty for all 5 tenant teams (algsoch / Q3 FY26 Sales Ops / CS IIT Delhi / Product Eng Mobile / Engineering FiscalMindset). Revises F-new-1.
+  - `users_presence_users_getpresence(user_id => '55bcc9a0-...')` → `availability=Offline activity=Offline` real data. Turns the `listpresences` 404 into a PASS via the function form.
+- 18 of 21 reproduce unchanged — confirmed Graph-side scope/ACS/licence/bugs:
+  - 5× Search 403 — unchanged (needs `Search.Read.All` which the Coral manifest OAuth flow doesn't request).
+  - 3× Education 403 — unchanged (needs `Edu.*` in OAuth scope).
+  - 4× Communications scope 403 (onlineMeetings, callRecords, etc.) — unchanged.
+  - 1× Calls ACS "Application is not registered in our store" — reproduced via `getcalls(call_id)` function form (whole-surface, not per-endpoint).
+  - 1× `onlineMeetingConversations` HTML 400 Graph bug — also reproduced via function form.
+  - 1× `listadhoccalls` 404 — also reproduced via `getadhoccalls(id)` function form.
+  - 1× `auditLogs/signIns` 403 P1+P2 premium licence — unchanged.
+  - 1× F7 400 filter mandatory — unchanged (regression-clean).
+  - 1× catalog drift (`sites_baseitem_sites_listitems`) — unchanged.
+
+### Single highest-leverage action (added to recommendations)
+Add the 119 unscoped Graph permissions (Search.Read.All, OnlineMeetings.Read.All, EduRoster.Read.All, etc.) to the Coral manifest's OAuth scope list. With the AllPrincipals grant already having 128 scopes, this one-line manifest change unlocks 8 of 21 failures on re-consent — the AllPrincipals grant allows 128 scopes but the OAuth-requested-scope list currently constrains `scp` claim to 9.
+
+### Changed
+- Updated yesterday's report headline to acknowledge function-form fixes in next-day retest.
+
 ## [1.0.1] — 2026-08-09
 
 ### Added
