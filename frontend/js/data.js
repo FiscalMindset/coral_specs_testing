@@ -685,6 +685,38 @@ window.CORAL_META = {
     { date: "08-08", label: "08-08 161-probe v8", pass: 79, total: 161 },
     { date: "08-09", label: "08-09 Search+Planner+Comms+Edu", pass: 19, total: 40 },
     { date: "08-10", label: "08-10 retest of 21 fails", pass: 3, total: 22 }
+  ],
+  guides: [
+    {
+      title: "How to consent to all 36 Coral app scopes",
+      desc: "Step-by-step interactive re-consent walkthrough for acquiring a 36-scope OAuth token (recommended path).",
+      file: "reports/2026-07-31-oauth-consent-guide.md"
+    },
+    {
+      title: "Scope unlock test (13 → 36 scopes)",
+      desc: "Expand the OAuth2 admin grant via Graph API PATCH — the exact request that returned HTTP 204.",
+      file: "reports/2026-07-31-scope-unlock-test.md"
+    },
+    {
+      title: "Full command & output log (07-14)",
+      desc: "Every coral command from the original battery, verbatim with output and exit codes.",
+      file: "reports/2026-07-14-full-command-output-log.md"
+    },
+    {
+      title: "Directory data test log (07-14)",
+      desc: "Real-data testing without an M365 license: 18 users + 2 groups through the connector.",
+      file: "reports/2026-07-14-directory-data-test-log.md"
+    },
+    {
+      title: "MS Graph OpenAPI cross-check (v4.5)",
+      desc: "How failures were triaged against Microsoft's published OpenAPI to retract phantom Coral bugs.",
+      file: "reports/2026-08-05-sharepoint-teams-deep-data-report-v4.5.md"
+    },
+    {
+      title: "OAuth re-auth verification (v5.2)",
+      desc: "Re-adding the source via interactive OAuth to fix scope-403s — a proven repro for token issues.",
+      file: "reports/2026-08-06-sharepoint-teams-coral-sql-data-report-v5.2.md"
+    }
   ]
 };
 

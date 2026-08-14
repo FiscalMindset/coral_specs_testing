@@ -1,17 +1,22 @@
 {
   "name": "coral-specs-testing-hub",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "private": true,
   "description": "Static multi-page report hub + headless smoke tests for the Coral microsoft_graph_v4 connector testing project.",
   "scripts": {
-    "lint": "eslint frontend/js",
-    "test": "node frontend/test/smoke.js"
+    "lint": "eslint frontend/js && htmlhint \"frontend/**/*.html\" && stylelint \"frontend/**/*.css\"",
+    "test": "node frontend/test/smoke.js",
+    "lint:html": "htmlhint \"frontend/**/*.html\"",
+    "lint:css": "stylelint \"frontend/**/*.css\""
   },
   "engines": {
     "node": ">=18"
   },
   "devDependencies": {
     "eslint": "^10.8.1",
-    "globals": "^17.9.0"
+    "globals": "^17.9.0",
+    "htmlhint": "^1.9.2",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard": "^40.0.0"
   }
 }

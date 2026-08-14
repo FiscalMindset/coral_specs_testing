@@ -4,6 +4,12 @@ All notable changes to the Coral Specs Testing hub (the static report hub at `fr
 
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] — 2026-08-10
+
+### Added
+- **htmlhint + stylelint** added to the hub's lint pipeline (`npm run lint` now runs `eslint` + `htmlhint "frontend/**/*.html"` + `stylelint "frontend/**/*.css"`). All existing files pass cleanly. CI gates (`.github/workflows/pr.yml` and `pages.yml`) now fail builds if any HTML/CSS regression sneaks in.
+- **Guides data moved to `data.js`**: the `GUIDES` array previously hardcoded in `frontend/js/guides.js` now lives in `window.CORAL_META.guides` alongside `passSeries` and `attribution`. `guides.js` reads from there (single source of truth restored).
+
 ## [1.0.4] — 2026-08-10
 
 ### Done
