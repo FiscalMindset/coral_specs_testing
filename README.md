@@ -90,9 +90,9 @@ The smoke test (`frontend/test/smoke.js`) parses each page's `<script src=...>` 
 
 ---
 
-## 🔐 Microsoft account in use
+## � Microsoft account in use
 
-The specifics of the test tenant (tenant name, tenant ID, admin email, test-user UPN, and Coral app client ID) are **not committed to this public repo** — the same disclosure standard this repo's [commit-email-exposure report](reports/2026-08-02-commit-email-exposure.md) applies to upstream-maintainer emails applies here to operational credentials. A maintainer reproducing a battery needs the values from the maintainer's out-of-band notes; the public record only needs to confirm a Business-Premium Entra tenant with admin consent, keychain OAuth, and an `az` admin token were used.
+> **Intentional disclosure.** This section lists *kinds* of credentials (tenant kind, sign-in methods, license state) — not the actual tenant ID, client ID, admin email, or test-user UPN. Those values are kept in the maintainer's out-of-band notes so anyone reproducing a battery can request them — see [`reports/2026-08-02-commit-email-exposure.md`](reports/2026-08-02-commit-email-exposure.md) for the disclosure rationale. The Coral project's own policy is that *reporting* an exposure is the cure, not hiding it — the same standard applies to this repo's operational credentials.
 
 | | |
 |---|---|
