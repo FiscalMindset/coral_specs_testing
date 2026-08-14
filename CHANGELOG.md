@@ -4,6 +4,11 @@ All notable changes to the Coral Specs Testing hub (the static report hub at `fr
 
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] — 2026-08-10
+
+### Added
+- **`npm audit --omit=dev` CI step** in both `.github/workflows/pr.yml` and `pages.yml`. Audits dependencies on every PR and before every Pages deploy; fails the build if any vulnerability is reported. Currently `found 0 vulnerabilities`. The hub has zero production dependencies (only dev deps: eslint, globals, htmlhint, stylelint, stylelint-config-standard).
+
 ## [1.1.0] — 2026-08-10
 
 ### Added

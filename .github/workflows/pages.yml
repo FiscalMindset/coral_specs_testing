@@ -25,6 +25,8 @@ jobs:
           cache: npm
       - name: Install dev dependencies (eslint, htmlhint, stylelint)
         run: npm ci
+      - name: Audit dependencies (zero prod deps; dev deps can have advisories)
+        run: npm audit --omit=dev
       - name: Lint (ESLint + htmlhint + stylelint)
         run: npm run lint
       - name: Run hub smoke tests
